@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>API Test Console</title>
+  <style>
+    :root{--bg:#f6f8fb;--card:#fff;--bd:#d9e2ec;--text:#1f2937;--muted:#667085;--top:#1f5f8b;--get:#61affe;--post:#49cc90;--delete:#f93e3e;--patch:#50e3c2}
+    *{box-sizing:border-box}body{margin:0;font-family:ui-sans-serif,"Segoe UI",sans-serif;background:linear-gradient(180deg,#f9fbfd 0,var(--bg) 100%);color:var(--text)}
+    .top{background:linear-gradient(135deg,#1f5f8b,#174d72);color:#fff;padding:20px 24px}
+    .top h1{margin:0;font-size:28px}.top p{margin:6px 0 0;color:rgba(255,255,255,.82)}
+    .wrap{max-width:1400px;margin:0 auto}.row{display:grid;gap:12px}.panel{background:var(--card);border:1px solid var(--bd);border-radius:14px;box-shadow:0 10px 24px rgba(15,23,42,.06)}
+    .toolbar,.ctx,.main{max-width:1400px;margin:18px auto 0;padding:0 24px}.toolbar .inner,.ctx .inner{padding:16px}
+    .grid3{display:grid;grid-template-columns:1.2fr 1.2fr .8fr;gap:12px}.grid6{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px}.gridP{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.gridB{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+    label{display:block;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin:0 0 6px}
+    input,select,textarea{width:100%;border:1px solid var(--bd);border-radius:10px;padding:10px 12px;font:inherit;background:#fff;color:var(--text);min-height:42px}
+    textarea{min-height:96px;resize:vertical}input[type=checkbox]{width:18px;min-height:18px}
+    .check{display:flex;align-items:center;gap:10px;border:1px solid var(--bd);border-radius:10px;padding:11px 12px;background:#fff;min-height:42px}
+    .btns,.acts,.headacts{display:flex;gap:10px;flex-wrap:wrap;align-items:end}.btn,.headacts a{appearance:none;border:1px solid var(--bd);background:#f3f6fa;color:var(--text);padding:10px 14px;border-radius:10px;cursor:pointer;text-decoration:none}
+    .btn.primary{background:#1566a0;border-color:#1566a0;color:#fff}.headacts a,.headacts .btn{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.2);color:#fff}
+    .note{font-size:13px;color:var(--muted)}.main{display:grid;gap:18px;padding-bottom:36px}.group h2{margin:0 0 4px}.group p{margin:0 0 10px;color:var(--muted);font-size:13px}
+    details.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;overflow:hidden;box-shadow:0 10px 24px rgba(15,23,42,.06)}summary{list-style:none;cursor:pointer;padding:16px;display:flex;align-items:center;justify-content:space-between;gap:12px}summary::-webkit-details-marker{display:none}
+    .sum{display:flex;align-items:center;gap:12px;min-width:0;flex:1}.badge{min-width:74px;padding:8px 10px;border-radius:8px;color:#fff;font-weight:700;text-align:center}.get{background:var(--get)}.post{background:var(--post)}.delete{background:var(--delete)}.patch{background:var(--patch);color:#053b3b}
+    .path{font-weight:700;word-break:break-all}.meta{font-size:13px;color:var(--muted)}.auth{font-size:12px;padding:4px 8px;border-radius:999px;background:#eef5fb;color:#32566c;font-weight:700}
+    .body{padding:0 16px 16px;display:grid;gap:14px}.hint{font-size:12px;color:var(--muted)}.sec{display:grid;gap:8px}
+    pre{margin:0;padding:14px;overflow:auto;white-space:pre-wrap;word-break:break-word;font:12px/1.55 ui-monospace,Consolas,monospace}.box{border:1px solid var(--bd);border-radius:12px;overflow:hidden;background:#fbfdff}.box header{display:flex;justify-content:space-between;gap:10px;padding:10px 14px;background:#f3f7fb;border-bottom:1px solid var(--bd);font-size:13px;color:var(--muted)}
+    .ok{color:#0f8d55;font-weight:700}.err{color:#d12f2f;font-weight:700}.hidden{display:none!important}
+    @media (max-width:1100px){.grid3,.grid6,.gridP,.gridB{grid-template-columns:1fr 1fr}}
+    @media (max-width:760px){.toolbar,.ctx,.main,.top{padding-left:16px;padding-right:16px}.grid3,.grid6,.gridP,.gridB{grid-template-columns:1fr}.sum,summary{align-items:flex-start;flex-direction:column}}
+  </style>
+</head>
+<body>
+  <div class="top">
+    <div class="wrap">
+      <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:flex-start">
+        <div>
+          <h1>Health Record API Test Console</h1>
+          <p>独立测试页，不改现有前端。风格参考 FastAPI Docs，每个接口可直接填写参数并发送。</p>
+        </div>
+        <div class="headacts">
+          <a href="/docs" target="_blank" rel="noreferrer">Open Docs</a>
+          <a href="/redoc" target="_blank" rel="noreferrer">Open ReDoc</a>
+          <button class="btn" id="openAll" type="button">Expand All</button>
+          <button class="btn" id="closeAll" type="button">Collapse All</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <section class="toolbar">
+    <div class="panel inner">
+      <div class="grid3">
+        <div><label for="base">Base URL</label><input id="base" type="text" /></div>
+        <div><label for="token">Bearer Token</label><input id="token" type="text" placeholder="登录成功后会自动写入" /></div>
+        <div class="btns">
+          <button class="btn primary" id="save" type="button">Save State</button>
+          <button class="btn" id="clearState" type="button">Clear State</button>
+        </div>
+      </div>
+      <div style="margin-top:12px" class="grid3">
+        <div><label for="search">Search</label><input id="search" type="text" placeholder="按路径、标题筛选接口" /></div>
+        <div class="note" style="align-self:end">接口返回的 ID 会自动回填到上下文，空白参数会优先使用上下文值。</div>
+        <div class="btns">
+          <button class="btn" id="refreshCtx" type="button">Refresh Context</button>
+          <button class="btn" id="clearResp" type="button">Clear Responses</button>
+        </div>
+      </div>
+    </div>
+  </section>
+  <section class="ctx">
+    <div class="panel inner">
+      <h2 style="margin:0 0 6px">运行上下文</h2>
+      <div class="note" style="margin-bottom:12px">这里的值会自动从响应里提取，也可以手动改。</div>
+      <div class="grid6" id="ctxBox"></div>
+    </div>
+  </section>
+  <main class="main" id="app"></main>
+  <script>
+    const ST="mog_api_test_console_v1";
+    const DCTX={email:"",password:"",record_id:"",file_id:"",task_id:"",ocr_result_id:"",document_id:"",version_id:"",conversation_id:""};
+    const CK=[["email","Email"],["password","Password"],["record_id","Record ID"],["file_id","File ID"],["task_id","Task ID"],["ocr_result_id","OCR Result ID"],["document_id","Document ID"],["version_id","Version ID"],["conversation_id","Conversation ID"]];
+    const S={base:"",token:"",ctx:{...DCTX}};
+    const defs=[];
+    const QP={n:"page",l:"page",i:"query",t:"number",d:1};
+    const QS={n:"page_size",l:"page_size",i:"query",t:"number",d:20};
+    const QO={n:"sort_order",l:"sort_order",i:"query",t:"select",d:"desc",o:["asc","desc"]};
+    function esc(v){return String(v??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#39;")}
+    function id(e,s,n){return "i-"+e+"-"+s+"-"+n}
+    function byId(x){return document.getElementById(x)}
+    function load(){try{const x=JSON.parse(localStorage.getItem(ST)||"null");if(x){S.base=x.base||"";S.token=x.token||"";S.ctx={...DCTX,...(x.ctx||{})}}}catch{}}
+    function save(){S.base=byId("base").value.trim();S.token=byId("token").value.trim();CK.forEach(([k])=>{const el=byId("ctx-"+k);if(el)S.ctx[k]=el.value.trim()});localStorage.setItem(ST,JSON.stringify(S))}
+    function resetState(){localStorage.removeItem(ST);S.base=window.location.origin&&window.location.origin!=="null"?window.location.origin:"http://127.0.0.1:8000";S.token="";S.ctx={...DCTX};topVals();ctxVals()}
+    function topVals(){byId("base").value=S.base||(window.location.origin&&window.location.origin!=="null"?window.location.origin:"http://127.0.0.1:8000");byId("token").value=S.token||""}
+    function ctxVals(){byId("ctxBox").innerHTML=CK.map(([k,l])=>`<div><label for="ctx-${k}">${esc(l)}</label><input id="ctx-${k}" type="${k==="password"?"password":"text"}" value="${esc(S.ctx[k]||"")}" /></div>`).join("")}
+    function renderField(eid,scope,f){const v=f.d!==undefined?f.d:(f.c?S.ctx[f.c]||"":""),h=[f.i?f.i.toUpperCase():"",f.r?"required":"",f.c?"ctx:"+f.c:""].filter(Boolean).join(" · "),fid=id(eid,scope,f.n);if(f.t==="checkbox")return `<div><label for="${fid}">${esc(f.l||f.n)}</label><div class="check"><input id="${fid}" type="checkbox" ${v?"checked":""} /><span class="hint">${esc(h||"boolean")}</span></div></div>`;if(f.t==="select")return `<div><label for="${fid}">${esc(f.l||f.n)}</label><select id="${fid}">${(f.o||[]).map(o=>`<option value="${esc(o)}" ${String(v)===String(o)?"selected":""}>${esc(o||"(empty)")}</option>`).join("")}</select><div class="hint">${esc(h)}</div></div>`;if(f.t==="textarea")return `<div><label for="${fid}">${esc(f.l||f.n)}</label><textarea id="${fid}" placeholder="${esc(f.ph||"")}">${esc(v||"")}</textarea><div class="hint">${esc(h)}</div></div>`;if(f.t==="file")return `<div><label for="${fid}">${esc(f.l||f.n)}</label><input id="${fid}" type="file" /><div class="hint">${esc(h||"multipart file")}</div></div>`;return `<div><label for="${fid}">${esc(f.l||f.n)}</label><input id="${fid}" type="${f.t||"text"}" value="${esc(v||"")}" placeholder="${esc(f.ph||"")}" /><div class="hint">${esc(h)}</div></div>`}
+    function render(){byId("app").innerHTML=defs.map(g=>`<section class="group"><h2>${esc(g.g)}</h2><p>${esc(g.d||"")}</p>${g.e.map(e=>{const q=e.q||[],b=e.b?e.b.f:[];return `<details class="card" data-search="${esc([g.g,e.t,e.p,e.d||""].join(" ").toLowerCase())}"><summary><div class="sum"><span class="badge ${e.m.toLowerCase()}">${e.m}</span><div><div class="path">${esc(e.p)}</div><div class="meta">${esc(e.t)}${e.d?" · "+esc(e.d):""}</div></div></div><span class="auth">${e.a?"Auth":"Public"}</span></summary><div class="body">${q.length?`<div class="sec"><div class="hint">Parameters</div><div class="gridP">${q.map(f=>renderField(e.id,"q",f)).join("")}</div></div>`:""}${b.length?`<div class="sec"><div class="hint">${e.b.t==="form"?"Form Data":"Request Body"}</div><div class="gridB">${b.map(f=>renderField(e.id,"b",f)).join("")}</div></div>`:""}<div class="acts"><button class="btn primary" data-act="run" data-e="${e.id}" type="button">Send</button><button class="btn" data-act="fill" data-e="${e.id}" type="button">Fill From Context</button><button class="btn" data-act="clear" data-e="${e.id}" type="button">Clear</button></div><section class="box"><header><span>Request</span><span id="m-${e.id}">Not sent</span></header><pre id="rq-${e.id}">No request yet.</pre></section><section class="box"><header><span>Response</span><span id="st-${e.id}">Waiting</span></header><pre id="rs-${e.id}">No response yet.</pre></section></div></details>`}).join("")}</section>`).join("")}
+    function findEp(x){for(const g of defs){for(const e of g.e){if(e.id===x)return e}}}
+    function raw(eid,scope,f){const el=byId(id(eid,scope,f.n));if(!el)return;if(f.t==="checkbox")return el.checked;if(f.t==="file")return el.files&&el.files[0]?el.files[0]:null;const txt=el.value.trim()||((f.c&&S.ctx[f.c])||"");if(!txt){if(f.r)throw new Error("Missing required field: "+f.n);return f.t==="list"?[]:undefined}if(f.t==="number"){const num=Number(txt);if(Number.isNaN(num))throw new Error("Invalid number: "+f.n);return num}if(f.t==="list"){if(txt.startsWith("[")){const a=JSON.parse(txt);if(!Array.isArray(a))throw new Error("Field must be an array: "+f.n);return a}return txt.split(/[\n,]/).map(v=>v.trim()).filter(Boolean).map(v=>/^\d+$/.test(v)?Number(v):v)}return txt}
+    function build(e){const base=byId("base").value.trim().replace(/\/+$/,""),u=new URL(base+e.p),h={Accept:"application/json"};if(e.a&&byId("token").value.trim())h.Authorization="Bearer "+byId("token").value.trim();for(const f of (e.q||[]).filter(x=>x.i==="path"))u.pathname=u.pathname.replace("{"+f.n+"}",encodeURIComponent(String(raw(e.id,"q",f))));for(const f of (e.q||[]).filter(x=>x.i==="query")){const v=raw(e.id,"q",f);if(v!==undefined&&v!==null&&v!=="")u.searchParams.set(f.n,String(v))}const o={method:e.m,headers:h};let body=null;if(e.b){if(e.b.t==="json"){h["Content-Type"]="application/json";body={};for(const f of e.b.f)body[f.n]=raw(e.id,"b",f);o.body=JSON.stringify(body)}else{delete h["Content-Type"];const fd=new FormData();body={};for(const f of e.b.f){const v=raw(e.id,"b",f);if(f.t==="file"){if(!v&&f.r)throw new Error("Missing required file: "+f.n);if(v){fd.append(f.n,v);body[f.n]={filename:v.name,size:v.size,type:v.type}}}else if(v!==undefined){fd.append(f.n,v);body[f.n]=v}}o.body=fd}}return{u,o,p:{method:e.m,url:u.toString(),headers:h,body}}}
+    function remember(d){if(!d||typeof d!=="object")return;if(d.access_token)S.token=String(d.access_token);if(d.record&&d.record.id)S.ctx.record_id=String(d.record.id);if(d.file&&d.file.id)S.ctx.file_id=String(d.file.id);if(d.task&&d.task.id){S.ctx.task_id=String(d.task.id);if(d.task.resource_type==="record_file")S.ctx.file_id=String(d.task.resource_id);if(d.task.result_resource_type==="ocr_result"&&d.task.result_resource_id)S.ctx.ocr_result_id=String(d.task.result_resource_id);if(d.task.result_resource_type==="document_version"&&d.task.result_resource_id)S.ctx.version_id=String(d.task.result_resource_id);if(d.task.result_resource_type==="extracted_document"&&d.task.result_resource_id)S.ctx.document_id=String(d.task.result_resource_id)}if(d.document&&d.document.id)S.ctx.document_id=String(d.document.id);if(d.version&&d.version.id){S.ctx.version_id=String(d.version.id);if(d.version.document_id)S.ctx.document_id=String(d.version.document_id)}if(d.id&&d.revision_number!==undefined){S.ctx.ocr_result_id=String(d.id);if(d.record_file_id)S.ctx.file_id=String(d.record_file_id)}if(d.id&&d.document_type!==undefined){S.ctx.document_id=String(d.id);if(d.record_id)S.ctx.record_id=String(d.record_id);if(d.record_file_id)S.ctx.file_id=String(d.record_file_id);if(d.current_version_id)S.ctx.version_id=String(d.current_version_id)}if(d.id&&d.version_number!==undefined){S.ctx.version_id=String(d.id);if(d.document_id)S.ctx.document_id=String(d.document_id)}if(d.id&&d.title!==undefined&&d.user_id!==undefined)S.ctx.conversation_id=String(d.id);if(Array.isArray(d.items)&&d.items[0])remember(d.items[0]);if(Array.isArray(d.conversations)&&d.conversations[0])remember(d.conversations[0]);if(Array.isArray(d.selected_document_version_ids)&&d.selected_document_version_ids[0])S.ctx.version_id=String(d.selected_document_version_ids[0])}
+    async function run(eid){const e=findEp(eid),rq=byId("rq-"+eid),rs=byId("rs-"+eid),st=byId("st-"+eid),m=byId("m-"+eid);try{save();const b=build(e);rq.textContent=JSON.stringify(b.p,null,2);st.textContent="Sending...";const t=performance.now(),resp=await fetch(b.u,b.o),ms=Math.round(performance.now()-t),txt=await resp.text();let data;try{data=txt?JSON.parse(txt):{}}catch{data=txt}if(data&&typeof data==="object")remember(data);if(eid==="auth-login"&&data&&data.access_token)byId("token").value=data.access_token;if((eid==="auth-register"||eid==="auth-login")&&b.p.body){if(b.p.body.email)S.ctx.email=String(b.p.body.email);if(b.p.body.password)S.ctx.password=String(b.p.body.password)}ctxVals();save();m.textContent=resp.status+" in "+ms+"ms";st.innerHTML=resp.ok?`<span class="ok">HTTP ${resp.status}</span>`:`<span class="err">HTTP ${resp.status}</span>`;rs.textContent=typeof data==="string"?data:JSON.stringify(data,null,2)}catch(err){m.textContent="Request failed";st.innerHTML='<span class="err">Client Error</span>';rs.textContent=err&&err.message?err.message:String(err)}}
+    function fill(e){[...(e.q||[]),...((e.b&&e.b.f)||[])].forEach(f=>{if(!f.c)return;const scope=(e.q||[]).includes(f)?"q":"b",el=byId(id(e.id,scope,f.n)),v=S.ctx[f.c]||"";if(el&&el.type!=="checkbox"&&el.type!=="file"&&!el.value.trim())el.value=v})}
+    function clearOne(e){[...(e.q||[]),...((e.b&&e.b.f)||[])].forEach(f=>{const scope=(e.q||[]).includes(f)?"q":"b",el=byId(id(e.id,scope,f.n));if(!el)return;if(f.t==="checkbox")el.checked=!!f.d;else if(f.t==="file")el.value="";else el.value=f.d!==undefined?f.d:(f.c?S.ctx[f.c]||"":"")});byId("rq-"+e.id).textContent="No request yet.";byId("rs-"+e.id).textContent="No response yet.";byId("st-"+e.id).textContent="Waiting";byId("m-"+e.id).textContent="Not sent"}
+    function wire(){document.addEventListener("click",ev=>{const b=ev.target.closest("[data-act]");if(b){const e=findEp(b.dataset.e);if(b.dataset.act==="run")run(e.id);if(b.dataset.act==="fill")fill(e);if(b.dataset.act==="clear")clearOne(e);return}if(ev.target.id==="save")save();if(ev.target.id==="clearState")resetState();if(ev.target.id==="refreshCtx"){save();ctxVals()}if(ev.target.id==="clearResp"){document.querySelectorAll("[id^='rq-']").forEach(x=>x.textContent="No request yet.");document.querySelectorAll("[id^='rs-']").forEach(x=>x.textContent="No response yet.");document.querySelectorAll("[id^='st-']").forEach(x=>x.textContent="Waiting");document.querySelectorAll("[id^='m-']").forEach(x=>x.textContent="Not sent")}if(ev.target.id==="openAll")document.querySelectorAll("details.card").forEach(x=>x.open=true);if(ev.target.id==="closeAll")document.querySelectorAll("details.card").forEach(x=>x.open=false)});document.addEventListener("input",ev=>{if(ev.target.id==="search"){const q=ev.target.value.trim().toLowerCase();document.querySelectorAll("details.card").forEach(c=>c.classList.toggle("hidden",q&&!String(c.dataset.search||"").includes(q)))}if(ev.target.id==="base"||ev.target.id==="token"||String(ev.target.id||"").startsWith("ctx-"))save()})}
+    defs.push({g:"System",d:"基础健康检查。",e:[
+      {id:"health",t:"Health Check",m:"GET",p:"/api/health"}
+    ]});
+    defs.push({g:"Auth",d:"注册、登录与当前用户。",e:[
+      {id:"auth-register",t:"Register",m:"POST",p:"/api/auth/register",b:{t:"json",f:[
+        {n:"email",l:"email",t:"email",r:1,c:"email",d:"tester@example.com"},
+        {n:"password",l:"password",t:"password",r:1,c:"password",d:"strongpass123"}
+      ]}},
+      {id:"auth-login",t:"Login",m:"POST",p:"/api/auth/login",b:{t:"json",f:[
+        {n:"email",l:"email",t:"email",r:1,c:"email",d:"tester@example.com"},
+        {n:"password",l:"password",t:"password",r:1,c:"password",d:"strongpass123"}
+      ]}},
+      {id:"auth-me",t:"Current User",m:"GET",p:"/api/auth/me",a:1}
+    ]});
+    defs.push({g:"Files",d:"上传测试文件。",e:[
+      {id:"files-upload",t:"Upload File",m:"POST",p:"/api/files/upload",a:1,d:"返回 record_id 和 file_id。",b:{t:"form",f:[
+        {n:"display_name",l:"display_name",t:"text",r:1,d:"test-report.txt"},
+        {n:"file",l:"file",t:"file",r:1}
+      ]}}
+    ]});
+    defs.push({g:"OCR",d:"OCR 任务与修订查询。",e:[
+      {id:"ocr-extract",t:"Extract OCR",m:"POST",p:"/api/ocr/files/{record_file_id}/extract",a:1,d:"默认 sync=true。",q:[
+        {n:"record_file_id",l:"record_file_id",i:"path",t:"number",r:1,c:"file_id"},
+        {n:"force",l:"force",i:"query",t:"checkbox",d:0},
+        {n:"sync",l:"sync",i:"query",t:"checkbox",d:1}
+      ]},
+      {id:"ocr-list-revisions",t:"List OCR Revisions",m:"GET",p:"/api/ocr/files/{record_file_id}/revisions",a:1,q:[
+        {n:"record_file_id",l:"record_file_id",i:"path",t:"number",r:1,c:"file_id"},
+        QP,QS,
+        {n:"sort_by",l:"sort_by",i:"query",t:"select",d:"revision_number",o:["created_at","id","revision_number"]},
+        QO
+      ]},
+      {id:"ocr-current-revision",t:"Current OCR Revision",m:"GET",p:"/api/ocr/files/{record_file_id}/revisions/current",a:1,q:[
+        {n:"record_file_id",l:"record_file_id",i:"path",t:"number",r:1,c:"file_id"}
+      ]},
+      {id:"ocr-compare-revisions",t:"Compare OCR Revisions",m:"GET",p:"/api/ocr/revisions/compare",a:1,q:[
+        {n:"from_id",l:"from_id",i:"query",t:"number",r:1,c:"ocr_result_id"},
+        {n:"to_id",l:"to_id",i:"query",t:"number",r:1,c:"ocr_result_id"}
+      ]},
+      {id:"ocr-get-revision",t:"Get OCR Revision",m:"GET",p:"/api/ocr/revisions/{ocr_result_id}",a:1,q:[
+        {n:"ocr_result_id",l:"ocr_result_id",i:"path",t:"number",r:1,c:"ocr_result_id"}
+      ]}
+    ]});
+    defs.push({g:"Ingestion",d:"把 OCR 标准化成结构化文档。",e:[
+      {id:"normalize-ocr",t:"Normalize OCR Result",m:"POST",p:"/api/ingestion/ocr-results/{ocr_result_id}/normalize",a:1,q:[
+        {n:"ocr_result_id",l:"ocr_result_id",i:"path",t:"number",r:1,c:"ocr_result_id"},
+        {n:"force",l:"force",i:"query",t:"checkbox",d:0},
+        {n:"sync",l:"sync",i:"query",t:"checkbox",d:1}
+      ]}
+    ]});
+    defs.push({g:"Query",d:"文档、版本、测量值和选择接口。",e:[
+      {id:"query-documents",t:"List Documents",m:"GET",p:"/api/documents",a:1,q:[
+        {n:"record_id",l:"record_id",i:"query",t:"number",c:"record_id"},
+        {n:"file_id",l:"file_id",i:"query",t:"number",c:"file_id"},
+        {n:"document_type",l:"document_type",i:"query",t:"text"},
+        {n:"status",l:"status",i:"query",t:"text"},
+        QP,QS,
+        {n:"sort_by",l:"sort_by",i:"query",t:"select",d:"created_at",o:["created_at","id","document_type"]},
+        QO
+      ]},
+      {id:"query-document-detail",t:"Get Document",m:"GET",p:"/api/documents/{document_id}",a:1,q:[
+        {n:"document_id",l:"document_id",i:"path",t:"number",r:1,c:"document_id"}
+      ]},
+      {id:"query-document-versions",t:"List Document Versions",m:"GET",p:"/api/documents/{document_id}/versions",a:1,q:[
+        {n:"document_id",l:"document_id",i:"path",t:"number",r:1,c:"document_id"},
+        QP,QS,
+        {n:"sort_by",l:"sort_by",i:"query",t:"select",d:"version_number",o:["created_at","id","version_number"]},
+        QO
+      ]},
+      {id:"query-current-version",t:"Current Document Version",m:"GET",p:"/api/documents/{document_id}/versions/current",a:1,q:[
+        {n:"document_id",l:"document_id",i:"path",t:"number",r:1,c:"document_id"}
+      ]},
+      {id:"query-compare-versions",t:"Compare Document Versions",m:"GET",p:"/api/document-versions/compare",a:1,q:[
+        {n:"from_id",l:"from_id",i:"query",t:"number",r:1,c:"version_id"},
+        {n:"to_id",l:"to_id",i:"query",t:"number",r:1,c:"version_id"}
+      ]},
+      {id:"query-version-detail",t:"Get Document Version",m:"GET",p:"/api/document-versions/{version_id}",a:1,q:[
+        {n:"version_id",l:"version_id",i:"path",t:"number",r:1,c:"version_id"}
+      ]},
+      {id:"query-record-documents",t:"List Documents For Record",m:"GET",p:"/api/records/{record_id}/documents",a:1,q:[
+        {n:"record_id",l:"record_id",i:"path",t:"number",r:1,c:"record_id"},
+        QP,QS,
+        {n:"sort_by",l:"sort_by",i:"query",t:"select",d:"created_at",o:["created_at","id","document_type"]},
+        QO
+      ]},
+      {id:"query-file-documents",t:"List Documents For File",m:"GET",p:"/api/files/{file_id}/documents",a:1,q:[
+        {n:"file_id",l:"file_id",i:"path",t:"number",r:1,c:"file_id"},
+        QP,QS,
+        {n:"sort_by",l:"sort_by",i:"query",t:"select",d:"created_at",o:["created_at","id","document_type"]},
+        QO
+      ]},
+      {id:"query-measurements",t:"List Measurements",m:"GET",p:"/api/measurements",a:1,q:[
+        {n:"record_id",l:"record_id",i:"query",t:"number",c:"record_id"},
+        {n:"file_id",l:"file_id",i:"query",t:"number",c:"file_id"},
+        {n:"document_id",l:"document_id",i:"query",t:"number",c:"document_id"},
+        {n:"document_version_id",l:"document_version_id",i:"query",t:"number",c:"version_id"},
+        {n:"name",l:"name",i:"query",t:"text"},
+        QP,QS,
+        {n:"sort_by",l:"sort_by",i:"query",t:"select",d:"created_at",o:["created_at","id","name","value_numeric"]},
+        QO
+      ]},
+      {id:"query-record-measurements",t:"Measurements For Record",m:"GET",p:"/api/records/{record_id}/measurements",a:1,q:[
+        {n:"record_id",l:"record_id",i:"path",t:"number",r:1,c:"record_id"},
+        QP,QS,
+        {n:"sort_by",l:"sort_by",i:"query",t:"select",d:"created_at",o:["created_at","id","name","value_numeric"]},
+        QO
+      ]},
+      {id:"query-file-measurements",t:"Measurements For File",m:"GET",p:"/api/files/{file_id}/measurements",a:1,q:[
+        {n:"file_id",l:"file_id",i:"path",t:"number",r:1,c:"file_id"},
+        QP,QS,
+        {n:"sort_by",l:"sort_by",i:"query",t:"select",d:"created_at",o:["created_at","id","name","value_numeric"]},
+        QO
+      ]},
+      {id:"query-document-measurements",t:"Measurements For Document",m:"GET",p:"/api/documents/{document_id}/measurements",a:1,q:[
+        {n:"document_id",l:"document_id",i:"path",t:"number",r:1,c:"document_id"},
+        QP,QS,
+        {n:"sort_by",l:"sort_by",i:"query",t:"select",d:"created_at",o:["created_at","id","name","value_numeric"]},
+        QO
+      ]},
+      {id:"query-search-measurements",t:"Search Measurements",m:"GET",p:"/api/measurements/search",a:1,q:[
+        {n:"name",l:"name",i:"query",t:"text",r:1,d:"glucose"},
+        {n:"start_date",l:"start_date",i:"query",t:"date"},
+        {n:"end_date",l:"end_date",i:"query",t:"date"},
+        QP,QS,
+        {n:"sort_by",l:"sort_by",i:"query",t:"select",d:"created_at",o:["created_at","id","name","value_numeric"]},
+        QO
+      ]},
+      {id:"query-select-versions",t:"Query Selections",m:"POST",p:"/api/query/selections",a:1,b:{t:"json",f:[
+        {n:"document_version_ids",l:"document_version_ids",t:"list",r:1,c:"version_id",ph:"1,2,3 或 [1,2,3]"},
+        {n:"requested_measurements",l:"requested_measurements",t:"list",ph:"glucose, platelet"}
+      ]}},
+      {id:"query-delete-document",t:"Delete Document",m:"DELETE",p:"/api/documents/{document_id}",a:1,q:[
+        {n:"document_id",l:"document_id",i:"path",t:"number",r:1,c:"document_id"}
+      ]},
+      {id:"query-rename-document",t:"Rename Document",m:"PATCH",p:"/api/documents/{document_id}/rename",a:1,q:[
+        {n:"document_id",l:"document_id",i:"path",t:"number",r:1,c:"document_id"},
+        {n:"new_name",l:"new_name",i:"query",t:"text",r:1,d:"renamed-report"}
+      ]},
+      {id:"query-measurement-timeseries",t:"Measurement Timeseries",m:"GET",p:"/api/measurements/timeseries",a:1,q:[
+        {n:"name",l:"name",i:"query",t:"text",r:1,d:"glucose"},
+        {n:"start_date",l:"start_date",i:"query",t:"date"},
+        {n:"end_date",l:"end_date",i:"query",t:"date"}
+      ]}
+    ]});
+    defs.push({g:"Tasks",d:"任务列表、事件、结果与重试。",e:[
+      {id:"tasks-list",t:"List Tasks",m:"GET",p:"/api/tasks",a:1,q:[
+        {n:"task_type",l:"task_type",i:"query",t:"select",d:"",o:["","ocr","normalization"]},
+        {n:"status",l:"status",i:"query",t:"select",d:"",o:["","pending","processing","completed","failed"]}
+      ]},
+      {id:"tasks-detail",t:"Get Task",m:"GET",p:"/api/tasks/{task_id}",a:1,q:[
+        {n:"task_id",l:"task_id",i:"path",t:"number",r:1,c:"task_id"}
+      ]},
+      {id:"tasks-events",t:"Task Events",m:"GET",p:"/api/tasks/{task_id}/events",a:1,q:[
+        {n:"task_id",l:"task_id",i:"path",t:"number",r:1,c:"task_id"}
+      ]},
+      {id:"tasks-provider-events",t:"Provider Events",m:"GET",p:"/api/tasks/{task_id}/provider-events",a:1,q:[
+        {n:"task_id",l:"task_id",i:"path",t:"number",r:1,c:"task_id"}
+      ]},
+      {id:"tasks-result",t:"Task Result",m:"GET",p:"/api/tasks/{task_id}/result",a:1,q:[
+        {n:"task_id",l:"task_id",i:"path",t:"number",r:1,c:"task_id"}
+      ]},
+      {id:"tasks-retry",t:"Retry Task",m:"POST",p:"/api/tasks/{task_id}/retry",a:1,q:[
+        {n:"task_id",l:"task_id",i:"path",t:"number",r:1,c:"task_id"}
+      ]}
+    ]});
+    defs.push({g:"Chat",d:"会话、消息和批量分析。",e:[
+      {id:"chat-create-conversation",t:"Create Conversation",m:"POST",p:"/api/chat/conversations",a:1,b:{t:"json",f:[
+        {n:"title",l:"title",t:"text",r:1,d:"Test Conversation"}
+      ]}},
+      {id:"chat-list-conversations",t:"List Conversations",m:"GET",p:"/api/chat/conversations",a:1},
+      {id:"chat-get-conversation",t:"Get Conversation",m:"GET",p:"/api/chat/conversations/{conversation_id}",a:1,q:[
+        {n:"conversation_id",l:"conversation_id",i:"path",t:"number",r:1,c:"conversation_id"}
+      ]},
+      {id:"chat-list-messages",t:"List Messages",m:"GET",p:"/api/chat/conversations/{conversation_id}/messages",a:1,q:[
+        {n:"conversation_id",l:"conversation_id",i:"path",t:"number",r:1,c:"conversation_id"}
+      ]},
+      {id:"chat-send-message",t:"Send Message",m:"POST",p:"/api/chat/conversations/{conversation_id}/messages",a:1,q:[
+        {n:"conversation_id",l:"conversation_id",i:"path",t:"number",r:1,c:"conversation_id"}
+      ],b:{t:"json",f:[
+        {n:"message",l:"message",t:"textarea",r:1,d:"请总结当前测试数据里的关键指标。"},
+        {n:"context_document_ids",l:"context_document_ids",t:"list",c:"document_id",ph:"1,2 或 [1,2]"}
+      ]}},
+      {id:"chat-batch-analyze",t:"Batch Analyze",m:"POST",p:"/api/chat/conversations/batch-analyze",a:1,b:{t:"json",f:[
+        {n:"document_version_ids",l:"document_version_ids",t:"list",r:1,c:"version_id",ph:"1,2,3 或 [1,2,3]"},
+        {n:"prompt",l:"prompt",t:"textarea",r:1,d:"请分析这些报告的趋势、异常值和潜在风险。"}
+      ]}}
+    ]});
+    load();topVals();ctxVals();render();wire();document.querySelector("details.card")?.setAttribute("open","open");
+  </script>
+</body>
+</html>

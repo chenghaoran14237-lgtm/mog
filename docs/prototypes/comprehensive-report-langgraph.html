@@ -1,0 +1,591 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="google" content="notranslate" />
+    <title>HealthDoc OS - 综合报告生成简版原型</title>
+    <style>
+      :root {
+        --bg: #f4f4f5;
+        --panel: #ffffff;
+        --ink: #18181b;
+        --muted: #71717a;
+        --faint: #a1a1aa;
+        --line: #e4e4e7;
+        --line-strong: #d4d4d8;
+        --accent: #06b6d4;
+        --accent-soft: rgba(6, 182, 212, 0.12);
+        --shadow: 0 28px 90px -44px rgba(0, 0, 0, 0.45);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        color: var(--ink);
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", "PingFang SC", "Microsoft YaHei", "Noto Sans SC",
+          sans-serif;
+        background:
+          radial-gradient(circle at 10% 12%, rgba(255, 255, 255, 0.9), transparent 30%),
+          radial-gradient(circle at 90% 8%, rgba(228, 228, 231, 0.92), transparent 26%),
+          linear-gradient(135deg, #fafafa 0%, var(--bg) 50%, #ececef 100%);
+      }
+
+      button,
+      input {
+        font: inherit;
+      }
+
+      .page {
+        min-height: 100vh;
+        padding: 18px;
+      }
+
+      .workbench {
+        display: grid;
+        grid-template-columns: 292px minmax(0, 1fr);
+        gap: 14px;
+        min-height: calc(100vh - 36px);
+        padding: 14px;
+        border: 1px solid rgba(228, 228, 231, 0.94);
+        border-radius: 32px;
+        background: rgba(255, 255, 255, 0.88);
+        box-shadow: var(--shadow);
+      }
+
+      .doc-panel,
+      .graph-panel {
+        min-height: 0;
+        border: 1px solid var(--line);
+        border-radius: 24px;
+        background: var(--panel);
+        overflow: hidden;
+      }
+
+      .doc-panel {
+        display: flex;
+        flex-direction: column;
+        padding: 14px;
+      }
+
+      .panel-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid #f4f4f5;
+      }
+
+      .panel-head h1,
+      .panel-head h2 {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 720;
+        letter-spacing: -0.035em;
+      }
+
+      .panel-head span {
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .select-all {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        margin: 13px 0 11px;
+        padding: 10px;
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        background: #fafafa;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .doc-list {
+        display: grid;
+        gap: 8px;
+        overflow: auto;
+        padding-right: 2px;
+      }
+
+      .doc-item {
+        position: relative;
+        display: grid;
+        grid-template-columns: 18px 34px minmax(0, 1fr);
+        gap: 9px;
+        align-items: center;
+        padding: 10px;
+        border: 1px solid var(--line);
+        border-radius: 17px;
+        background: #fff;
+        transition: 0.2s ease;
+      }
+
+      .doc-item:has(input:checked) {
+        border-color: #18181b;
+        background: linear-gradient(180deg, #fff, #fafafa);
+        box-shadow: 0 14px 30px -27px rgba(0, 0, 0, 0.65);
+      }
+
+      .doc-item input {
+        width: 15px;
+        height: 15px;
+        accent-color: #18181b;
+      }
+
+      .doc-icon {
+        display: grid;
+        place-items: center;
+        width: 34px;
+        height: 38px;
+        border: 1px solid #d4d4d8;
+        border-radius: 12px;
+        background: #f4f4f5;
+        color: #3f3f46;
+        font-size: 12px;
+        font-weight: 760;
+      }
+
+      .doc-copy {
+        min-width: 0;
+      }
+
+      .doc-copy strong {
+        display: block;
+        overflow: hidden;
+        color: var(--ink);
+        font-size: 13px;
+        font-weight: 660;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .doc-copy span {
+        display: block;
+        margin-top: 3px;
+        color: var(--muted);
+        font-size: 11px;
+      }
+
+      .run-button {
+        width: 100%;
+        height: 42px;
+        margin-top: 13px;
+        border: 1px solid #09090b;
+        border-radius: 999px;
+        color: #fff;
+        background: #09090b;
+        box-shadow: 0 20px 45px -28px rgba(0, 0, 0, 0.58);
+      }
+
+      .graph-panel {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .graph-panel .panel-head {
+        min-height: 62px;
+        padding: 14px 16px;
+        background: rgba(255, 255, 255, 0.94);
+      }
+
+      .legend {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .legend span {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        height: 28px;
+        padding: 0 10px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        color: var(--muted);
+        background: #fff;
+        font-size: 11px;
+      }
+
+      .legend i {
+        width: 8px;
+        height: 8px;
+        border-radius: 999px;
+        background: var(--line-strong);
+      }
+
+      .legend .active-dot {
+        background: var(--accent);
+        box-shadow: 0 0 0 5px var(--accent-soft);
+      }
+
+      .legend .done-dot {
+        background: var(--ink);
+      }
+
+      .graph-canvas {
+        position: relative;
+        flex: 1;
+        min-height: 650px;
+        padding: 12px;
+        background:
+          linear-gradient(rgba(24, 24, 27, 0.035) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(24, 24, 27, 0.035) 1px, transparent 1px),
+          radial-gradient(circle at 50% 45%, rgba(6, 182, 212, 0.07), transparent 32%),
+          #fafafa;
+        background-size: 28px 28px, 28px 28px, auto, auto;
+      }
+
+      .graph-svg {
+        width: 100%;
+        height: 100%;
+        min-height: 650px;
+      }
+
+      .edge {
+        fill: none;
+        stroke: #c7c7cf;
+        stroke-width: 2.2;
+        stroke-linecap: round;
+        stroke-dasharray: 7 9;
+        opacity: 0.7;
+      }
+
+      .edge.done {
+        stroke: #18181b;
+        stroke-dasharray: 0;
+        opacity: 0.82;
+      }
+
+      .edge.active {
+        stroke: var(--accent);
+        stroke-width: 3.2;
+        opacity: 1;
+        filter: drop-shadow(0 0 8px rgba(6, 182, 212, 0.38));
+        animation: flow 0.72s linear infinite;
+      }
+
+      .node-box {
+        fill: rgba(255, 255, 255, 0.97);
+        stroke: #d4d4d8;
+        stroke-width: 1.35;
+        rx: 14;
+        filter: drop-shadow(0 16px 24px rgba(0, 0, 0, 0.065));
+      }
+
+      .node-title {
+        fill: #18181b;
+        font-size: 13px;
+        font-weight: 740;
+      }
+
+      .node-subtitle {
+        fill: #71717a;
+        font-size: 10px;
+      }
+
+      .port {
+        fill: #fff;
+        stroke: #a1a1aa;
+        stroke-width: 1.2;
+      }
+
+      .node.done .node-box {
+        stroke: #18181b;
+      }
+
+      .node.done .port.out {
+        fill: #18181b;
+        stroke: #18181b;
+      }
+
+      .node.active .node-box {
+        fill: #ecfeff;
+        stroke: var(--accent);
+        stroke-width: 2.25;
+        filter: drop-shadow(0 18px 32px rgba(6, 182, 212, 0.2));
+      }
+
+      .node.active .port {
+        fill: var(--accent);
+        stroke: var(--accent);
+      }
+
+      .node.dark .node-box {
+        fill: #18181b;
+        stroke: #18181b;
+      }
+
+      .node.dark .node-title {
+        fill: #fff;
+      }
+
+      .node.dark .node-subtitle {
+        fill: #d4d4d8;
+      }
+
+      .node.dark.active .node-box {
+        fill: #0f172a;
+        stroke: var(--accent);
+      }
+
+      @keyframes flow {
+        to {
+          stroke-dashoffset: -32;
+        }
+      }
+
+      @media (max-width: 980px) {
+        .workbench {
+          grid-template-columns: 1fr;
+        }
+
+        .doc-panel {
+          max-height: 380px;
+        }
+
+        .graph-canvas,
+        .graph-svg {
+          min-height: 560px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <section class="workbench">
+        <aside class="doc-panel">
+          <div class="panel-head">
+            <h1>文档选择</h1>
+            <span id="selectedCount">已选 8 份</span>
+          </div>
+
+          <label class="select-all">
+            <input id="selectAll" type="checkbox" checked />
+            <span>纳入当前账户全部有效文档</span>
+          </label>
+
+          <div class="doc-list" id="docList">
+            <label class="doc-item">
+              <input type="checkbox" checked />
+              <span class="doc-icon">病</span>
+              <span class="doc-copy"><strong>门诊病历 2026-04-12</strong><span>主诉、诊断、处置意见</span></span>
+            </label>
+            <label class="doc-item">
+              <input type="checkbox" checked />
+              <span class="doc-icon">病</span>
+              <span class="doc-copy"><strong>复诊记录 2026-04-19</strong><span>症状变化、随访建议</span></span>
+            </label>
+            <label class="doc-item">
+              <input type="checkbox" checked />
+              <span class="doc-icon">验</span>
+              <span class="doc-copy"><strong>血常规化验单</strong><span>WBC / Hb / PLT / CRP</span></span>
+            </label>
+            <label class="doc-item">
+              <input type="checkbox" checked />
+              <span class="doc-icon">验</span>
+              <span class="doc-copy"><strong>肝肾功能检查</strong><span>ALT / AST / Cr / eGFR</span></span>
+            </label>
+            <label class="doc-item">
+              <input type="checkbox" checked />
+              <span class="doc-icon">验</span>
+              <span class="doc-copy"><strong>血脂四项报告</strong><span>TC / TG / HDL-C / LDL-C</span></span>
+            </label>
+            <label class="doc-item">
+              <input type="checkbox" checked />
+              <span class="doc-icon">影</span>
+              <span class="doc-copy"><strong>胸部 CT 报告</strong><span>影像所见、检查结论</span></span>
+            </label>
+            <label class="doc-item">
+              <input type="checkbox" checked />
+              <span class="doc-icon">药</span>
+              <span class="doc-copy"><strong>近期用药记录</strong><span>药品、剂量、频次</span></span>
+            </label>
+            <label class="doc-item">
+              <input type="checkbox" checked />
+              <span class="doc-icon">体</span>
+              <span class="doc-copy"><strong>体检摘要</strong><span>BMI、血压、既往史</span></span>
+            </label>
+          </div>
+
+          <button class="run-button" type="button" id="restartBtn">重新生成综合报告</button>
+        </aside>
+
+        <section class="graph-panel">
+          <div class="panel-head">
+            <div>
+              <h2>LangGraph 流程图</h2>
+              <span>文档进入流程后并行审计，最终汇聚生成综合报告</span>
+            </div>
+            <div class="legend">
+              <span><i></i> 等待</span>
+              <span><i class="active-dot"></i> 流转中</span>
+              <span><i class="done-dot"></i> 已完成</span>
+            </div>
+          </div>
+
+          <div class="graph-canvas">
+            <svg class="graph-svg" viewBox="0 0 1080 640" role="img" aria-label="综合报告生成 LangGraph 流程图">
+              <defs>
+                <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+                  <path d="M0,0 L0,6 L8,3 z" fill="#a1a1aa"></path>
+                </marker>
+                <marker id="arrowActive" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+                  <path d="M0,0 L0,6 L8,3 z" fill="#06b6d4"></path>
+                </marker>
+              </defs>
+
+              <path class="edge" data-edge="start-load" d="M118 320 C146 320 154 320 182 320" marker-end="url(#arrow)"></path>
+              <path class="edge" data-edge="load-router" d="M314 320 C346 320 358 320 390 320" marker-end="url(#arrow)"></path>
+              <path class="edge" data-edge="router-medical" d="M522 306 C568 252 604 202 664 184" marker-end="url(#arrow)"></path>
+              <path class="edge" data-edge="router-lab" d="M522 320 C572 320 594 320 644 320" marker-end="url(#arrow)"></path>
+              <path class="edge" data-edge="router-safety" d="M522 334 C568 388 604 438 664 456" marker-end="url(#arrow)"></path>
+              <path class="edge" data-edge="medical-merge" d="M796 184 C826 202 798 252 826 300" marker-end="url(#arrow)"></path>
+              <path class="edge" data-edge="lab-merge" d="M776 320 C794 320 808 320 826 320" marker-end="url(#arrow)"></path>
+              <path class="edge" data-edge="safety-merge" d="M796 456 C826 438 798 388 826 340" marker-end="url(#arrow)"></path>
+              <path class="edge" data-edge="merge-report" d="M958 320 C962 320 966 320 970 320" marker-end="url(#arrow)"></path>
+
+              <g class="node dark" data-node="start" transform="translate(34 292)">
+                <rect class="node-box" width="84" height="56"></rect>
+                <circle class="port out" cx="84" cy="28" r="4"></circle>
+                <text class="node-title" x="17" y="25">START</text>
+                <text class="node-subtitle" x="17" y="41">创建状态</text>
+              </g>
+
+              <g class="node" data-node="load" transform="translate(182 286)">
+                <circle class="port in" cx="0" cy="34" r="4"></circle>
+                <rect class="node-box" width="132" height="68"></rect>
+                <circle class="port out" cx="132" cy="34" r="4"></circle>
+                <text class="node-title" x="16" y="27">LoadDocs</text>
+                <text class="node-subtitle" x="16" y="45">读取选中文档</text>
+              </g>
+
+              <g class="node" data-node="router" transform="translate(390 286)">
+                <circle class="port in" cx="0" cy="34" r="4"></circle>
+                <rect class="node-box" width="132" height="68"></rect>
+                <circle class="port out" cx="132" cy="34" r="4"></circle>
+                <text class="node-title" x="16" y="27">Router</text>
+                <text class="node-subtitle" x="16" y="45">按文档类型分流</text>
+              </g>
+
+              <g class="node" data-node="medical" transform="translate(664 150)">
+                <circle class="port in" cx="0" cy="34" r="4"></circle>
+                <rect class="node-box" width="132" height="68"></rect>
+                <circle class="port out" cx="132" cy="34" r="4"></circle>
+                <text class="node-title" x="16" y="27">病例审计</text>
+                <text class="node-subtitle" x="16" y="45">诊断与病程抽取</text>
+              </g>
+
+              <g class="node" data-node="lab" transform="translate(644 286)">
+                <circle class="port in" cx="0" cy="34" r="4"></circle>
+                <rect class="node-box" width="132" height="68"></rect>
+                <circle class="port out" cx="132" cy="34" r="4"></circle>
+                <text class="node-title" x="16" y="27">化验审计</text>
+                <text class="node-subtitle" x="16" y="45">指标与异常识别</text>
+              </g>
+
+              <g class="node" data-node="safety" transform="translate(664 422)">
+                <circle class="port in" cx="0" cy="34" r="4"></circle>
+                <rect class="node-box" width="132" height="68"></rect>
+                <circle class="port out" cx="132" cy="34" r="4"></circle>
+                <text class="node-title" x="16" y="27">安全审计</text>
+                <text class="node-subtitle" x="16" y="45">隐私与一致性</text>
+              </g>
+
+              <g class="node" data-node="merge" transform="translate(826 286)">
+                <circle class="port in" cx="0" cy="34" r="4"></circle>
+                <rect class="node-box" width="132" height="68"></rect>
+                <circle class="port out" cx="132" cy="34" r="4"></circle>
+                <text class="node-title" x="16" y="27">Merge</text>
+                <text class="node-subtitle" x="16" y="45">证据归并排序</text>
+              </g>
+
+              <g class="node dark" data-node="report" transform="translate(970 286)">
+                <circle class="port in" cx="0" cy="34" r="4"></circle>
+                <rect class="node-box" width="100" height="68"></rect>
+                <text class="node-title" x="18" y="27">Report</text>
+                <text class="node-subtitle" x="18" y="45">综合报告</text>
+              </g>
+            </svg>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <script>
+      const phases = [
+        { nodes: ["start"], edges: [] },
+        { nodes: ["load"], edges: ["start-load"] },
+        { nodes: ["router"], edges: ["load-router"] },
+        { nodes: ["medical", "lab", "safety"], edges: ["router-medical", "router-lab", "router-safety"] },
+        { nodes: ["merge"], edges: ["medical-merge", "lab-merge", "safety-merge"] },
+        { nodes: ["report"], edges: ["merge-report"] },
+      ];
+
+      const nodeEls = new Map([...document.querySelectorAll("[data-node]")].map((el) => [el.dataset.node, el]));
+      const edgeEls = new Map([...document.querySelectorAll("[data-edge]")].map((el) => [el.dataset.edge, el]));
+      const selectedCount = document.getElementById("selectedCount");
+      const selectAll = document.getElementById("selectAll");
+      const checks = [...document.querySelectorAll(".doc-item input")];
+      let timer = null;
+      let phaseIndex = 0;
+
+      function updateSelectedCount() {
+        const count = checks.filter((item) => item.checked).length;
+        selectedCount.textContent = `已选 ${count} 份`;
+        selectAll.checked = count === checks.length;
+        selectAll.indeterminate = count > 0 && count < checks.length;
+      }
+
+      function renderPhase(index) {
+        const phase = phases[index];
+        const doneNodes = phases.slice(0, index).flatMap((item) => item.nodes);
+        const doneEdges = phases.slice(0, index).flatMap((item) => item.edges);
+
+        nodeEls.forEach((el, key) => {
+          el.classList.toggle("done", doneNodes.includes(key));
+          el.classList.toggle("active", phase.nodes.includes(key));
+        });
+
+        edgeEls.forEach((el, key) => {
+          const active = phase.edges.includes(key);
+          el.classList.toggle("done", doneEdges.includes(key));
+          el.classList.toggle("active", active);
+          el.setAttribute("marker-end", active ? "url(#arrowActive)" : "url(#arrow)");
+        });
+      }
+
+      function play() {
+        clearInterval(timer);
+        phaseIndex = 0;
+        renderPhase(phaseIndex);
+        timer = setInterval(() => {
+          phaseIndex = (phaseIndex + 1) % phases.length;
+          renderPhase(phaseIndex);
+        }, 1300);
+      }
+
+      selectAll.addEventListener("change", () => {
+        checks.forEach((item) => {
+          item.checked = selectAll.checked;
+        });
+        updateSelectedCount();
+      });
+
+      checks.forEach((item) => item.addEventListener("change", updateSelectedCount));
+      document.getElementById("restartBtn").addEventListener("click", play);
+      updateSelectedCount();
+      play();
+    </script>
+  </body>
+</html>
