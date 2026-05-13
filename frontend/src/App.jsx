@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import {
   Activity,
   ArrowLeft,
@@ -94,6 +95,13 @@ const metricDisplayValue = (metric) => {
     metric?.value_text || (metric?.value_numeric !== null && metric?.value_numeric !== undefined ? String(metric.value_numeric) : "--");
   return `${value}${metric?.unit ? ` ${metric.unit}` : ""}`;
 };
+
+function ModalPortal({ children }) {
+  if (typeof document === "undefined") {
+    return children;
+  }
+  return createPortal(children, document.body);
+}
 
 function escapeHtml(value) {
   return String(value ?? "").replace(/[&<>"']/g, (char) => {
@@ -795,14 +803,16 @@ function VaultModule({ documents, loading, error, onRefresh }) {
         ))}
       </div>
       {reviewState.open ? (
-        <DocumentReviewModal
-          detail={reviewState.detail}
-          error={reviewState.error}
-          fallbackDoc={reviewState.fallbackDoc}
-          loading={reviewState.loading}
-          ocr={reviewState.ocr}
-          onClose={closeReview}
-        />
+        <ModalPortal>
+          <DocumentReviewModal
+            detail={reviewState.detail}
+            error={reviewState.error}
+            fallbackDoc={reviewState.fallbackDoc}
+            loading={reviewState.loading}
+            ocr={reviewState.ocr}
+            onClose={closeReview}
+          />
+        </ModalPortal>
       ) : null}
     </section>
   );
@@ -1022,7 +1032,7 @@ function AuditReportModule({ documents, loadingDocuments, onRefreshDocuments }) 
                 <span>
                   <strong>{documentTitle(doc)}</strong>
                   <small>{categoryLabel(doc.document_category)}</small>
-                  <small>版本 ID：{versionId || "--"}</small>
+                  <small>创建时间：{formatDateTime(doc.created_at || doc.uploaded_at)}</small>
                 </span>
               </label>
             );
@@ -1053,7 +1063,11 @@ function AuditReportModule({ documents, loadingDocuments, onRefreshDocuments }) 
         {terminal && run?.status === "failed" ? <p className="error-text">{run.error_message || "审计图执行失败"}</p> : null}
       </section>
 
-      {reportOpen && run?.final_report ? <AuditReportModal report={run.final_report} onClose={() => setReportOpen(false)} /> : null}
+      {reportOpen && run?.final_report ? (
+        <ModalPortal>
+          <AuditReportModal report={run.final_report} onClose={() => setReportOpen(false)} />
+        </ModalPortal>
+      ) : null}
     </div>
   );
 }

@@ -1555,11 +1555,13 @@ marker#auditArrow path {
   position: fixed;
   inset: 0;
   display: grid;
-  place-items: center;
+  align-items: start;
+  justify-items: center;
   padding: 24px;
+  overflow: auto;
   background: rgba(9, 9, 11, 0.44);
   backdrop-filter: blur(10px);
-  z-index: 30;
+  z-index: 1000;
 }
 
 .report-modal {
