@@ -5,6 +5,7 @@ from typing import Iterator
 
 from langgraph.graph import END, START, StateGraph
 
+from app.providers.base import LLMProvider
 from app.services.audit_graph.nodes import (
     audit_router,
     citation_checker,
@@ -68,9 +69,9 @@ class AuditGraphStep:
 
 
 class AuditGraphEngine:
-    def __init__(self, recursion_limit: int = 100) -> None:
+    def __init__(self, recursion_limit: int = 100, llm_provider: LLMProvider | None = None) -> None:
         self.recursion_limit = recursion_limit
-        self._compiled_graph = build_audit_graph()
+        self._compiled_graph = build_audit_graph(llm_provider=llm_provider)
 
     def run(self, initial_state: AuditGraphState) -> AuditGraphState:
         final_state = dict(initial_state)
@@ -96,7 +97,7 @@ class AuditGraphEngine:
             previous_node = node_name
 
 
-def build_audit_graph():
+def build_audit_graph(llm_provider: LLMProvider | None = None):
     graph = StateGraph(AuditGraphState)
     graph.add_node("load_graph_state", load_graph_state)
     graph.add_node("audit_router", audit_router)
@@ -109,7 +110,7 @@ def build_audit_graph():
     graph.add_node("conflict_agent", conflict_agent)
     graph.add_node("compliance_agent", compliance_agent)
     graph.add_node("quality_gate", quality_gate)
-    graph.add_node("report_composer", report_composer)
+    graph.add_node("report_composer", lambda state: report_composer(state, llm_provider=llm_provider))
     graph.add_node("citation_checker", citation_checker)
     graph.add_node("safety_reviewer", safety_reviewer)
     graph.add_node("final_router", final_router)

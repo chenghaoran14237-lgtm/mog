@@ -929,6 +929,8 @@ const AUDIT_GRAPH_EDGES = [
 
 const auditStatusText = (value) =>
   ({ pending: "排队中", processing: "图执行中", completed: "报告已生成", failed: "执行失败" })[value] || "未启动";
+const llmStatusLabel = (value) =>
+  ({ completed: "LLM", fallback: "规则兜底", not_configured: "未启用", started: "生成中" })[value] || value || "--";
 
 function AuditReportModule({ documents, loadingDocuments, onRefreshDocuments }) {
   const [selected, setSelected] = useState([]);
@@ -1134,6 +1136,7 @@ function auditEdgePath(from, to) {
 function AuditReportModal({ report, onClose }) {
   const knowledgeSources = report.knowledge_sources || [];
   const ragSummary = report.rag_summary || {};
+  const llmMetadata = report.llm_metadata || {};
   const evidenceItems = report.evidence_items || [];
   const knowledgeEvidence = evidenceItems.filter((item) => item.kind === "knowledge_chunk");
   const documentEvidence = evidenceItems.filter((item) => item.kind !== "knowledge_chunk");
@@ -1164,6 +1167,8 @@ function AuditReportModal({ report, onClose }) {
                 <span>RAG 查询 {ragSummary.query_count ?? "--"}</span>
                 <span>命中知识 {ragSummary.context_count ?? knowledgeSources.length}</span>
                 <span>默沙东来源 {ragSummary.msd_manual_count ?? "--"}</span>
+                <span>LLM 调用 {llmMetadata.call_count ?? 0}</span>
+                <span>生成状态 {llmStatusLabel(llmMetadata.status)}</span>
               </div>
               <div className="rag-source-list">
                 {knowledgeSources.map((source) => (

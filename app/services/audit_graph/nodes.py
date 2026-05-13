@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
+import json
 from typing import Any
 
+from app.providers.base import LLMProvider
 from app.services.audit_graph.state import AuditGraphState
 from app.services.rag_retrieval import rank_knowledge_chunks
 
@@ -316,7 +318,53 @@ def quality_gate(state: AuditGraphState) -> dict:
     return _with_route(state, "quality_gate", {"quality_gate": gate})
 
 
-def report_composer(state: AuditGraphState) -> dict:
+def report_composer(state: AuditGraphState, llm_provider: LLMProvider | None = None) -> dict:
+    fallback_report = _build_rule_based_report(state)
+    llm_call_count = int(state.get("llm_call_count") or 0)
+    llm_metadata: dict[str, Any] = {
+        "enabled": llm_provider is not None,
+        "status": "not_configured",
+        "call_count": llm_call_count,
+    }
+    report = fallback_report
+
+    if llm_provider is not None:
+        llm_call_count += 1
+        provider_name = getattr(getattr(llm_provider, "config", None), "name", "unknown")
+        llm_metadata = {
+            "enabled": True,
+            "provider": provider_name,
+            "status": "started",
+            "call_count": llm_call_count,
+        }
+        try:
+            llm_payload = _call_report_llm(state, llm_provider=llm_provider)
+            report = _merge_llm_report(fallback_report, llm_payload)
+            llm_metadata.update({"status": "completed"})
+        except Exception as exc:  # LLM is an enhancement; evidence-bound fallback keeps the graph available.
+            llm_metadata.update(
+                {
+                    "status": "fallback",
+                    "error_type": exc.__class__.__name__,
+                    "error_message": str(exc)[:300],
+                }
+            )
+
+    report["llm_metadata"] = llm_metadata
+
+    return _with_route(
+        state,
+        "report_composer",
+        {
+            "report_draft": report,
+            "needs_report_revision": False,
+            "llm_call_count": llm_call_count,
+            "llm_report_metadata": llm_metadata,
+        },
+    )
+
+
+def _build_rule_based_report(state: AuditGraphState) -> dict:
     generated_at = datetime.now(timezone.utc).isoformat()
     risk_findings = state.get("risk_findings", [])
     conflict_findings = state.get("conflict_findings", [])
@@ -382,14 +430,138 @@ def report_composer(state: AuditGraphState) -> dict:
             ),
         },
     }
-    return _with_route(
-        state,
-        "report_composer",
-        {
-            "report_draft": report,
-            "needs_report_revision": False,
-        },
+    return report
+
+
+def _call_report_llm(state: AuditGraphState, *, llm_provider: LLMProvider) -> dict[str, Any]:
+    prompt = _build_report_llm_prompt(state)
+    response = llm_provider.chat(
+        messages=[
+            {
+                "role": "system",
+                "content": (
+                    "你是医疗文档审计报告生成 Agent。你只能基于输入的证据、结构化指标和知识依据生成报告，"
+                    "不得给出确诊、处方或替代医生诊疗的结论。必须输出严格 JSON。"
+                ),
+            },
+            {"role": "user", "content": prompt},
+        ],
+        temperature=0.2,
     )
+    return _parse_json_object(response)
+
+
+def _build_report_llm_prompt(state: AuditGraphState) -> str:
+    payload = {
+        "documents": [
+            {
+                "document_version_id": item.get("document_version_id"),
+                "display_name": item.get("display_name"),
+                "document_category": item.get("document_category"),
+                "report_date": item.get("report_date"),
+                "raw_text_excerpt": str(item.get("raw_text") or "")[:700],
+            }
+            for item in state.get("documents", [])
+        ],
+        "measurements": [
+            {
+                "document_version_id": item.get("document_version_id"),
+                "name": item.get("name"),
+                "value_text": item.get("value_text"),
+                "value_numeric": item.get("value_numeric"),
+                "unit": item.get("unit"),
+                "observed_at": item.get("observed_at"),
+            }
+            for item in state.get("measurements", [])[:80]
+        ],
+        "findings": {
+            "quality": state.get("quality_findings", []),
+            "consistency": state.get("consistency_findings", []),
+            "risk": state.get("risk_findings", []),
+            "conflict": state.get("conflict_findings", []),
+            "compliance": state.get("compliance_findings", []),
+        },
+        "evidence_items": [
+            {
+                "id": item.get("id"),
+                "kind": item.get("kind"),
+                "source_label": item.get("source_label"),
+                "quote": item.get("quote"),
+                "source_url": item.get("source_url"),
+            }
+            for item in state.get("evidence_items", [])[:80]
+        ],
+        "knowledge_context": [
+            {
+                "source_title": item.get("source_title"),
+                "section_title": item.get("section_title"),
+                "content": str(item.get("content") or "")[:500],
+                "metadata_json": item.get("metadata_json") or {},
+            }
+            for item in state.get("knowledge_context", [])[:8]
+        ],
+    }
+    return (
+        "请根据以下审计 GraphState 生成综合审计报告。只输出 JSON，不要 markdown。\n"
+        "JSON schema: {\n"
+        '  "title": "报告标题",\n'
+        '  "summary": "一段摘要",\n'
+        '  "sections": [{"id": "sources|quality|risks|conflicts|knowledge|conclusion", "title": "章节标题", "content": "章节正文"}]\n'
+        "}\n"
+        "要求：章节必须覆盖数据来源、文档质量、风险与异常指标、跨文档一致性、审计知识依据、审计结论；"
+        "结论必须强调此报告用于审计复核，不替代医生诊断。\n\n"
+        f"{json.dumps(payload, ensure_ascii=False, default=str)}"
+    )
+
+
+def _parse_json_object(text: str) -> dict[str, Any]:
+    stripped = (text or "").strip()
+    if stripped.startswith("```"):
+        stripped = stripped.strip("`")
+        if stripped.lower().startswith("json"):
+            stripped = stripped[4:].strip()
+    try:
+        parsed = json.loads(stripped)
+    except json.JSONDecodeError:
+        start = stripped.find("{")
+        end = stripped.rfind("}")
+        if start < 0 or end <= start:
+            raise ValueError("LLM response did not contain a JSON object")
+        parsed = json.loads(stripped[start : end + 1])
+    if not isinstance(parsed, dict):
+        raise ValueError("LLM response JSON must be an object")
+    return parsed
+
+
+def _merge_llm_report(fallback_report: dict[str, Any], llm_payload: dict[str, Any]) -> dict[str, Any]:
+    sections = _normalize_llm_sections(llm_payload.get("sections")) or fallback_report["sections"]
+    return {
+        **fallback_report,
+        "title": str(llm_payload.get("title") or fallback_report["title"])[:200],
+        "summary": str(llm_payload.get("summary") or fallback_report["summary"]),
+        "sections": sections,
+    }
+
+
+def _normalize_llm_sections(value: Any) -> list[dict[str, str]]:
+    if not isinstance(value, list):
+        return []
+    sections: list[dict[str, str]] = []
+    for index, item in enumerate(value):
+        if not isinstance(item, dict):
+            continue
+        title = str(item.get("title") or "").strip()
+        content = str(item.get("content") or "").strip()
+        if not title or not content:
+            continue
+        sections.append(
+            {
+                "id": str(item.get("id") or f"section_{index + 1}")[:80],
+                "title": title[:120],
+                "content": content,
+            }
+        )
+    return sections
 
 
 def citation_checker(state: AuditGraphState) -> dict:

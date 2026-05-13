@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session, selectinload
 from app.models.document_version import DocumentVersion
 from app.models.extracted_document import ExtractedDocument
 from app.models.record import Record
+from app.providers.base import LLMProvider
 from app.repositories.audit_report_repository import AuditReportRepository
 from app.repositories.knowledge_repository import (
     DEFAULT_KNOWLEDGE_CHUNKS,
@@ -27,11 +28,12 @@ class AuditReportService:
         session: Session,
         repository: AuditReportRepository | None = None,
         graph_engine: AuditGraphEngine | None = None,
+        llm_provider: LLMProvider | None = None,
         step_delay_seconds: float = 0.15,
     ) -> None:
         self.session = session
         self.repository = repository or AuditReportRepository(session)
-        self.graph_engine = graph_engine or AuditGraphEngine()
+        self.graph_engine = graph_engine or AuditGraphEngine(llm_provider=llm_provider)
         self.step_delay_seconds = step_delay_seconds
 
     def create_run(
@@ -260,6 +262,8 @@ def _summarize_node_output(output: dict) -> dict:
             "safety_issues",
             "final_report",
             "report_draft",
+            "llm_call_count",
+            "llm_report_metadata",
         }:
             summary[key] = value
         elif key.endswith("_findings") and isinstance(value, list):

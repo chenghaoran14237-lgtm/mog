@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from app.api.deps import get_current_user_dependency, get_session_dependency
 from app.core.db import SessionLocal
 from app.models.user import User
+from app.providers.registry import ProviderRegistry
 from app.schemas.audit_report import (
     AuditReportCreateRequest,
     AuditReportEventResponse,
@@ -19,7 +20,11 @@ router = APIRouter(prefix="/audit-reports", tags=["audit-reports"])
 
 
 def build_audit_report_service(session: Session, *, step_delay_seconds: float = 0.15) -> AuditReportService:
-    return AuditReportService(session=session, step_delay_seconds=step_delay_seconds)
+    return AuditReportService(
+        session=session,
+        llm_provider=ProviderRegistry().build_llm_provider(),
+        step_delay_seconds=step_delay_seconds,
+    )
 
 
 @router.post("", response_model=AuditReportRunResponse, status_code=status.HTTP_202_ACCEPTED)

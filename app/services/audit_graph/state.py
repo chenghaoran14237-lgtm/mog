@@ -23,6 +23,8 @@ class AuditGraphState(TypedDict, total=False):
     citation_issues: list[dict[str, Any]]
     safety_issues: list[dict[str, Any]]
     final_report: dict[str, Any] | None
+    llm_call_count: int
+    llm_report_metadata: dict[str, Any]
     quality_gate: dict[str, Any]
     completed_agents: dict[str, int]
     route_history: list[str]
@@ -64,6 +66,8 @@ def create_initial_state(
         "citation_issues": [],
         "safety_issues": [],
         "final_report": None,
+        "llm_call_count": 0,
+        "llm_report_metadata": {},
         "quality_gate": {"ready": False, "reasons": []},
         "completed_agents": {},
         "route_history": [],

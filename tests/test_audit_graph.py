@@ -3,9 +3,36 @@ from sqlalchemy.orm import sessionmaker
 
 from app.core.db import Base
 from app.models import DocumentVersion, ExtractedDocument, Measurement, OCRResult, Record, RecordFile, User
+from app.providers.base import LLMProvider, ProviderConfig
 from app.repositories.knowledge_repository import DEFAULT_KNOWLEDGE_CHUNKS
 from app.services.audit_graph.engine import AUDIT_GRAPH_EDGES, AuditGraphEngine
 from app.services.audit_report_service import AuditReportService
+
+
+class FakeReportLLMProvider(LLMProvider):
+    def __init__(self) -> None:
+        super().__init__(ProviderConfig(provider_type="llm", name="fake_report_llm"))
+        self.call_count = 0
+
+    def complete(self, prompt: str) -> dict:
+        return {"result": prompt}
+
+    def chat(self, messages: list[dict], temperature: float = 0.7) -> str:
+        self.call_count += 1
+        return """
+        {
+          "title": "LLM 综合审计报告",
+          "summary": "LLM 已基于证据生成审计摘要。",
+          "sections": [
+            {"id": "sources", "title": "一、数据来源", "content": "读取了文档和指标。"},
+            {"id": "quality", "title": "二、文档质量", "content": "文档可追溯。"},
+            {"id": "risks", "title": "三、风险与异常指标", "content": "血糖和 ALT 需要复核。"},
+            {"id": "conflicts", "title": "四、跨文档一致性", "content": "存在糖尿病史表述复核点。"},
+            {"id": "knowledge", "title": "五、审计知识依据", "content": "结合内置知识依据。"},
+            {"id": "conclusion", "title": "六、审计结论", "content": "本报告用于审计复核，不替代医生诊断。"}
+          ]
+        }
+        """
 
 
 def _initial_graph_state() -> dict:
@@ -191,6 +218,19 @@ def test_audit_graph_is_cyclic_state_machine_and_generates_cited_report():
     assert any(item["kind"] == "knowledge_chunk" and item.get("source_url") for item in final_state["evidence_items"])
     assert final_state["citation_issues"] == []
     assert final_state["safety_issues"] == []
+
+
+def test_audit_graph_report_composer_calls_llm_once_when_provider_is_configured():
+    llm_provider = FakeReportLLMProvider()
+
+    final_state = AuditGraphEngine(llm_provider=llm_provider).run(_initial_graph_state())
+
+    assert llm_provider.call_count == 1
+    assert final_state["llm_call_count"] == 1
+    assert final_state["llm_report_metadata"]["status"] == "completed"
+    assert final_state["final_report"]["title"] == "LLM 综合审计报告"
+    assert final_state["final_report"]["summary"] == "LLM 已基于证据生成审计摘要。"
+    assert final_state["final_report"]["evidence_items"]
 
 
 def test_audit_report_service_persists_real_node_events_and_report():
