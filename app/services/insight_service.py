@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from datetime import datetime, timezone
+
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
@@ -113,6 +115,7 @@ class InsightService:
             role="user",
             content=content,
         )
+        insight_session.updated_at = datetime.now(timezone.utc)
         self.session.add(message)
         self.session.commit()
         self.session.refresh(message)
@@ -134,6 +137,7 @@ class InsightService:
             role="assistant",
             content=content,
         )
+        insight_session.updated_at = datetime.now(timezone.utc)
         self.session.add(message)
         self.session.commit()
         self.session.refresh(message)

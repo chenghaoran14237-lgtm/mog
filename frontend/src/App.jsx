@@ -13,6 +13,8 @@ import {
   Lock,
   LogOut,
   Mail,
+  MessageSquare,
+  Plus,
   Search,
   Send,
   ShieldCheck,
@@ -1223,10 +1225,18 @@ function InsightModule({ documents, loadingDocuments }) {
   const [selected, setSelected] = useState([]);
   const [prompt, setPrompt] = useState("");
   const [messages, setMessages] = useState([]);
+  const [sessions, setSessions] = useState([]);
   const [sessionId, setSessionId] = useState(null);
+  const [historyLoading, setHistoryLoading] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const listRef = useRef(null);
+
+  const activeSession = sessions.find((session) => session.id === sessionId);
+
+  useEffect(() => {
+    loadSessions();
+  }, []);
 
   useEffect(() => {
     listRef.current?.scrollTo({ top: listRef.current.scrollHeight });
@@ -1234,6 +1244,57 @@ function InsightModule({ documents, loadingDocuments }) {
 
   function toggleDoc(versionId) {
     setSelected((items) => (items.includes(versionId) ? items.filter((id) => id !== versionId) : [...items, versionId]));
+  }
+
+  async function loadSessions() {
+    setHistoryLoading(true);
+    try {
+      const response = await api.insight.listSessions();
+      setSessions(response.items || []);
+    } catch (err) {
+      setError(err.message || "加载历史会话失败");
+    } finally {
+      setHistoryLoading(false);
+    }
+  }
+
+  async function openSession(session) {
+    if (busy) return;
+    setError("");
+    setHistoryLoading(true);
+    try {
+      const [detail, messageResponse] = await Promise.all([api.insight.getSession(session.id), api.insight.listMessages(session.id)]);
+      setSessionId(session.id);
+      setSelected(detail.selected_document_version_ids || []);
+      setMessages((messageResponse.items || []).map((item) => ({ ...item, isStreaming: false })));
+      setPrompt("");
+    } catch (err) {
+      setError(err.message || "打开历史会话失败");
+    } finally {
+      setHistoryLoading(false);
+    }
+  }
+
+  function startNewSession() {
+    if (busy) return;
+    setSessionId(null);
+    setSelected([]);
+    setMessages([]);
+    setPrompt("");
+    setError("");
+  }
+
+  async function deleteSession(session, event) {
+    event.stopPropagation();
+    if (busy) return;
+    setError("");
+    try {
+      await api.insight.deleteSession(session.id);
+      if (sessionId === session.id) startNewSession();
+      await loadSessions();
+    } catch (err) {
+      setError(err.message || "删除历史会话失败");
+    }
   }
 
   async function sendMessage() {
@@ -1278,6 +1339,7 @@ function InsightModule({ documents, loadingDocuments }) {
         await api.insight.startSessionStream(selected, userText, handlers);
       }
       setMessages((items) => items.map((item) => (item.id === assistantId ? { ...item, isStreaming: false } : item)));
+      await loadSessions();
     } catch (err) {
       setError(err.message || "智能洞察失败");
       setMessages((items) =>
@@ -1293,8 +1355,47 @@ function InsightModule({ documents, loadingDocuments }) {
   return (
     <div className="insight-layout">
       <section className="panel source-panel">
-        <h3>数据源</h3>
-        <p className="muted">选择文档作为智能洞察上下文。</p>
+        <div className="history-head">
+          <div>
+            <h3>历史会话</h3>
+            <p className="muted">{historyLoading ? "正在同步" : `${sessions.length} 个会话`}</p>
+          </div>
+          <button className="ghost-button icon-button" onClick={startNewSession} disabled={busy} type="button">
+            <Plus size={15} />
+          </button>
+        </div>
+        <div className="session-list">
+          {sessions.length === 0 && !historyLoading ? <p className="empty">暂无历史会话。</p> : null}
+          {sessions.map((session) => (
+            <article className={classNames("session-item", session.id === sessionId && "active")} key={session.id}>
+              <button className="session-main" disabled={busy} onClick={() => openSession(session)} type="button">
+                <MessageSquare size={15} />
+                <span>
+                  <strong>{session.title}</strong>
+                  <small>
+                    {formatDateTime(session.updated_at)} | {(session.source_documents || []).length || session.selected_document_version_ids?.length || 0} 份文档
+                  </small>
+                </span>
+              </button>
+              <button
+                aria-label={`删除会话 ${session.title}`}
+                className="session-delete"
+                disabled={busy}
+                onClick={(event) => deleteSession(session, event)}
+                type="button"
+              >
+                <Trash2 size={13} />
+              </button>
+            </article>
+          ))}
+        </div>
+
+        <div className="source-section-head">
+          <h3>数据源</h3>
+          <p className="muted">
+            {sessionId ? "当前会话上下文已锁定，开始新会话可重新选择文档。" : "选择文档作为新会话上下文。"}
+          </p>
+        </div>
         <div className="source-list">
           {loadingDocuments ? <p className="empty">加载文档中...</p> : null}
           {!loadingDocuments && documents.length === 0 ? <p className="empty">暂无可分析文档。</p> : null}
@@ -1304,7 +1405,7 @@ function InsightModule({ documents, loadingDocuments }) {
               <label className="source-item" key={doc.id}>
                 <input
                   checked={selected.includes(versionId)}
-                  disabled={busy || !versionId}
+                  disabled={busy || !versionId || Boolean(sessionId)}
                   type="checkbox"
                   onChange={() => toggleDoc(versionId)}
                 />
@@ -1322,8 +1423,10 @@ function InsightModule({ documents, loadingDocuments }) {
       <section className="panel chat-panel">
         <div className="section-toolbar">
           <div>
-            <h3>{sessionId ? `会话 #${sessionId}` : "新的智能洞察"}</h3>
-            <p className="muted">{sessionId ? "继续追问当前会话" : `待发起 | 已选择 ${selected.length} 份文档`}</p>
+            <h3>{sessionId ? activeSession?.title || `会话 #${sessionId}` : "新的智能洞察"}</h3>
+            <p className="muted">
+              {sessionId ? `继续追问当前会话 | ${selected.length} 份上下文文档` : `待发起 | 已选择 ${selected.length} 份文档`}
+            </p>
           </div>
           <Bot size={18} />
         </div>
