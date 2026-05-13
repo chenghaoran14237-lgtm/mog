@@ -1,0 +1,587 @@
+
+<!DOCTYPE html>
+<html xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:msxsl="urn:schemas-microsoft-com:xslt" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<head>
+<base href="/">
+<meta charset="utf-8">
+<title>面向知识抽取的真实世界中文电子病历数据质量分析与治理对策研究</title>
+
+    <link rel="stylesheet" href="../static-1.1.1/css/reset.css">
+    <link rel="stylesheet" href="../static-1.1.1/css/jsmodern-1.1.1.min.css">
+    <link rel="stylesheet" href="../static-1.1.1/css/element.css">
+    <link rel="stylesheet" href="../static-1.1.1/css/style.css">
+
+    <link href="../static-1.1.2/css/common.css" type="text/css" rel="stylesheet"/>
+    <link rel="stylesheet" href="../static-1.1.2/css/simpleDetail.css">
+    <link rel="stylesheet" href="../static-1.1.2/css/newStyle.css">
+    <script type="text/javascript" src="../static-1.1.2/js/jquery-1.8.3.min.js"></script>
+    <script type="text/javascript" src="../static-1.1.2/js/utils.js"></script>
+    <script type="text/javascript" src="../static-1.1.2/js/json2.js"></script>
+    <script type="text/javascript" src="../static-1.1.2/js/message.js"></script>
+    <script type="text/javascript" src="../static-1.1.2/js/clipboard.min.js"></script>
+    <script type="text/javascript" src="../static-1.1.2/js/simpleDetail.js"></script>
+
+    <style type="text/css">
+        body {
+            font-family: Microsoft YaHei !important;
+        }
+        /* 隐藏 全文标题 作者 作者机构 */
+        #FtextCon .title,
+        #FtextCon .author_info,
+        #FtextCon .author_organization {
+            display: none;
+        }
+        .searSub {
+            width: 112px;
+        }
+        .search-btns p:nth-child(1) {
+            line-height: 44px;
+        }
+        .search-btns p:nth-child(2) {
+            display: none;
+        }
+        /* 隐藏 在结果中检索 */
+        .online {
+            width: 36px;
+            height: 36px;
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+        }
+        .online a.huiding {
+            background: #f5f5f5 url(/images/chaoxing/journal2/keywordnode/top.png) no-repeat center;
+            width: 34px;
+            height: 34px;
+            border: solid #e4e4e4 1px;
+        }
+    </style>
+<style>#jo-main #jo-main-comment{ display:none;} .sina-comment-wrap{ max-width: 100% !important;}</style><link href='/css/comment/Score_review.css' rel='stylesheet'>
+<div align='left'>
+    <div class="FdkTop Fwid1400 clearfix">
+        <!-- 出版信息 -->
+        <input type="hidden" id="GBTInputId" class="GBTInputId" value='盖彦蓉, 张云秋, 张慧等. 面向知识抽取的真实世界中文电子病历数据质量分析与治理对策研究[J]. 医学信息学杂志, 2025, (12):pp.47-53.' />
+        <input type="hidden" id="MLAInputId" class="MLAInputId" value='盖彦蓉等. &#034;面向知识抽取的真实世界中文电子病历数据质量分析与治理对策研究.&#034; 医学信息学杂志 12(2025):pp.47-53.' />
+        <input type="hidden" id="APAInputId" class="APAInputId" value='盖彦蓉, 张云秋, 张慧, 李晨程, &amp; 卢浚睿. (2025). 面向知识抽取的真实世界中文电子病历数据质量分析与治理对策研究. 医学信息学杂志(12), pp.47-53.' />
+        <!-- 出版信息 -->
+        <div class="FdkTop__left fl">
+            <div class="FdkTop__left-header">
+                <h1 class="F_titel fl" style="padding-left: 0;">
+                    <span class="F_titel_real">
+                        面向知识抽取的真实世界中文电子病历数据质量分析与治理对策研究
+                    </span>
+                </h1>
+            </div>
+            <p class="F_name"> 盖彦蓉<sup>1</sup>， 张云秋<sup>2</sup>， 张慧<sup>2</sup>， 李晨程<sup>1</sup>， 卢浚睿<sup>1</sup></p>
+            <div class="Fmian1">
+                <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                    <tbody>
+                        <tr>
+                            <td align="left" width="90" valign="bottom" style="letter-spacing: 0px;">【作者机构】</td>
+                            <td align="left"> <sup>1</sup>深圳市卫生健康发展研究和数据管理中心； <sup>2</sup>吉林大学公共卫生学院</td>
+                        </tr>
+                        <tr>
+                            <td align="left" width="90" valign="top" style="letter-spacing: 1px;">【分&nbsp;类&nbsp;号】</td>
+                            <td align="left">R197.323</td>
+                        </tr>
+                        <tr>
+                            <td align="left" width="90" valign="top" style="letter-spacing: 1.6px;">【基&nbsp;&nbsp;&nbsp;&nbsp;金】</td>
+                            <td align="left"> </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 是否显示 全文 模块 -->
+    
+    <!-- 是否显示 文内图表 模块 -->
+    
+    <!-- 是否显示 参考文献 模块 -->
+    
+
+    <div class="fdk-detail Fwid1400">
+        <div class="F_ydqw">
+            <div class="FqwTit" id="qwcontentDivId" style="padding-left: 20px">
+                
+                    <span class="FqwTit-tab cur" tab="0">全文</span>
+                
+                
+                    <span class="FqwTit-tab" tab="1">文内图表</span>
+                
+                
+                    <span class="FqwTit-tab" tab="2">参考文献</span>
+                
+                
+                    <span class="FqwTit-tab" tab="3">出版信息</span>
+                
+            </div>
+
+
+            <!-- 全文模块 开始 -->
+            
+            
+                
+                <div class="readCon clearfix FqwCon-container FqwCon-container-0">
+                    <div class="fl readLeft">
+                        <span class="readIcon"></span>
+                        <div class="readMulu">
+                            <div class="muluBox" style="border-bottom: none;">
+                                <h3 class="muluTit">目录</h3>
+                                <ul><li><p><a href-id='generateCatalog_0' href='javascript:void(0);' title='摘要'>摘要</a></p></li><li><p><a href-id='generateCatalog_1' href='javascript:void(0);' title='关键词'>关键词</a></p></li><li><p><a href-id='generateCatalog_2' href='javascript:void(0);' title='1 引言'>1 引言</a></p></li><li><i class='catalogCloseArr'></i><p><a href-id='generateCatalog_3' href='javascript:void(0);' title='2 相关研究'>2 相关研究</a></p><ul><li><p><a href-id='generateCatalog_4' href='javascript:void(0);' title='2.1 中文电子病历标注规则研究现状'>2.1 中文电子病历标注规则研究现状</a></p></li><li><p><a href-id='generateCatalog_5' href='javascript:void(0);' title='2.2 电子病历命名实体与实体关系识别研究现状'>2.2 电子病历命名实体与实体关系识别研究现状</a></p></li><li><p><a href-id='generateCatalog_6' href='javascript:void(0);' title='2.3 电子病历数据治理现状'>2.3 电子病历数据治理现状</a></p></li></ul></li><li><i class='catalogCloseArr'></i><p><a href-id='generateCatalog_7' href='javascript:void(0);' title='3 知识抽取实践'>3 知识抽取实践</a></p><ul><li><p><a href-id='generateCatalog_8' href='javascript:void(0);' title='3.1 命名实体标注规则设计'>3.1 命名实体标注规则设计</a></p></li><li><p><a href-id='generateCatalog_9' href='javascript:void(0);' title='3.2 实体关系标注规则设计'>3.2 实体关系标注规则设计</a></p></li><li><p><a href-id='generateCatalog_10' href='javascript:void(0);' title='3.3 数据来源与处理'>3.3 数据来源与处理</a></p></li><li><p><a href-id='generateCatalog_11' href='javascript:void(0);' title='3.4 抽取模型选取'>3.4 抽取模型选取</a></p></li><li><p><a href-id='generateCatalog_12' href='javascript:void(0);' title='3.5 实体、关系抽取'>3.5 实体、关系抽取</a></p></li></ul></li><li><i class='catalogCloseArr'></i><p><a href-id='generateCatalog_13' href='javascript:void(0);' title='4 真实世界电子病历数据治理分析'>4 真实世界电子病历数据治理分析</a></p><ul><li><p><a href-id='generateCatalog_14' href='javascript:void(0);' title='4.1 结果分析'>4.1 结果分析</a></p></li><li><p><a href-id='generateCatalog_15' href='javascript:void(0);' title='4.2 真实世界电子病历数据治理痛点分析'>4.2 真实世界电子病历数据治理痛点分析</a></p></li><li><p><a href-id='generateCatalog_16' href='javascript:void(0);' title='4.3 隐私保护与数据安全治理分析'>4.3 隐私保护与数据安全治理分析</a></p></li><li><p><a href-id='generateCatalog_17' href='javascript:void(0);' title='4.4 对真实世界电子病历管理人员的建议'>4.4 对真实世界电子病历管理人员的建议</a></p></li></ul></li><li><p><a href-id='generateCatalog_18' href='javascript:void(0);' title='5 结语'>5 结语</a></p></li><li><p><a href-id='generateCatalog_19' href='javascript:void(0);' title='参考文献'>参考文献</a></p></li></ul>
+                            </div>
+                            <h3 class="muluTit">文内图表</h3>
+                            <div class="clearfix articleImg">
+                                <dl><dt><a href-id='img_generateCatalog_0' href='javascript:void(0);' title='图1 研究思路'><img src="html/yxxxx/20251208/alternativeImage/01143fc5b6879c0aa4606da8f82107f2.jpg" /></a></dt><dd><a href-id='img_generateCatalog_0' href='javascript:void(0);' title='图1 研究思路'>图1 研究思路</a></dd></dl><dl><dt><a href-id='img_generateCatalog_1' href='javascript:void(0);' title='表1 命名实体类型及定义'><img src="html/yxxxx/20251208/alternativeImage/362575a7ae1a3c07af728efa17eac23e.jpg" /></a></dt><dd><a href-id='img_generateCatalog_1' href='javascript:void(0);' title='表1 命名实体类型及定义'>表1 命名实体类型及定义</a></dd></dl><dl><dt><a href-id='img_generateCatalog_2' href='javascript:void(0);' title='表2 实体关系标注规则'><img src="html/yxxxx/20251208/alternativeImage/a33e25f39ba2ccf1bc0ebed13f23747c.jpg" /></a></dt><dd><a href-id='img_generateCatalog_2' href='javascript:void(0);' title='表2 实体关系标注规则'>表2 实体关系标注规则</a></dd></dl><dl><dt><a href-id='img_generateCatalog_3' href='javascript:void(0);' title='表3 模型配置'><img src="html/yxxxx/20251208/alternativeImage/c7a502f583e0de0fd560642fe9d61755.jpg" /></a></dt><dd><a href-id='img_generateCatalog_3' href='javascript:void(0);' title='表3 模型配置'>表3 模型配置</a></dd></dl><dl><dt><a href-id='img_generateCatalog_4' href='javascript:void(0);' title='表4 命名实体识别结果'><img src="html/yxxxx/20251208/alternativeImage/83ad5cc2c001c8746582ee5c0c69d5e5.jpg" /></a></dt><dd><a href-id='img_generateCatalog_4' href='javascript:void(0);' title='表4 命名实体识别结果'>表4 命名实体识别结果</a></dd></dl><dl><dt><a href-id='img_generateCatalog_5' href='javascript:void(0);' title='表5 实体关系识别结果'><img src="html/yxxxx/20251208/alternativeImage/6b15c05b87173ce26a174f9f7209304e.jpg" /></a></dt><dd><a href-id='img_generateCatalog_5' href='javascript:void(0);' title='表5 实体关系识别结果'>表5 实体关系识别结果</a></dd></dl>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="fr readRight">
+                        <div class="FtextCon" id="FtextCon" style="font-size: 16px;">
+                            <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="zh-CN">
+ <head> 
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" pages_book="47-53" pages_ebook="50-56" column_name="医学信息研究" author_name="盖彦蓉，张云秋，张慧，李晨程，卢浚睿"> 
+  <link rel="stylesheet" type="text/css" href="../static-1.1.2/css/style.css"> 
+  <title>面向知识抽取的真实世界中文电子病历数据质量分析与治理对策研究</title> 
+ <style>#jo-main #jo-main-comment{ display:none;} .sina-comment-wrap{ max-width: 100% !important;}</style><link href='/css/comment/Score_review.css' rel='stylesheet'> 
+ <div align='left'> 
+  <h1 class="title" data-meta-name="篇名">面向知识抽取的真实世界中文电子病历数据质量分析与治理对策研究</h1> 
+  <p class="author_info" data-meta-name="作者信息">盖彦蓉<span class="superscript">1</span> 张云秋<span class="superscript">2</span> 张 慧<span class="superscript">2</span> 李晨程<span class="superscript">1</span> 卢浚睿<span class="superscript">1</span></p> 
+  <p class="author_info" data-meta-name="作者信息">(<span class="superscript">1</span>深圳市卫生健康发展研究和数据管理中心 深圳 518000 <span class="superscript">2</span>吉林大学公共卫生学院 长春 130021)</p> 
+  <p class="meta" data-meta-name="摘要" id="generateCatalog_0"><span class="key" data-meta-name="摘要.标题">〔摘要〕</span><span class="emphasis_bold"> 目的/意义</span> 分析真实世界中文电子病历知识抽取应用中的深层质量瓶颈，从数据治理和管理流程视角提出对策。<span class="emphasis_bold">方法/过程</span> 制定覆盖临床诊疗主要实体和关系类型的标注规则，选用BERT+Bi-LSTM+CRF模型，基于真实世界电子病历数据开展实验，分析电子病历数据治理的关键问题。<span class="emphasis_bold">结果/结论</span> 所选模型在真实世界电子病历上的实体及关系识别性能均明显低于其在公开数据集上的表现。数据方面原因包括表述不规范、数据稀疏、科室间术语差异；数据治理原因包括隐私保护与数据利用失衡、缺乏全流程管理及入库前质量检测等，对此提出针对性建议。</p> 
+  <p class="meta" data-meta-name="关键词" id="generateCatalog_1"><span class="key" data-meta-name="关键词.标题">〔关键词〕 </span>中文电子病历；知识抽取；命名实体识别；实体关系识别；数据治理</p>           
+  <div id="article_content"> 
+   <h2 class="sect2" id="generateCatalog_2">1 引言</h2> 
+   <p class="content">随着医疗卫生信息化飞速发展，电子病历(electronic medical record，EMR)成为医疗机构的核心信息载体<span class="superscript" tag="1">[1]</span>，深入挖掘利用其中的非结构化或半结构化文本信息，对提升医疗服务质量意义重大<span class="superscript" tag="2">[2]</span>。命名实体识别(named entity recognition，NER)<span class="superscript" tag="3">[3]</span>和实体关系识别(relation extraction，RE)<span class="superscript" tag="4">[4]</span>是医学自然语言处理核心技术，是病历信息结构化、可计算化的基础，也是文本知识抽取的核心任务。高精度NER与RE模型构建依赖大规模、高质量人工标注语料，而语料质量的关键在于清晰、规范、符合临床逻辑的标注规则。科学完备的标注规则能确保不同标注者对同一病历理解和标注结果高度一致，为模型训练提供可靠金标准<span class="superscript" tag="5">[5]</span>。中文电子病历在表述习惯、术语体系等方面具有独特性<span class="superscript" tag="6">[6]</span>，标准化标注规则仍待探索。真实世界电子病历数据在临床实践中自然形成，存在非规范性、信息缺失、表述歧义、上下文依赖复杂等问题<span class="superscript" tag="7">[7]</span>，即便有精良标注规则和先进算法模型，知识抽取性能瓶颈仍然存在。此问题的根源不仅在下游标注与抽取环节，更在于上游数据产生与治理环节。因此，本研究将视角从单纯追求模型算法与标注规则优化，转向系统性分析真实世界中文电子病历知识抽取应用中的深层质量瓶颈，并从数据治理和管理流程视角提出对策。</p> 
+   <h2 class="sect2" id="generateCatalog_3">2 相关研究</h2> 
+   <h3 class="sect3" id="generateCatalog_4">2.1 中文电子病历标注规则研究现状</h3> 
+   <p class="content">早期研究多借鉴英文医疗信息处理领域成熟经验，如i2b2评测任务定义的实体类型(治疗、检查等)<span class="superscript" tag="8-9">[8-9]</span>。但因中文语言特性和国内临床书写习惯差异，直接照搬英文规则会引发实体边界界定模糊、特定表达方式无法涵盖等问题<span class="superscript" tag="10">[10]</span>。因此，构建符合中文电子病历特点的本土化标注规则成为研究焦点。国内学者<span class="superscript" tag="11-12">[11-12]</span>构建大规模中文医疗实体关系语料库时，常邀请临床医生深度参与制定标注规范。多数研究遵循基本原则，如标注实体为连续文本片段，不跨越标点符号，采用BIO或BIOES等序列标注模式界定实体边界<span class="superscript" tag="13">[13]</span>。部分研究借鉴统一医学语言系统(unified medical language system，UMLS)等国际标准，参考其语义类型定义本地实体类型，以增强规则的科学性和通用性<span class="superscript" tag="10">[10]</span>。实体关系识别是命名实体识别后揭示实体间复杂语义关联、实现信息结构化利用的关键步骤。常见关系类型包括临床表现、检查、治疗方案等<span class="superscript" tag="1,14">[1，14]</span>。CMeIE<span class="superscript" tag="15">[15]</span>等公开数据集定义的实体关系规则注重临床意义，关系种类达53种，对现阶段实体关系识别技术而言是较大的挑战。</p> 
+   <h3 class="sect3" id="generateCatalog_5">2.2 电子病历命名实体与实体关系识别研究现状</h3> 
+   <p class="content">早期识别方法高度依赖领域专家构建的规则模板和医学词典，准确率高但规则编写耗时耗力、可移植性差。随后，以条件随机场(conditional random field，CRF)为代表的传统机器学习方法广泛应用，能自动从标注数据中学习特征，泛化能力有所提高<span class="superscript" tag="16">[16]</span>。近年来，随着深度学习发展，基于循环神经网络<span class="superscript" tag="17">[17]</span>、长短期记忆网络(long short-term memory，LSTM)<span class="superscript" tag="18">[18]</span>和门控循环单元<span class="superscript" tag="19">[19]</span>的模型广泛用于NER和RE任务。越来越多的研究引入注意力机制，使用以双向编码器表征(bidirectional encoder representations from transformers，BERT)为代表的预训练语言模型。特别是结合CRF层的Bi-LSTM-CRF架构<span class="superscript" tag="20">[20]</span>，能有效捕捉文本上下文序列信息，已成为命名实体识别基准模型。研究<span class="superscript" tag="21-22">[21-22]</span>表明，BERT+Bi-LSTM+CRF模型在中文电子病历NER和RE任务中效果较好。</p> 
+   <h3 class="sect3" id="generateCatalog_6">2.3 电子病历数据治理现状</h3> 
+   <p class="content">当前我国医疗机构电子病历数据治理效果与日益增长的数据应用需求差距显著。首先，数据质量参差不齐，临床工作高度繁忙，医生书写病历更注重效率，产生大量非规范表述、医学术语同义异形、自定义缩写，甚至拼写错误<span class="superscript" tag="23">[23]</span>。尽管已出台一系列电子病历相关标准，但实际落地中，由于各医疗机构历史原因、系统供应商差异等，数据格式、编码体系和术语使用差异巨大<span class="superscript" tag="24">[24]</span>。这种数据孤岛现象<span class="superscript" tag="25">[25]</span>阻碍了跨机构数据共享与协同医疗，也导致为某机构开发的知识抽取模型难以在其他机构复用。</p> 
+   <p class="content">目前电子病历知识抽取相关研究多呈技术中心主义倾向。但源头数据质量问题过大时，下游技术优化可能收效甚微。标准化中文电子病历数据集(如CCKS系列、CMeIE系列)经较强预处理、脱敏后统一化、实体边界重写等，接近标准文本，与真实世界电子病历不同。因此，亟待从真实世界中文电子病历知识抽取规则构建、数据采集、模型构建全流程视角，开展实践经验与数据治理综合性分析。本研究以知识抽取过程为探针，用模型失效现象反向识别真实世界中文电子病历在数据质量、书写习惯、语义边界、隐私治理等层面的瓶颈，并提出数据治理建议，见图1。</p> 
+   <div class="picture_figure">
+    <img id="img_generateCatalog_0" class="picture_figure" src="html/yxxxx/20251208/alternativeImage/01143fc5b6879c0aa4606da8f82107f2.jpg" width="189" height="329" title="width=189,height=329,dpi=110">
+    <p class="picture_figure_title">图1 研究思路</p>
+   </div> 
+   <h2 class="sect2" id="generateCatalog_7">3 知识抽取实践</h2> 
+   <h3 class="sect3" id="generateCatalog_8">3.1 命名实体标注规则设计</h3> 
+   <p class="content">基于中文电子病历涉及的临床诊疗流程，定义9类核心命名实体，见表1。</p> 
+   <div class="picture_table">
+    <p class="picture_table_title" id="img_generateCatalog_1">表1 命名实体类型及定义</p>
+    <img id="f359ed382999473d04bc827d4b3f1992" class="picture_table" src="html/yxxxx/20251208/alternativeImage/362575a7ae1a3c07af728efa17eac23e.jpg" width="358" height="474" title="width=358,height=474,dpi=110">
+    <p class="picture_table_content">实体类型定义疾病 导致患者非健康状态的原因或医生给出的最终诊断,具备可治疗性,且能被否定词修饰,属于UMLS语义类型中的一种临床表现患者主观陈述的不适表现及通过检查发现的异常结果,具备可改善或治愈性,能被否定词修饰,属于UMLS语义类型中的症状或体征检查 为发现、证实疾病或症状,获取更多相关信息而施加给患者的检查过程、仪器或项目,属于UMLS语义类型中的化验过程、诊断过程等检验 实验室开展的化验项目,含血液、尿液、细胞检验等,常伴随数值结果,也包括诊疗计划或治疗过程中提到的有化验结果的化验项目、查体里的体液检查项目、生理测量、重要生理指标及其他检查项目,含“化验结果”“检测结果”“实验数据”“化验”等提示词的对应项目也属此类结果 与本段病历疾病相关的检查、检验结果治疗 针对疾病的干预手段,含治疗过程、术后康复等,属于UMLS语义类型中的治疗过程或预防过程治疗结果治疗后病情发生的变化,与治疗过程直接相关药物 用于预防、治疗、诊断疾病的物质,含临床诊断试剂身体部位含具体身体位置、病变细胞及内源性身体物质</p>
+   </div> 
+   <h3 class="sect3" id="generateCatalog_9">3.2 实体关系标注规则设计</h3> 
+   <p class="content">实体关系标注以临床诊疗逻辑为核心依据，见表2。</p> 
+   <div class="picture_table">
+    <p class="picture_table_title" id="img_generateCatalog_2">表2 实体关系标注规则</p>
+    <img id="c146daf89b72c67731b78fad166bce27" class="picture_table" src="html/yxxxx/20251208/alternativeImage/a33e25f39ba2ccf1bc0ebed13f23747c.jpg" width="358" height="341" title="width=358,height=341,dpi=110">
+    <p class="picture_table_content">头实体关系类型尾实体疾病 疾病相关的疾病 疾病 疾病 疾病导致了症状 临床表现检查 检查确诊了疾病 疾病 检验 检验确诊了疾病 疾病 治疗 治疗作用于疾病 疾病 治疗 治疗导致了治疗结果治疗结果药物 药物作用于疾病 疾病 疾病 疾病施加于身体部位身体部位临床表现因为症状采取检查 检查 临床表现因为症状采取检验 检验 检查 检查发现了症状 临床表现检查 检查发现了结果 结果 检验 检验发现了结果 结果 临床表现临床表现的位置 身体部位检查 检查施加于身体部位身体部位</p>
+   </div> 
+   <h3 class="sect3" id="generateCatalog_10">3.3 数据来源与处理</h3> 
+   <p class="content">以深圳市全民健康数据库为数据来源，检索住院病案首页、入院记录表、首次病程记录、出院小结等核心表，排除字段缺失严重的病历，最终获取2 178条符合临床完整性要求的电子病历。将其按8∶2比例随机划分为训练集与测试集。</p> 
+   <h3 class="sect3" id="generateCatalog_11">3.4 抽取模型选取</h3> 
+   <p class="content">选取在实体抽取、关系抽取领域广受认可的BERT+Bi-LSTM+CRF模型进行实验，相关配置，见表3。</p> 
+   <div class="picture_table">
+    <p class="picture_table_title" id="img_generateCatalog_3">表3 模型配置</p>
+    <img id="276cdae45ace650ccfdac833b9a657c3" class="picture_table" src="html/yxxxx/20251208/alternativeImage/c7a502f583e0de0fd560642fe9d61755.jpg" width="358" height="218" title="width=358,height=218,dpi=110">
+    <p class="picture_table_content">任务类型关键参数具体信息命名实体识别BERT 版本BERT-Base-Chinese优化器Adam学习率3e-5训练轮数6批大小4早停策略未使用实体关系识别BERT 版本BERT-Base-Chinese优化器Adam学习率3e-5训练轮数8批大小4早停策略未使用</p>
+   </div> 
+   <h3 class="sect3" id="generateCatalog_12">3.5 实体、关系抽取</h3> 
+   <p class="content">采用召回率、精确率和micro-<span class="emphasis_italic">F</span>1作为实体和关系抽取结果的评价指标，BERT+Bi-LSTM+CRF模型对真实世界中文电子病历实体与关系的抽取结果统计，见表4—表5。</p> 
+   <div class="picture_table">
+    <p class="picture_table_title" id="img_generateCatalog_4">表4 命名实体识别结果</p>
+    <img id="79a73ff50bd0f2f847d745b5b05aa7a4" class="picture_table" src="html/yxxxx/20251208/alternativeImage/83ad5cc2c001c8746582ee5c0c69d5e5.jpg" width="358" height="242" title="width=358,height=242,dpi=110">
+    <p class="picture_table_content">实体类型召回率精确率micro-F1样本数量(条)疾病 0.630.630.63379临床表现0.380.380.381 254检查 0.710.650.681 254检验 0.690.650.672 020结果 0.840.770.802 390治疗 0.410.390.40181治疗结果0.150.330.2055药物 0.530.530.5389身体部位0.600.540.571 917总体 0.660.620.649 536</p>
+   </div> 
+   <div class="picture_table">
+    <p class="picture_table_title" id="img_generateCatalog_5">表5 实体关系识别结果</p>
+    <img id="5cbb3f974f18a8b2bb7555b828e70e25" class="picture_table" src="html/yxxxx/20251208/alternativeImage/6b15c05b87173ce26a174f9f7209304e.jpg" width="358" height="438" title="width=358,height=438,dpi=110">
+    <p class="picture_table_content">关系类型召回率精确率micro-F1样本数量(条)疾病相关的疾病0.200.030.055疾病导致了症状0000检查确诊了疾病0.420.330.37223检验确诊了疾病0.360.440.4011治疗作用于疾病0.450.380.41116治疗导致了治疗结果0.060.140.0852药物作用于疾病0.420.300.3576疾病施加于身体部位0.020.010.0144因为症状采取检查0.020047因为症状采取检验0002检查发现了症状0.280.150.20495检查发现了结果0.800.690.74337检验发现了结果0.580.520.552 015临床表现的位置0.390.310.341 013检查施加于身体部位0.680.550.61515总体0.510.360.424 951</p>
+   </div> 
+   <h2 class="sect2" id="generateCatalog_13">4 真实世界电子病历数据治理分析</h2> 
+   <h3 class="sect3" id="generateCatalog_14">4.1 结果分析</h3> 
+   <p class="content">在命名实体识别任务中，对表意明确、专指性较强的实体，识别准确率较高；对治疗结果和药物类实体，因样本数量不足，识别效果较差。对于临床表现类实体，其在真实世界电子病历中情况复杂，相关文本标注易产生歧义，且边界模糊。经与三甲医院临床医生多轮讨论认为：真实世界电子病历具有多样性，统一标注规则难以覆盖全部情形；即便严格遵循规则标注，该类实体仍存在边界不清、歧义和不一致问题。对于身体部位类实体，与CCKS2019等常用数据集相比，真实病历文本描述高度不统一，是其识别准确率低的重要原因。</p> 
+   <p class="content">在实体关系识别任务中，对于样本数量低于70条的关系类型，识别效果普遍较差。样本较充足的关系类型中，对于检查发现了结果、检验发现了结果等指向明确、逻辑清晰的关系，识别准确率较高；检查发现了症状、临床表现的位置等关系，样本虽多，但因其识别逻辑过于依赖书写习惯，模型识别表现不理想。</p> 
+   <p class="content">BERT+Bi-LSTM+CRF模型是业界主流架构，在标准公开数据集上综合准确率近0.90、子类别命名实体识别准确率达0.95<span class="superscript" tag="26">[26]</span>，但在本研究中命名实体识别准确率仅约0.62、实体关系识别准确率仅约0.36。说明如果原始病历文本的数据质量差，将阻碍规则精准执行与模型有效学习，数据质量对抽取效果的影响远超模型算法优化。</p> 
+   <h3 class="sect3" id="generateCatalog_15">4.2 真实世界电子病历数据治理痛点分析</h3> 
+   <p class="content">电子病历是医疗活动的核心记录载体，其数据价值释放依赖健全的数据治理体系。然而，真实世界中文电子病历数据治理处于起步阶段，系统化治理体系尚停留在倡议层面<span class="superscript" tag="27">[27]</span>。许多医疗机构将电子病历系统视为信息化工具，未将其产生的数据视为核心战略资产。这种管理缺失，使数据治理停留在技术层面的事后补救，而非贯穿数据全生命周期的事前预防和事中控制。本研究中观察到的录入质量问题，根源在于书写规范缺失、录入环节缺乏有效的事中控制标准与监督流程。这种重末端处理、轻源头管理的模式，导致系统层面的数据质量问题持续产生，极大影响后续数据利用效能。</p> 
+   <h3 class="sect3" id="generateCatalog_16">4.3 隐私保护与数据安全治理分析</h3> 
+   <p class="content">本研究中BERT+Bi-LSTM+CRF模型在真实世界电子病历上的实体和关系识别性能明显低于其在公开数据集上的表现，分析其原因，除文本本身存在非规范表述、样本稀疏等问题外，也受到隐私保护与数据安全要求的间接约束。对于可用于标注和建模的数据范围，如果采用“一刀切”的高强度脱敏策略和过于保守的访问控制，既会压缩可用样本量，进一步加剧某些实体和关系类别的稀疏性，又可能打断时间、空间等对知识抽取至关重要的语义线索，从而放大模型性能瓶颈。基于此，本研究尝试从隐私保护与数据安全治理角度，在合规前提下尽量提升电子病历对知识抽取任务的可用性。在数据脱敏环节，应强调“任务协同”的分级脱敏策略。对姓名、身份证号、联系方式等直接标识符实施不可逆去标识化与伪随机替换，确保个体不可被直接识别。对年龄、住址等准标识符依据知识抽取任务对时间、空间尺度的敏感性进行泛化或区间化处理，控制再识别风险的同时尽量保留与疾病谱、诊疗路径相关的模式信息。对与实体、关系识别紧密相关的就诊时间、科室流转、关键检查检验等临床要素，建立影子标识与可回溯映射表，在安全环境中实现“对研究者可用、对外部环境不可识别”的折中。在数据安全治理方面，应从访问控制角度，构建“业务角色-数据申请域-使用目的”的授权视图，将不同岗位、不同项目对电子病历数据的访问需求与其职责范围、研究目的绑定，并在时间窗口、数据范围等维度施加约束，实现最小必要授权。结合病历内容敏感度、患者隐私授权意愿以及研究场景，将电子病历划分为公开、内部公开、受控使用、仅可浏览、严格保密等不同安全等级，对不同等级的数据分别配置访问路径、审计策略和使用边界。</p> 
+   <h3 class="sect3" id="generateCatalog_17">4.4 对真实世界电子病历管理人员的建议</h3> 
+   <p class="content">首先，设计涵盖全治疗周期的标准化病历模板。前文表4显示，与模板化、术语清晰度强相关的检查、检验、结果等实体识别效果较好，临床表现等表述多样实体识别效果较差，提示清晰的临床术语可显著提升数据质量。模板应覆盖从入院评估、诊疗干预到预后随访的关键环节，可参照本研究定义的9类命名实体和15类关系。</p> 
+   <p class="content">其次，建立电子病历入库前自动检测机制。结合本研究发现的字段缺失严重、语义逻辑矛盾等问题，自动检测机制应重点关注：核心字段完整性，针对病案首页诊断编码、入院记录症状发生时间、出院小结治疗结果等关键信息，设置必填校验和缺失提醒；核心字段避免重复，检测不同字段中大段重复信息并提示修改；表述规范性，借助基于标准化术语知识库的大语言模型，实时识别模糊表述和非标准缩写，并给出修正建议。</p> 
+   <p class="content">再次，推进电子病历数据分层分类管理，针对性补充稀缺样本、提升数据利用效率。由于模型对样本数量不足的实体及关系识别效果较差，应对病历库中数量不足的类别进行针对性补充。</p> 
+   <p class="content">最后，推动跨科室电子病历术语协同。中文电子病历存在明显科室表述差异，易导致同一实体被误判为不同类别，影响实体识别泛化能力。因此，管理人员应联合各临床科室制定统一电子病历术语词典，明确常用术语标准表述、缩写规范及对应实体类型。</p> 
+   <h2 class="sect2" id="generateCatalog_18">5 结语</h2> 
+   <p class="content">本研究围绕真实世界中文电子病历进行知识抽取，完成标注规则设计、抽取实验验证和数据治理分析全流程探索。联合三甲医院临床医生与技术人员，构建涵盖9类实体和15类关系的标注规则，该规则体系兼顾临床意义与技术可操作性，为后续中文电子病历知识抽取提供了可复用的标注基础。实验显示，即便是业界主流的BERT+Bi-LSTM+CRF模型，面对真实世界电子病历数据，其命名实体识别和实体关系识别性能远低于其在公开数据集上的表现。说明原始病历文本数据质量问题已成为模型有效学习的关键瓶颈。当前电子病历数据治理存在3大短板：一是隐私保护与数据利用平衡难题导致高质量标注数据集稀缺；二是管理层面缺乏战略级数据治理体系，重事后处理、轻源头控制；三是技术层面缺乏入库前自动质量检测机制，使非规范、缺失数据持续流入系统。本研究存在3方面局限：一是样本规模和来源相对单一，代表性有限；二是受人力成本约束，标注一致性有提升空间，可能影响语料质量上限；三是数据治理建议主要源于实践观察，缺乏系统量化评估和实证验证。未来研究可从标注规则动态迭代与领域拓展、数据治理技术智能化升级，以及数据治理-模型优化协同机制3方面深化，推动中文电子病历知识抽取由技术适配数据向数据反哺和支撑技术方向转型。</p> 
+   <p class="content"><span class="emphasis_bold">作者贡献</span>：盖彦蓉负责技术指导；张云秋负责提供指导、论文审核；张慧负责实验实施、论文撰写；李晨程负责数据标准化；卢浚睿负责图表制作。</p> 
+   <p class="content"><span class="emphasis_bold">利益声明</span>：所有作者均声明不存在利益冲突。</p> 
+   <p class="meta" data-meta-name="参考文献" id="generateCatalog_19"><span class="key" data-meta-name="参考文献.标题">参考文献</span></p> 
+   <p class="content" name="ref1" data-meta-name="参考文献.条目">1 赵琬清，胡佳慧，陈凌云，等. 中文电子病历标注系统构建与应用[J]. 医学信息学杂志，2025，46(6)：74-80.</p> 
+   <p class="content" name="ref2" data-meta-name="参考文献.条目">2 张坤丽，马鸿超，赵悦淑，等. 基于自然语言处理的中文产科电子病历研究[J]. 郑州大学学报(理学版)，2017，49(4)：40-45.</p> 
+   <p class="content" name="ref3" data-meta-name="参考文献.条目">3 白宇，何佳蔚，张桂平. 图注意力网络与句法融合的医疗实体识别[J]. 中文信息学报，2024，38(9)：108-116.</p> 
+   <p class="content" name="ref4" data-meta-name="参考文献.条目">4 张志昌，周侗，张瑞芳，等. 融合双向GRU与注意力机制的医疗实体关系识别[J]. 计算机工程，2020，46(6)：296-302.</p> 
+   <p class="content" name="ref5" data-meta-name="参考文献.条目">5 程齐凯，李信，陆伟. 领域无关学术文献词汇功能标准化数据集构建及分析[J]. 情报科学，2019，37(7)：41-47.</p> 
+   <p class="content" name="ref6" data-meta-name="参考文献.条目">6 韩普，陈文祺，叶东宇. 面向中文电子病历的多模态知识图谱构建方法研究[J]. 图书情报工作，2024，68(23)：30-40.</p> 
+   <p class="content" name="ref7" data-meta-name="参考文献.条目">7 贾杨春，朱定局. 基于深度学习的医疗命名实体识别[J]. 计算机系统应用，2022，31(9)：70-81.</p> 
+   <p class="content" name="ref8" data-meta-name="参考文献.条目">8 杨锦锋，于秋滨，关毅，等. 电子病历命名实体识别和实体关系抽取研究综述[J]. 自动化学报，2014，40(8)：1537-1562.</p> 
+   <p class="content" name="ref9" data-meta-name="参考文献.条目">9 曲春燕，关毅，杨锦锋，等. 中文电子病历命名实体标注语料库构建[J]. 高技术通讯，2015，25(2)：143-150.</p> 
+   <p class="content" name="ref10" data-meta-name="参考文献.条目">10 李丽双，王泽昊，秦雪洋，等. 基于平行交互注意力网络的中文电子病历实体及关系联合抽取[J]. 中文信息学报，2024，38(6)：108-118.</p> 
+   <p class="content" name="ref11" data-meta-name="参考文献.条目">11 杨锦锋，关毅，何彬，等. 中文电子病历命名实体和实体关系语料库构建[J]. 软件学报，2016，27(11)：2725-2746.</p> 
+   <p class="content" name="ref12" data-meta-name="参考文献.条目">12 刘安栋，彭琳，叶青，等. 电子病历命名实体识别研究进展[J]. 计算机工程与应用，2023，59(21)：39-51.</p> 
+   <p class="content" name="ref13" data-meta-name="参考文献.条目">13 陈婕卿，竹志超，张锋，等. 中文电子病历命名实体识别方法研究[J]. 医学信息学杂志，2024，45(4)：78-84.</p> 
+   <p class="content" name="ref14" data-meta-name="参考文献.条目">14 LEI J，TANG B，LU X，et al. A comprehensive study of named entity recognition in Chinese clinical text[J]. Journal of the American medical informatics association，2014，21(5)：808-814.</p> 
+   <p class="content" name="ref15" data-meta-name="参考文献.条目">15 GUAN T，ZAN H，ZHOU X，et al. CMeIE：construction and evaluation of Chinese medical information extraction dataset[EB/OL].[2025-09-18].https：//link.springer.com/chapter/10.1007/978-3-030-60450-9_22.</p> 
+   <p class="content" name="ref16" data-meta-name="参考文献.条目">16 张由，李舫. 基于K-BERT的中文妇产科电子病历实体识别研究[J]. 医学信息，2024，37(1)：65-71.</p> 
+   <p class="content" name="ref17" data-meta-name="参考文献.条目">17 何涛，陈剑，闻英友. 基于BERT-CRF模型的电子病历实体识别研究[J]. 计算机与数字工程，2022，50(3)：639-643.</p> 
+   <p class="content" name="ref18" data-meta-name="参考文献.条目">18 陈雪松，朱鑫海，王浩畅. 基于PMV-LSTM的中文医学命名实体识别[J]. 计算机工程与设计，2022，43(11)：3257-3263.</p> 
+   <p class="content" name="ref19" data-meta-name="参考文献.条目">19 张斌，赵婷婷，张碧霞，等. 基于RBAC模型的中文医疗命名实体识别[J]. 天津科技大学学报，2024，39(5)：56-62.</p> 
+   <p class="content" name="ref20" data-meta-name="参考文献.条目">20 张芳丛，秦秋莉，姜勇，等. 基于RoBERTa-WWM-BiLSTM-CRF的中文电子病历命名实体识别研究[J]. 数据分析与知识发现，2022，6(Z1)：251-262.</p> 
+   <p class="content" name="ref21" data-meta-name="参考文献.条目">21 罗熹，夏先运，安莹，等. 结合多头自注意力机制与BiLSTM-CRF的中文临床实体识别[J]. 湖南大学学报(自然科学版)，2021，48(4)：45-55.</p> 
+   <p class="content" name="ref22" data-meta-name="参考文献.条目">22 熊回香，周明洁. 电子病历中基于实体识别和共现分析的疾病间语义关系挖掘研究 [J/OL]. 情报科学，1-23[2025-09-18]. https：//link.cnki.net/urlid/22.1264. g2.20241010.1714.014.</p> 
+   <p class="content" name="ref23" data-meta-name="参考文献.条目">23 ZHANG R，ZHAO P，GUO W，et al. Medical named entity recognition based on dilated convolutional neural network[J]. Cognitive robotics，2022(2)：13-20.</p> 
+   <p class="content" name="ref24" data-meta-name="参考文献.条目">24 王鑫. 基层医疗信息化系统的设计与实现[D]. 成都：电子科技大学，2023.</p> 
+   <p class="content" name="ref25" data-meta-name="参考文献.条目">25 杨珑平，刘泽坤，杨俊涛，等. 医学科学数据共享的理论逻辑与实践探索[J]. 医学信息学杂志，2025，46(6)：37-42.</p> 
+   <p class="content" name="ref26" data-meta-name="参考文献.条目">26 肖丹，杨春明，张晖，等. 基于多头注意力的中文电子病历命名实体识别[J]. 计算机应用与软件，2024，41(1)：133-138，160.</p> 
+   <p class="content" name="ref27" data-meta-name="参考文献.条目">27 刘燃峰，申皓，吴梦平. 基于电子病历评价标准构建医院数据治理体系的实践与思考[J]. 信息与电脑，2025，37(11)：136-138.</p> 
+  </div> 
+  <form>
+   <input type="hidden" id="html_version" value="3">
+  </form>   
+  <div id="en">
+   <h1 class="title_translate" data-meta-name="译文篇名">Study on Data Quality Analysis and Governance Countermeasures of Real-World Chinese Electronic Medical Records Oriented to Knowledge Extraction</h1>
+   <p class="author_info_translate" data-meta-name="译文作者信息"><span class="emphasis_italic">GAI</span> <span class="emphasis_italic">Yanrong</span><span class="superscript">1</span>，<span class="emphasis_italic">ZHANG</span> <span class="emphasis_italic">Yunqiu</span><span class="superscript">2</span>，<span class="emphasis_italic">ZHANG</span> <span class="emphasis_italic">Hui</span><span class="superscript">2</span>，<span class="emphasis_italic">LI</span> <span class="emphasis_italic">Chencheng</span><span class="superscript">1</span>，<span class="emphasis_italic">LU</span> <span class="emphasis_italic">Junrui</span><span class="superscript">1</span></p>
+   <p class="author_info_translate" data-meta-name="译文作者信息"><span class="superscript">1</span><span class="emphasis_italic">Shenzhen</span> <span class="emphasis_italic">Health</span> <span class="emphasis_italic">Development</span> <span class="emphasis_italic">Research</span> <span class="emphasis_italic">and</span> <span class="emphasis_italic">Data</span> <span class="emphasis_italic">Management</span> <span class="emphasis_italic">Center</span>，<span class="emphasis_italic">Shenzhen</span> 518000，<span class="emphasis_italic">China</span>；<span class="superscript">2</span><span class="emphasis_italic">School</span> <span class="emphasis_italic">of</span> <span class="emphasis_italic">Public</span> <span class="emphasis_italic">Health</span>，<span class="emphasis_italic">Jilin</span> <span class="emphasis_italic">University</span>，<span class="emphasis_italic">Changchun</span> 130021，<span class="emphasis_italic">China</span></p>
+   <p class="meta" data-meta-name="译文摘要"><span class="key" data-meta-name="译文摘要.标题">〔<span class="emphasis_bold">Abstract</span>〕 </span><span class="emphasis_bold">Purpose/Significance</span> To analyze the deep-seated quality bottlenecks in the application of knowledge extraction of real-world Chinese electronic medical records (EMR)，and to propose countermeasures from the perspectives of data governance and management processes. <span class="emphasis_bold">Method/Process</span> Annotation rules covering the main entities and relationship types in clinical diagnosis and treatment are formulated. The BERT+Bi-LSTM+CRF model is selected，and experiments are conducted based on real-world EMR data to analyze the key issues in the governance of EMR data. <span class="emphasis_bold">Result/Conclusion</span> The entity and relation recognition performance of the selected model on real-world EMR is significantly lower than that on public datasets. Data-related reasons include irregular expression，data sparsity，and terminology differences among departments. Data governance-related reasons include the imbalance between privacy protection and data utilization，the lack of end-to-end process management，insufficient pre-storage quality inspection，etc. Targeted suggestions are put forward.</p>
+   <p class="meta" data-meta-name="译文关键词"><span class="key" data-meta-name="译文关键词.标题">〔<span class="emphasis_bold">Keywords</span>〕 </span>Chinese electronic medical record (EMR)；knowledge extraction；named entity recognition；entity relationship recognition；data governance</p>
+  </div>
+  <div id="other">
+   <p class="meta" data-meta-name="中图分类号"><span class="key" data-meta-name="中图分类号.标题">〔中图分类号〕</span>R-058 </p>
+   <p class="meta" data-meta-name="文献标识码"><span class="key" data-meta-name="文献标识码.标题">〔文献标识码〕</span>A </p>
+   <p class="meta" data-meta-name="doi"><span class="key" data-meta-name="doi.标题">〔DOI〕</span>10.3969/j.issn.1673-6036.2025.12.008</p>
+   <p class="meta" data-meta-name="修稿日期"><span class="key" data-meta-name="修稿日期.标题">〔修回日期〕 </span>2025-11-19</p>
+   <p class="meta" data-meta-name="作者简介"><span class="key" data-meta-name="作者简介.标题">〔作者简介〕 </span>盖彦蓉，高级工程师，发表论文6篇；通信作者：张云秋，教授，博士生导师。</p>
+  </div>
+     	<script type="text/javascript">
+	    	var css={
+	    		cssBox:'position: fixed; left: 0; top: 0; width: 98%; height: 98%; padding: 1%; background: rgba(0,0,0,0.6);',
+	    		cssBody:'display: -webkit-box; -webkit-box-orient:vertical; -webkit-box-pack: center; -webkit-box-align:center; width: 100%; height: 100%;',
+	    		cssImg:'max-width: 100%; max-height: 100%;'
+	    	}
+	    	var body=document.querySelector('body');
+			function ImgShow(body1,css1){
+				this.show1=function(){
+					var imgBox=document.createElement("div");
+		    		var imgBody=document.createElement("div");
+		    		var newImg=document.createElement("img");
+		    		imgBox.style.cssText=arguments[2].cssBox;
+		    		imgBody.style.cssText=arguments[2].cssBody;
+		    		newImg.style.cssText=arguments[2].cssImg;
+		    		newImg.setAttribute('src',arguments[1].getAttribute('src'));
+		    		imgBody.appendChild(newImg);
+		    		imgBox.appendChild(imgBody);
+		    		document.querySelector('body').appendChild(imgBox);
+		    		imgBox.onclick=function(){
+		    			this.style.display='none';
+		    			this.remove();
+		    		}
+				}
+				this.imgList=body1.getElementsByTagName('img');
+				for(var i=0;i<this.imgList.length;i++){
+					var _self=this;
+					this.imgList[i].addEventListener('click',function(event){
+						_self.show1(event,this,css1);
+					},false);
+				}
+			}
+			var zImg=new ImgShow(body,css);
+    	</script>
+
+
+                        </div>
+                    </div>
+                </div>
+            
+            <!-- 全文模块 结束 -->
+
+            <!-- 文内图表 开始 -->
+            
+                <div class="img-list pd24 FqwCon-container FqwCon-container-1" style="display: none;">
+                    <div class="picture_figure mb35">
+ <img id="4629d0426b2e244d153d2b04824a4896" class="picture_figure" src="html/yxxxx/20251208/alternativeImage/01143fc5b6879c0aa4606da8f82107f2.jpg" width="189" height="329" title="width=189,height=329,dpi=110">
+ <p class="picture_figure_title">图1 研究思路</p>
+</div><div class="picture_table mb35">
+ <p class="picture_table_title">表1 命名实体类型及定义</p>
+ <img id="f359ed382999473d04bc827d4b3f1992" class="picture_table" src="html/yxxxx/20251208/alternativeImage/362575a7ae1a3c07af728efa17eac23e.jpg" width="358" height="474" title="width=358,height=474,dpi=110">
+ <p class="picture_table_content">实体类型定义疾病 导致患者非健康状态的原因或医生给出的最终诊断,具备可治疗性,且能被否定词修饰,属于UMLS语义类型中的一种临床表现患者主观陈述的不适表现及通过检查发现的异常结果,具备可改善或治愈性,能被否定词修饰,属于UMLS语义类型中的症状或体征检查 为发现、证实疾病或症状,获取更多相关信息而施加给患者的检查过程、仪器或项目,属于UMLS语义类型中的化验过程、诊断过程等检验 实验室开展的化验项目,含血液、尿液、细胞检验等,常伴随数值结果,也包括诊疗计划或治疗过程中提到的有化验结果的化验项目、查体里的体液检查项目、生理测量、重要生理指标及其他检查项目,含“化验结果”“检测结果”“实验数据”“化验”等提示词的对应项目也属此类结果 与本段病历疾病相关的检查、检验结果治疗 针对疾病的干预手段,含治疗过程、术后康复等,属于UMLS语义类型中的治疗过程或预防过程治疗结果治疗后病情发生的变化,与治疗过程直接相关药物 用于预防、治疗、诊断疾病的物质,含临床诊断试剂身体部位含具体身体位置、病变细胞及内源性身体物质</p>
+</div><div class="picture_table mb35">
+ <p class="picture_table_title">表2 实体关系标注规则</p>
+ <img id="c146daf89b72c67731b78fad166bce27" class="picture_table" src="html/yxxxx/20251208/alternativeImage/a33e25f39ba2ccf1bc0ebed13f23747c.jpg" width="358" height="341" title="width=358,height=341,dpi=110">
+ <p class="picture_table_content">头实体关系类型尾实体疾病 疾病相关的疾病 疾病 疾病 疾病导致了症状 临床表现检查 检查确诊了疾病 疾病 检验 检验确诊了疾病 疾病 治疗 治疗作用于疾病 疾病 治疗 治疗导致了治疗结果治疗结果药物 药物作用于疾病 疾病 疾病 疾病施加于身体部位身体部位临床表现因为症状采取检查 检查 临床表现因为症状采取检验 检验 检查 检查发现了症状 临床表现检查 检查发现了结果 结果 检验 检验发现了结果 结果 临床表现临床表现的位置 身体部位检查 检查施加于身体部位身体部位</p>
+</div><div class="picture_table mb35">
+ <p class="picture_table_title">表3 模型配置</p>
+ <img id="276cdae45ace650ccfdac833b9a657c3" class="picture_table" src="html/yxxxx/20251208/alternativeImage/c7a502f583e0de0fd560642fe9d61755.jpg" width="358" height="218" title="width=358,height=218,dpi=110">
+ <p class="picture_table_content">任务类型关键参数具体信息命名实体识别BERT 版本BERT-Base-Chinese优化器Adam学习率3e-5训练轮数6批大小4早停策略未使用实体关系识别BERT 版本BERT-Base-Chinese优化器Adam学习率3e-5训练轮数8批大小4早停策略未使用</p>
+</div><div class="picture_table mb35">
+ <p class="picture_table_title">表4 命名实体识别结果</p>
+ <img id="79a73ff50bd0f2f847d745b5b05aa7a4" class="picture_table" src="html/yxxxx/20251208/alternativeImage/83ad5cc2c001c8746582ee5c0c69d5e5.jpg" width="358" height="242" title="width=358,height=242,dpi=110">
+ <p class="picture_table_content">实体类型召回率精确率micro-F1样本数量(条)疾病 0.630.630.63379临床表现0.380.380.381 254检查 0.710.650.681 254检验 0.690.650.672 020结果 0.840.770.802 390治疗 0.410.390.40181治疗结果0.150.330.2055药物 0.530.530.5389身体部位0.600.540.571 917总体 0.660.620.649 536</p>
+</div><div class="picture_table mb35">
+ <p class="picture_table_title">表5 实体关系识别结果</p>
+ <img id="5cbb3f974f18a8b2bb7555b828e70e25" class="picture_table" src="html/yxxxx/20251208/alternativeImage/6b15c05b87173ce26a174f9f7209304e.jpg" width="358" height="438" title="width=358,height=438,dpi=110">
+ <p class="picture_table_content">关系类型召回率精确率micro-F1样本数量(条)疾病相关的疾病0.200.030.055疾病导致了症状0000检查确诊了疾病0.420.330.37223检验确诊了疾病0.360.440.4011治疗作用于疾病0.450.380.41116治疗导致了治疗结果0.060.140.0852药物作用于疾病0.420.300.3576疾病施加于身体部位0.020.010.0144因为症状采取检查0.020047因为症状采取检验0002检查发现了症状0.280.150.20495检查发现了结果0.800.690.74337检验发现了结果0.580.520.552 015临床表现的位置0.390.310.341 013检查施加于身体部位0.680.550.61515总体0.510.360.424 951</p>
+</div>
+                </div>
+            
+            <!-- 文内图表 结束 -->
+
+            <!-- 参考文献 开始 -->
+            
+                <div class="reference-list pd24 FqwCon-container FqwCon-container-2" style="display: none;">
+                    <p class="content" name="ref1" data-meta-name="参考文献.条目">1 赵琬清，胡佳慧，陈凌云，等. 中文电子病历标注系统构建与应用[J]. 医学信息学杂志，2025，46(6)：74-80.</p><p class="content" name="ref2" data-meta-name="参考文献.条目">2 张坤丽，马鸿超，赵悦淑，等. 基于自然语言处理的中文产科电子病历研究[J]. 郑州大学学报(理学版)，2017，49(4)：40-45.</p><p class="content" name="ref3" data-meta-name="参考文献.条目">3 白宇，何佳蔚，张桂平. 图注意力网络与句法融合的医疗实体识别[J]. 中文信息学报，2024，38(9)：108-116.</p><p class="content" name="ref4" data-meta-name="参考文献.条目">4 张志昌，周侗，张瑞芳，等. 融合双向GRU与注意力机制的医疗实体关系识别[J]. 计算机工程，2020，46(6)：296-302.</p><p class="content" name="ref5" data-meta-name="参考文献.条目">5 程齐凯，李信，陆伟. 领域无关学术文献词汇功能标准化数据集构建及分析[J]. 情报科学，2019，37(7)：41-47.</p><p class="content" name="ref6" data-meta-name="参考文献.条目">6 韩普，陈文祺，叶东宇. 面向中文电子病历的多模态知识图谱构建方法研究[J]. 图书情报工作，2024，68(23)：30-40.</p><p class="content" name="ref7" data-meta-name="参考文献.条目">7 贾杨春，朱定局. 基于深度学习的医疗命名实体识别[J]. 计算机系统应用，2022，31(9)：70-81.</p><p class="content" name="ref8" data-meta-name="参考文献.条目">8 杨锦锋，于秋滨，关毅，等. 电子病历命名实体识别和实体关系抽取研究综述[J]. 自动化学报，2014，40(8)：1537-1562.</p><p class="content" name="ref9" data-meta-name="参考文献.条目">9 曲春燕，关毅，杨锦锋，等. 中文电子病历命名实体标注语料库构建[J]. 高技术通讯，2015，25(2)：143-150.</p><p class="content" name="ref10" data-meta-name="参考文献.条目">10 李丽双，王泽昊，秦雪洋，等. 基于平行交互注意力网络的中文电子病历实体及关系联合抽取[J]. 中文信息学报，2024，38(6)：108-118.</p><p class="content" name="ref11" data-meta-name="参考文献.条目">11 杨锦锋，关毅，何彬，等. 中文电子病历命名实体和实体关系语料库构建[J]. 软件学报，2016，27(11)：2725-2746.</p><p class="content" name="ref12" data-meta-name="参考文献.条目">12 刘安栋，彭琳，叶青，等. 电子病历命名实体识别研究进展[J]. 计算机工程与应用，2023，59(21)：39-51.</p><p class="content" name="ref13" data-meta-name="参考文献.条目">13 陈婕卿，竹志超，张锋，等. 中文电子病历命名实体识别方法研究[J]. 医学信息学杂志，2024，45(4)：78-84.</p><p class="content" name="ref14" data-meta-name="参考文献.条目">14 LEI J，TANG B，LU X，et al. A comprehensive study of named entity recognition in Chinese clinical text[J]. Journal of the American medical informatics association，2014，21(5)：808-814.</p><p class="content" name="ref15" data-meta-name="参考文献.条目">15 GUAN T，ZAN H，ZHOU X，et al. CMeIE：construction and evaluation of Chinese medical information extraction dataset[EB/OL].[2025-09-18].https：//link.springer.com/chapter/10.1007/978-3-030-60450-9_22.</p><p class="content" name="ref16" data-meta-name="参考文献.条目">16 张由，李舫. 基于K-BERT的中文妇产科电子病历实体识别研究[J]. 医学信息，2024，37(1)：65-71.</p><p class="content" name="ref17" data-meta-name="参考文献.条目">17 何涛，陈剑，闻英友. 基于BERT-CRF模型的电子病历实体识别研究[J]. 计算机与数字工程，2022，50(3)：639-643.</p><p class="content" name="ref18" data-meta-name="参考文献.条目">18 陈雪松，朱鑫海，王浩畅. 基于PMV-LSTM的中文医学命名实体识别[J]. 计算机工程与设计，2022，43(11)：3257-3263.</p><p class="content" name="ref19" data-meta-name="参考文献.条目">19 张斌，赵婷婷，张碧霞，等. 基于RBAC模型的中文医疗命名实体识别[J]. 天津科技大学学报，2024，39(5)：56-62.</p><p class="content" name="ref20" data-meta-name="参考文献.条目">20 张芳丛，秦秋莉，姜勇，等. 基于RoBERTa-WWM-BiLSTM-CRF的中文电子病历命名实体识别研究[J]. 数据分析与知识发现，2022，6(Z1)：251-262.</p><p class="content" name="ref21" data-meta-name="参考文献.条目">21 罗熹，夏先运，安莹，等. 结合多头自注意力机制与BiLSTM-CRF的中文临床实体识别[J]. 湖南大学学报(自然科学版)，2021，48(4)：45-55.</p><p class="content" name="ref22" data-meta-name="参考文献.条目">22 熊回香，周明洁. 电子病历中基于实体识别和共现分析的疾病间语义关系挖掘研究 [J/OL]. 情报科学，1-23[2025-09-18]. https：//link.cnki.net/urlid/22.1264. g2.20241010.1714.014.</p><p class="content" name="ref23" data-meta-name="参考文献.条目">23 ZHANG R，ZHAO P，GUO W，et al. Medical named entity recognition based on dilated convolutional neural network[J]. Cognitive robotics，2022(2)：13-20.</p><p class="content" name="ref24" data-meta-name="参考文献.条目">24 王鑫. 基层医疗信息化系统的设计与实现[D]. 成都：电子科技大学，2023.</p><p class="content" name="ref25" data-meta-name="参考文献.条目">25 杨珑平，刘泽坤，杨俊涛，等. 医学科学数据共享的理论逻辑与实践探索[J]. 医学信息学杂志，2025，46(6)：37-42.</p><p class="content" name="ref26" data-meta-name="参考文献.条目">26 肖丹，杨春明，张晖，等. 基于多头注意力的中文电子病历命名实体识别[J]. 计算机应用与软件，2024，41(1)：133-138，160.</p><p class="content" name="ref27" data-meta-name="参考文献.条目">27 刘燃峰，申皓，吴梦平. 基于电子病历评价标准构建医院数据治理体系的实践与思考[J]. 信息与电脑，2025，37(11)：136-138.</p>
+                </div>
+            
+            <!-- 参考文献 结束 -->
+
+            <!-- 出版信息 开始 -->
+            
+                <div class="publication-information pd24 FqwCon-container FqwCon-container-3" style="display: none;">
+                    <div class="publishContent">
+                        <div class="publishItem">
+                            
+                                <div class="title">基本信息</div>
+                                <div class="content">
+                                    
+                                        
+                                            
+                                                <p><span>DOI:</span>10.3969/j.issn.1673-6036.2025.12.008</p>
+                                            
+                                            
+                                        
+                                    
+                                    
+                                        <p><span>中图分类号:</span>R197.323</p>
+                                    
+                                </div>
+                            
+                            <div class="title">引文格式</div>
+                            <div class="content">
+                                <div class="citation-format">
+                                    <span>GB/T 7714：</span>
+                                    <span class="GBT303"></span>
+                                    <a class="copybtn" data-clipboard-text='盖彦蓉, 张云秋, 张慧等. 面向知识抽取的真实世界中文电子病历数据质量分析与治理对策研究[J]. 医学信息学杂志, 2025, (12):pp.47-53.'>复制</a>
+                                </div>
+                                <div class="citation-format">
+                                    <span>MLA：</span>
+                                    <span class="MLA303"></span>
+                                    <a class="copybtn" href="javascript:void(0);" data-clipboard-text='盖彦蓉等. &#034;面向知识抽取的真实世界中文电子病历数据质量分析与治理对策研究.&#034; 医学信息学杂志 12(2025):pp.47-53.'>复制</a>
+                                </div>
+                                <div class="citation-format">
+                                    <span>APA：</span>
+                                    <span class="APA303"></span>
+                                    <a class="copybtn" href="javascript:void(0);" data-clipboard-text='盖彦蓉, 张云秋, 张慧, 李晨程, &amp; 卢浚睿. (2025). 面向知识抽取的真实世界中文电子病历数据质量分析与治理对策研究. 医学信息学杂志(12), pp.47-53.'>复制</a>
+                                </div>
+                                <script type="text/javascript">
+                                    $(".FqwCon-container-3 .GBT303").html($("#GBTInputId").val());
+                                    $(".FqwCon-container-3 .MLA303").html($("#MLAInputId").val());
+                                    $(".FqwCon-container-3 .APA303").html($("#APAInputId").val());
+                                </script>
+                            </div>
+                            
+                        </div>
+                    </div>
+                </div>
+            
+            <!-- 出版信息 结束 -->
+            <script>
+                $(".FqwTit-tab").first().addClass("cur"); // 默认第一个tab为当前选中tab
+            </script>
+        </div>
+    </div>
+
+    <!-- 弹框之类的DOM 开始 -->
+    <div class="maskLayer"></div>
+
+    <!-- 查看大图 -->
+    <div class="shobigimg">
+        <img src="html/yxxxx/20251208/alternativeImage/" alt="" class="bigImg">
+        <img src="html/yxxxx/20251208/alternativeImage/close.png" alt="" class="big-img-close">
+    </div>
+
+    <!-- 查看参考文献 -->
+    <div class="ckwx__pop ckwx__pop1">
+        <p class="ckwx__pop-title"></p>
+        <p class="ckwx__pop-content"></p>
+        <span class="ckwx__pop-arrow"></span>
+    </div>
+
+    <!-- 查看注脚 -->
+    <div class="alertCon1" style="width:485px;height:auto">
+        <p align="right"><span class="closed1">X</span></p>
+        <div class="alCenter">
+            <ul id="refdiv"></ul>
+        </div>
+    </div>
+
+    <!-- 查看注脚 -->
+    <div class="ckwx__pop ckwx__pop2">
+        <p class="ckwx__pop-content"></p>
+        <span class="ckwx__pop-arrow"></span>
+    </div>
+
+    <div class="alertBg">
+    </div>
+    <!-- 弹框之类的DOM 结束 -->
+
+    <div class="online" style="display: none;">
+        <a id="headTop" class="huiding icons" href="javascript:;" style="display: block; text-decoration: underline;"></a>
+    </div>
+
+    <input type="hidden" id="apistrclassfy" value="&apistrclassfy=0_16_4"/>
+    <input type="hidden" id="dxidInputId" value="100449392322"/>
+    <input type="hidden" id="datatypeInputId" value="1"/>
+    <input type="hidden" id="magidInputId" value="320910032136"/>
+    <input type="hidden" id="yearInputId" value="2025"/>
+    <input type="hidden" id="chorenInputId" value="1"/>
+    <input type="hidden" id="magnameInputId" value="医学信息学杂志"/>
+    <input type="hidden" id="companyInputId" value=" 1深圳市卫生健康发展研究和数据管理中心； 2吉林大学公共卫生学院"/>
+    <input type="hidden" id="firstAuthorInputId" value="盖彦蓉"/>
+    <input type="hidden" id="relatedwritingsInputId" value="/related/right?sw=%E4%B8%AD%E6%96%87%E7%94%B5%E5%AD%90%E7%97%85%E5%8E%86+%E7%9F%A5%E8%AF%86%E6%8A%BD%E5%8F%96&channel=1&dxid=100449392322&type=0&d="/>
+    <input type="hidden" id="relatedfundInputId" value=""/>
+    <input type="hidden" id="relatedrecommendInputId" value="/related/right?channel=1&dxid=100449392322&type=3&d="/>
+    <input type="hidden" id="relatedsearchrefInputId" value=""/>
+    <input type="hidden" id="keywordsearchrefInputId" value="/analysis/themeindex?strchannel=1&sw=%E4%B8%AD%E6%96%87%E7%94%B5%E5%AD%90%E7%97%85%E5%8E%86%E3%80%80%E3%80%80%E7%9F%A5%E8%AF%86%E6%8A%BD%E5%8F%96%E3%80%80%E3%80%80%E5%91%BD%E5%90%8D%E5%AE%9E%E4%BD%93%E8%AF%86%E5%88%AB%E3%80%80%E3%80%80%E5%AE%9E%E4%BD%93%E5%85%B3%E7%B3%BB%E8%AF%86%E5%88%AB%E3%80%80%E3%80%80%E6%95%B0%E6%8D%AE%E6%B2%BB%E7%90%86"/>
+    <input type="hidden" id="cankaoInputId" value="/jourrelatedtype?d=&type=1&size=10&pages=1"/>
+    <input type="hidden" id="pubyearInputId" value="2025"/>
+    <input type="hidden" id="refcountInputId" value="/jourrelatedmain?d="/>
+    <input type="hidden" id="paramd" value=""/>
+    <input type="hidden" id="aidInputId" value="0"/>
+    <input type="hidden" id="firstComeInputId" value="0"/>
+    <input type="hidden" id="refcounturl" value="/related/ref?m=38502727e7500f2667fd13009fcb48ef6cd729046a48d0edec8e69bc8193f14a861aa6accfa013e5f53e1c6af831398d6cd0930c00a11bcc124bf645dec285ca&title=%E9%9D%A2%E5%90%91%E7%9F%A5%E8%AF%86%E6%8A%BD%E5%8F%96%E7%9A%84%E7%9C%9F%E5%AE%9E%E4%B8%96%E7%95%8C%E4%B8%AD%E6%96%87%E7%94%B5%E5%AD%90%E7%97%85%E5%8E%86%E6%95%B0%E6%8D%AE%E8%B4%A8%E9%87%8F%E5%88%86%E6%9E%90%E4%B8%8E%E6%B2%BB%E7%90%86%E5%AF%B9%E7%AD%96%E7%A0%94%E7%A9%B6&channel=1"/>
+    
+    <input type="hidden" id="classfytp" value="R197.323"/>
+    <input type="hidden" id="unitInputId" value="[['安徽',69],['澳门',2],['北京',159],['福建',65],['甘肃',30],['广东',126],['广西',69],['贵州',31],['海南',14],['海外',5],['河北',67],['河南',79],['黑龙江',38],['湖北',72],['湖南',87],['吉林',39],['江苏',135],['江西',62],['辽宁',66],['内蒙古',29],['宁夏',9],['其它',10],['青海',8],['山东',108],['山西',33],['陕西',57],['上海',67],['四川',71],['台湾',2],['天津',29],['西藏',3],['香港',1],['新疆',26],['云南',32],['浙江',101],['重庆',35]]"/>
+    <input type="hidden" id="wordCloudData" value='{"数据":{"counter":58},"实体":{"counter":52},"病历":{"counter":47},"电子":{"counter":37},"结果":{"counter":31},"疾病":{"counter":31},"模型":{"counter":29},"关系":{"counter":29},"中文电子病历":{"counter":26},"规则":{"counter":24},"数据治理":{"counter":20},"质量":{"counter":19},"世界":{"counter":19},"类型":{"counter":18},"命名实体识别":{"counter":18},"知识抽取":{"counter":17},"信息":{"counter":16},"医疗":{"counter":15},"技术":{"counter":12},"症状":{"counter":12},"身体":{"counter":12},"问题":{"counter":11},"实体关系识别":{"counter":11},"核心":{"counter":10},"文本":{"counter":10},"术语":{"counter":10},"任务":{"counter":10},"过程":{"counter":10},"部位":{"counter":10},"医学":{"counter":10},"语义":{"counter":10},"中文":{"counter":9},"系统":{"counter":9},"标准":{"counter":9},"准确率":{"counter":8},"定义":{"counter":8},"关键":{"counter":8},"效果":{"counter":8},"体系":{"counter":7},"边界":{"counter":7},"流程":{"counter":7},"隐私":{"counter":7},"缺失":{"counter":7},"项目":{"counter":7},"样本":{"counter":7},"机制":{"counter":7},"机构":{"counter":7},"学报":{"counter":7},"药物":{"counter":6},"瓶颈":{"counter":6},"逻辑":{"counter":6},"原因":{"counter":6},"层面":{"counter":6},"语言":{"counter":6},"注意力":{"counter":6},"计算机":{"counter":6},"领域":{"counter":5},"环节":{"counter":5},"策略":{"counter":5},"方面":{"counter":5},"医生":{"counter":5},"性能":{"counter":5},"方法":{"counter":5},"时间":{"counter":5},"差异":{"counter":5},"大学":{"counter":5},"字段":{"counter":5},"建议":{"counter":5},"科室":{"counter":5},"作者":{"counter":4},"工程":{"counter":4},"视角":{"counter":4},"类别":{"counter":4},"作用":{"counter":4},"模板":{"counter":4},"网络":{"counter":4},"位置":{"counter":4},"习惯":{"counter":4},"意义":{"counter":4},"科学":{"counter":4},"结构化":{"counter":4},"患者":{"counter":4},"算法":{"counter":3},"范围":{"counter":3},"标识":{"counter":3},"源头":{"counter":3},"关毅":{"counter":3},"人员":{"counter":3},"杂志":{"counter":3},"模式":{"counter":3},"现状":{"counter":3},"张云秋":{"counter":3},"论文":{"counter":3},"信息学":{"counter":3},"目的":{"counter":3},"数量":{"counter":3},"对策":{"counter":3},"文献":{"counter":3},"情报":{"counter":3},"医院":{"counter":3},"盖彦蓉":{"counter":3},"空间":{"counter":3},"深度":{"counter":3},"语料库":{"counter":3},"语料":{"counter":3},"杨锦锋":{"counter":3},"缩写":{"counter":3},"样本数":{"counter":3},"来源":{"counter":3},"歧义":{"counter":3},"针对性":{"counter":3},"规范性":{"counter":2},"等级":{"counter":2},"方式":{"counter":2},"知识":{"counter":2},"英文":{"counter":2},"小结":{"counter":2},"完整性":{"counter":2},"卢浚睿":{"counter":2},"能力":{"counter":2},"上下文":{"counter":2},"需求":{"counter":2},"序列":{"counter":2},"软件":{"counter":2},"根源":{"counter":2},"经验":{"counter":2},"利益":{"counter":2},"李晨程":{"counter":2},"版本":{"counter":2},"指标":{"counter":2},"代表":{"counter":2},"战略":{"counter":2},"主流":{"counter":2},"总体":{"counter":2},"业界":{"counter":2},"架构":{"counter":2},"环境":{"counter":2},"现象":{"counter":2},"科技":{"counter":2},"生理":{"counter":2},"细胞":{"counter":2},"角度":{"counter":2},"声明":{"counter":2},"病案":{"counter":2},"效率":{"counter":2},"中心":{"counter":2},"深圳市":{"counter":2},"多头":{"counter":2},"词典":{"counter":2},"路径":{"counter":2},"载体":{"counter":2},"依据":{"counter":2},"基础":{"counter":2},"编码":{"counter":2},"周期":{"counter":2},"大小":{"counter":2},"物质":{"counter":2},"标识符":{"counter":2}}'/>
+    <input type="hidden" id="c122InputId" value=""/>
+    <input type="hidden" id="userIp" value="60.10.197.135"/>
+    <input type="hidden" id="puburl" value="http://counter.zhizhen.com/api/statistics/log?clientid=1&groupID=0&AID_dsr=0"/>
+
+    <script type="text/javascript">
+        function MyMap() {
+            this.container = new Object();
+        }
+        MyMap.prototype.put = function(key, value) {
+            this.container[key] = value;
+        }
+        MyMap.prototype.get = function(key) {
+            return this.container[key];
+        }
+        $(function() {
+
+            // 返回顶部
+            $('.online').click(function() {
+                window.scrollTo(0, Number.parseInt($('#qwcontentDivId').offset().top) - 15);
+            })
+
+            //设置字体大小
+            var fontUtil = {
+                name: "fontIndex",
+                fonteLib: [
+                    ["16px", "26px", "14px", "30px", "22px", "12px", "12px", "10px", "10px", "22px", "0"],
+                    ["18px", "28px", "16px", "30px", "24px", "14px", "14px", "12px", "12px", "22px", "1"],
+                    ["20px", "32px", "18px", "30px", "26px", "16px", "16px", "14px", "14px", "22px", "2"],
+                    ["21px", "32px", "20px", "34px", "26px", "16px", "16px", "14px", "14px", "26px", "3"]
+                ],
+                footnote_content: $(".footnote_content").first().css("font-size"), //注释的吧
+                changeContent: function(e) {
+                    var selectedFont = this.fonteLib[e];
+                    $(".FtextCon,.FtextCon *").css("font-size", selectedFont[0]); //文章内容
+                    $(".footnote_content").css("font-size", this.footnote_content).css("display", "none");
+                    $(".title_translate,.title_translate > *").css("font-size", selectedFont[1]); //英文标题
+                    $(".author_info").css("font-size", selectedFont[2]); //作者
+                    $(".title, .title > *").css("font-size", selectedFont[3]); //标题
+                    $(".sect1, .sect2").css("font-size", selectedFont[4]); //小标题1 小标题2
+                    $(".picture_table_title").css("font-size", selectedFont[5]);
+                    $(".picture_figure_title").css("font-size", selectedFont[6]);
+                    $(".picture_figure_note").css("font-size", "14px");
+                    $(".superscript").css("font-size", selectedFont[7]);
+                    $(".subscript").css("font-size", selectedFont[8]);
+                    $(".title").find(".subtitle").css("font-size", selectedFont[9]);
+                },
+                init: function() {
+                    // fontUtil.changeContent(0)
+                    $(".footnote_content").css("font-size", this.footnote_content).css("display", "none");
+                }
+            };
+            fontUtil.init();
+            var showCount = "1";
+            generalInfo.init();
+            detailCommon.init();
+            if (showCount > 0) { // > 0 表示有全文
+                detailArticle.init();
+                detailImg.init();
+            }
+            detailPublish.init();
+        })
+    </script>
+
+
+
+
+</div>
+<script type="text/javascript">
+//是否禁止查看版本信息
+var strDisabledArticleVersionHistory="";
+$().ready(function() {
+	//刷新html访问次数
+	$.get("yxxxx/article/get_html_count/20251208?flag=1",function(strReturnScript){});
+	
+	$("#CommentList").load("template/common/et_article_comment.aspx?file_no=20251208&journal_id=yxxxx&is_mobile=0&year_id=2025&return_url=https://www.yxxxx.ac.cn/yxxxx/article/html/20251208&issue=12&flag=1");
+	
+	//获取参考文献
+	$.get("yxxxx/article/reference/2025-12-20251208?from_founder_html=1&file_no=20251208",function(strHtml){
+		if(strHtml!=""){
+			$("div#ReferenceList").html(strHtml);	
+		}
+	});
+
+	if(strDisabledArticleVersionHistory!="1"){
+		$.get("template/common/get_online_first_version.aspx?file_no=20251208&ms_file_no=20251208&journal_id=yxxxx&flag=1&html_url=https://www.yxxxx.ac.cn/yxxxx/article/html/20251208",function(strReturn){
+			if(strReturn!=""){
+				$("#jo-main-publish").html(strReturn);
+			}		
+		});	
+	}
+});
+function ChangeOnlineFirstVersion(strKeyID){
+	$("#jo-main-publish").load("template/common/get_online_first_version.aspx?file_no=20251208&ms_file_no=20251208&journal_id=yxxxx&key_id="+strKeyID+"&html_url=https://www.yxxxx.ac.cn/yxxxx/article/html/20251208");
+}
+$(".topbar_title").append("&nbsp;&nbsp;<a href='yxxxx/article/pdf/20251208'><svg focusable='false' viewBox='0 0 32 32' height='18' width='20' class='icon icon-pdf-multicolor pdf-icon'><path d='M7 .362h17.875l6.763 6.1V31.64H6.948V16z' stroke='#000' stroke-width='.703' fill='#fff'></path><path d='M.167 2.592H22.39V9.72H.166z' stroke='#aaa' stroke-width='.315' fill='#da0000'></path><path fill='#fff9f9' d='M5.97 3.638h1.62c1.053 0 1.483.677 1.488 1.564.008.96-.6 1.564-1.492 1.564h-.644v1.66h-.977V3.64m.977.897v1.34h.542c.27 0 .596-.068.596-.673-.002-.6-.32-.667-.596-.667h-.542m3.8.036v2.92h.35c.933 0 1.223-.448 1.228-1.462.008-1.06-.316-1.45-1.23-1.45h-.347m-.977-.94h1.03c1.68 0 2.523.586 2.534 2.39.01 1.688-.607 2.4-2.534 2.4h-1.03V3.64m4.305 0h2.63v.934h-1.657v.894H16.6V6.4h-1.56v2.026h-.97V3.638'></path><path d='M19.462 13.46c.348 4.274-6.59 16.72-8.508 15.792-1.82-.85 1.53-3.317 2.92-4.366-2.864.894-5.394 3.252-3.837 3.93 2.113.895 7.048-9.25 9.41-15.394zM14.32 24.874c4.767-1.526 14.735-2.974 15.152-1.407.824-3.157-13.72-.37-15.153 1.407zm5.28-5.043c2.31 3.237 9.816 7.498 9.788 3.82-.306 2.046-6.66-1.097-8.925-4.164-4.087-5.534-2.39-8.772-1.682-8.732.917.047 1.074 1.307.67 2.442-.173-1.406-.58-2.44-1.224-2.415-1.835.067-1.905 4.46 1.37 9.065z' fill='#f91d0a'></path></svg>PDF</a>");
+$(".jo-document-title").append("&nbsp;&nbsp;<a href='yxxxx/article/pdf/20251208'><svg focusable='false' viewBox='0 0 32 32' height='18' width='20' class='icon icon-pdf-multicolor pdf-icon'><path d='M7 .362h17.875l6.763 6.1V31.64H6.948V16z' stroke='#000' stroke-width='.703' fill='#fff'></path><path d='M.167 2.592H22.39V9.72H.166z' stroke='#aaa' stroke-width='.315' fill='#da0000'></path><path fill='#fff9f9' d='M5.97 3.638h1.62c1.053 0 1.483.677 1.488 1.564.008.96-.6 1.564-1.492 1.564h-.644v1.66h-.977V3.64m.977.897v1.34h.542c.27 0 .596-.068.596-.673-.002-.6-.32-.667-.596-.667h-.542m3.8.036v2.92h.35c.933 0 1.223-.448 1.228-1.462.008-1.06-.316-1.45-1.23-1.45h-.347m-.977-.94h1.03c1.68 0 2.523.586 2.534 2.39.01 1.688-.607 2.4-2.534 2.4h-1.03V3.64m4.305 0h2.63v.934h-1.657v.894H16.6V6.4h-1.56v2.026h-.97V3.638'></path><path d='M19.462 13.46c.348 4.274-6.59 16.72-8.508 15.792-1.82-.85 1.53-3.317 2.92-4.366-2.864.894-5.394 3.252-3.837 3.93 2.113.895 7.048-9.25 9.41-15.394zM14.32 24.874c4.767-1.526 14.735-2.974 15.152-1.407.824-3.157-13.72-.37-15.153 1.407zm5.28-5.043c2.31 3.237 9.816 7.498 9.788 3.82-.306 2.046-6.66-1.097-8.925-4.164-4.087-5.534-2.39-8.772-1.682-8.732.917.047 1.074 1.307.67 2.442-.173-1.406-.58-2.44-1.224-2.415-1.835.067-1.905 4.46 1.37 9.065z' fill='#f91d0a'></path></svg>PDF</a>");
+</script>
+
+
+
+<script type="text/javascript">
+
+$(function() {
+  
+  $('img').each(function() {
+    const $img = $(this);
+    const originalSrc = $img.attr('src'); 
+
+   
+    if (originalSrc && /^alternativeimage/.test(originalSrc)) {
+      
+      const newSrc = originalSrc.replace('alternativeImage','html/yxxxx/20251208/alternativeImage').replace('alternativeimage','html/yxxxx/20251208/alternativeImage');
+
+      
+      $img.attr('src', newSrc);
+
+    }
+  });
+});</script>
+

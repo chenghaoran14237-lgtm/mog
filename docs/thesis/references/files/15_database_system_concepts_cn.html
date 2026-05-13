@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>数据库系统概论（第5版）</title>
+    <meta charset="UTF-8">
+<meta name="renderer" content="webkit">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta http-equiv="Content-security-Policy" content="upgrade-insecure-requests">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=0">
+<meta name="keywords" content="高等教育出版社产品信息检索系统；高教社产品信息检索系统；高教社产品；高教社系统；高教社检索；高教社检索系统；高教社信息检索系统；高教社信息；产品信息检索系统；产品信息系统；信息检索系统；高教社产品系统；高教社产品检索系统"/>
+<meta name="description" content="高等教育出版社，产品信息，检索，系统，包括资源下载、样书申请、信息推送、书目下载在内的教师教学服务系统"/>
+<link rel="shortcut icon" type="image/x-icon" href="/static/favicon.ico"/>
+<link rel="stylesheet" href="/static/bootstrap/css/bootstrap.css"/>
+<link rel="stylesheet" href="/static/internal/common/css/front.css"/>
+<script src="/static/jquery/jquery.js"></script>
+<script src="/static/bootstrap/js/bootstrap.js"></script>
+<script src="/static/layer/layer.js"></script>
+<!--[if lt IE 9]>
+<script src="/static/respond/respond.js"></script>
+<script src="/static/jquery/jquery.placeholder.js"></script>
+<script src="/static/json/json2.js"></script>
+<![endif]-->
+<script>
+    window.appId = '6082593c04b5c2dab3c7f1e8';
+    window.appDomain = 'xuanshu.u2.hep.com.cn';
+    window.baseUrl = 'https://core.u2.hep.com.cn';
+    window.user = 'https://users.u2.hep.com.cn/graphql';
+    window.oauth = 'https://oauth.u2.hep.com.cn/graphql';
+    window.ctx = '';
+    window.imageCtx = 'https://hepshow-image-formal.oss-cn-beijing.aliyuncs.com';
+    window.fixedTopHeight = 120;
+</script>
+<script src="/static/internal/common/js/common.js"></script>
+<script>
+    var _hmt = _hmt || [];
+    (function () {
+        var hm = document.createElement("script");
+        hm.src = "https://hm.baidu.com/hm.js?fbec258952e854d110faf4241b905d55";
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(hm, s);
+    })();
+</script><script src="/static/internal/front/bookDetails.js?value=4"></script>
+
+</head>
+<body>
+<script type="text/javascript" src="/static/internal/front/frontHeader.js"></script>
+<script src="https://cdn.authing.co/packages/authing-sso/1.x/AuthingSSO.umd.min.js"></script>
+<script type="text/javascript" src="/static/internal/login/js/login.js?v=20210527"></script>
+<script type="text/javascript">
+    </script>
+<script type="text/javascript" src="/static/internal/front/bookWords.js"></script>
+<script>
+    var isTrue = 'false' === 'true';
+    var isSearch = 'false' === 'true';
+</script>
+<header>
+    <style>
+         div.labelListPnal{display:none;position:absolute;height:150px;width:217px;z-index:10;background:#fff;border:1px solid #ccc;overflow:auto;}
+        .labelListPnal li{list-style:none;height:25px;line-height:25px;padding:0px;margin:0px auto;padding-left:10px;cursor:pointer;width:410px;overflow:hidden;}
+        .labelListPnal_ul li.labelLiOver{background:#ccc;color:#fff;}
+    </style>
+    <div class="header-holder"></div>
+    <div class="navbar-fixed-top">
+        <div class="front-top">
+<input type="hidden" id="CXGFlg" value="null"/>
+            <div class="container">
+                <ul class="front-top-nav">
+                    <li><a href="javascript:login();">登录</a></li>
+                    <li><a href="javascript:register();">注册</a></li>
+                    <li><a href="/front/bibliography/findBibliographies">书目下载</a></li>
+                    <li><a href="/front/common/contactUs">联系我们</a></li>
+                    <li class="dropdown">
+                        <a class="dropdown-toggle" data-toggle="dropdown" href="#">移动端</a>
+                        <ul class="dropdown-menu dropdown-menu-left">
+                            <li>
+                                <div class="p-5 text-center">扫码关注-登录移动端</div>
+                                <img src="/static/internal/common/image/qrcode.jpg" style="width: 150px;height:150px"/>
+                            </li>
+                        </ul>
+                    </li>
+                    <li><a target="_blank" href="/static/internal/helpCenter/help.html">帮助中心</a></li>
+                    </ul>
+            </div>
+        </div>
+        <div class="front-head">
+            <nav class="navbar navbar-default">
+                <div class="container">
+                    <div class="navbar-header">
+                        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+                                data-target="#head-collapse-nav">
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                        </button>
+                        <a class="navbar-brand" href="/">
+                            <img src="/static/internal/common/image/logo.png">
+                            <h1>高等教育出版社产品信息检索系统</h1>
+                        </a>
+                    </div>
+                    <div class="collapse navbar-collapse" id="head-collapse-nav">
+                        <ul class="nav navbar-nav">
+                            <li class="active"><a href="/front/book/findBookProducts">图书产品</a></li>
+                            <li ><a href="/front/book/findDigitizationBooks">数字化产品</a></li>
+                            <li ><a href="/front/periodical/findPeriodicalInfoList">期刊产品</a></li>
+                            <li ><a href="/front/meeting/findMeetingInfos">会议信息</a></li>
+                            <li ><a href="https://ebook.hep.com.cn/index.html#/list/ebook?id=91" target="_blank">电子书</a></li>
+                            <li ><a href="/front/bookFair/findOnlineBookFairs">线上书展</a></li>
+                            </ul>
+                        <form action="/front/book/bookSearch" class="navbar-form navbar-right">
+                            <div class="input-group">
+                                <input name="wd" class="form-control" placeholder="标题/名称/作者/ISBN/物料号" autocomplete="off" onfocus="labelPnalShow(this)" onkeyup="labelPnalKeyUp(event)" onblur="labelPnalShow(this)" id="labelInput" maxlength="20">
+                                <span class="input-group-addon">
+                                    <button class="btn btn-default">
+                                        <i>&#57352;</i>
+                                    </button>
+                                </span>
+                            </div>
+                            <div class="labelListPnal" style="top:49px;">
+                                <ul id="labelListPnal_ul">
+                                </ul>
+                            </div>
+                        </form>
+                        </div>
+                </div>
+            </nav>
+        </div>
+    </div>
+</header>
+
+<a href="#" class="go-top">
+    <i>&#57383;</i>
+    <span>顶部</span>
+</a><script>
+
+    
+    let auth = new AuthingSSO({
+        // OIDC 应用 ID
+        appId: appId,
+        // OIDC 应用认证地址
+        appDomain: appDomain,
+        baseUrl: baseUrl,
+        redirectUrl:window.location.href,
+        host: {
+            user: user,
+            oauth: oauth,
+        }
+    });
+    window.onload = async function () {
+        let res = await auth.trackSession();
+        if (res.session !== null) {
+            $.request(ctx + "/auth/checkLogin",
+                {"token": res.userInfo.token},
+                function (dataCheck) {
+                    if (dataCheck.result == 1) {
+                        location.reload();
+                    }
+                    else if (dataCheck.result == 0 || dataCheck.result == 2) {
+                        
+                            if (dataCheck.result == 0) {
+
+                                // alert(dataCheck.message);
+                                auth.logout();
+                            }
+                        
+                    }
+                },
+                function () {
+                    auth.logout();
+                }
+            );
+        } else {
+            auth.logout();
+            
+        }
+
+    };
+</script>
+<div class="container">
+    <ol class="breadcrumb">
+        <li><a href="/">首页</a></li>
+        <li><a href="/front/book/findBookProducts">图书产品</a></li>
+        <li class="active">
+            数据库系统概论（第5版）</li>
+    </ol>
+    <input id="reloadFlg" type="hidden" value="true"/>
+    <div class="plate">
+        <div class="book-detail-info row pt-10">
+            <div class="col-md-4 col-xs-4">
+                <div class="book-frame">
+                    <div class="book-detail-image">
+                        <img src="https://hepshow-image-formal.oss-cn-beijing.aliyuncs.com/bookCover/2021-10-4w/616e0f2b0cf2e3f217e8267c.jpg"/>
+                        </div>
+                    <div class="book-share">
+                        <div class="bshare-custom">
+                            <div class="bsPromo bsPromo2"></div>
+                            <a title="分享到微信" class="bshare-weixin" href="javascript:void(0);"></a>
+                            <a title="分享到QQ好友" class="bshare-qqim" href="javascript:void(0);"></a>
+                            <a title="分享到QQ空间" class="bshare-qzone"></a>
+                            <a title="分享到豆瓣" class="bshare-douban" href="javascript:void(0);"></a>
+                            <a title="更多平台" class="bshare-more bshare-more-icon more-style-addthis"></a>
+                        </div>
+                        <div id="favorite">
+                            <i class="orange">&#57354;</i>
+                            <span>收藏</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="clear"></div>
+            </div>
+            <div class="col-md-8 col-xs-8">
+                <h1 class="mt-10">
+                    数据库系统概论（第5版）</h1>
+                <div class="row mt-10">
+                    <div class="col-md-8 col-sm-8 lh-25 pt-5">
+                        “十二五”普通高等教育本科国家级规划教材</div>
+                    <div class="col-md-4 col-sm-4 wrap">
+                        <div class="labels">
+                            <a class="chapter" href="/front/book/previewBookResource?bookId=5ad8da07f18f967ee7f36d46" target="_blank">样章</a><a class="cloud"></a></div>
+                    </div>
+                </div>
+                <hr class="mt-10 dashed"/>
+                <div class="row mt-10 black2">
+                    <div class="col-md-6 col-xs-12">
+                        <div class="row lh-30">
+                            <div class="col-md-4 col-xs-4">作者：</div>
+                            <div class="col-md-8 col-xs-8">
+                                王珊  萨师煊</div>
+                        </div>
+                        <div class="row lh-30">
+                            <div class="col-md-4 col-xs-4">定价：</div>
+                            <div class="col-md-8 col-xs-8 red">
+                                98.00 元</div>
+                        </div>
+                        <div class="row lh-30">
+                            <div class="col-md-4 col-xs-4">版面字数：</div>
+                            <div class="col-md-8 col-xs-8">
+                                560.000千字</div>
+                        </div>
+                        <div class="row lh-30">
+                            <div class="col-md-4 col-xs-4">开本：</div>
+                            <div class="col-md-8 col-xs-8">
+                                16开</div>
+                        </div>
+<div class="row lh-30">
+                            <div class="col-md-4 col-xs-4">装帧形式：</div>
+                            <div class="col-md-8 col-xs-8">
+                                精装</div>
+                        </div>
+<div class="row lh-30">
+                            <div class="col-md-4 col-xs-4">版次：</div>
+                            <div class="col-md-8 col-xs-8">
+                                5</div>
+                        </div>
+                        <div class="row lh-30">
+                            <div class="col-md-4 col-xs-4">最新版次</br>印刷时间：</div>
+                            <div class="col-md-8 col-xs-8">
+                                2018-01-24</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-xs-12">
+                        <div class="row lh-30">
+                            <div class="col-md-4 col-xs-4">ISBN：</div>
+                            <div class="col-md-8 col-xs-8">
+                                978-7-04-049683-3</div>
+                        </div>
+                        <div class="row lh-30">
+                            <div class="col-md-4 col-xs-4">物料号：</div>
+                            <div class="col-md-8 col-xs-8">
+                                49683-00</div>
+                        </div>
+                        <div class="row lh-30">
+                            <div class="col-md-4 col-xs-4">出版时间：</div>
+                            <div class="col-md-8 col-xs-8">
+                                2018-05-21</div>
+                        </div>
+                        <div class="row lh-30">
+                            <div class="col-md-4 col-xs-4">读者对象：</div>
+                            <div class="col-md-8 col-xs-8">
+                                高等教育</div>
+                        </div>
+                        <div class="row lh-30">
+                            <div class="col-md-4 col-xs-4">一级分类：</div>
+                            <div class="col-md-8 col-xs-8">
+                                计算机/教育技术类</div>
+                        </div>
+                        <div class="row lh-30">
+                            <div class="col-md-4 col-xs-4">二级分类：</div>
+                            <div class="col-md-8 col-xs-8">
+                                计算机类专业核心课程</div>
+                        </div>
+                        <div class="row lh-30">
+                            <div class="col-md-4 col-xs-4">三级分类：</div>
+                            <div class="col-md-8 col-xs-8">
+                                数据库系统原理</div>
+                        </div>
+                        </div>
+                </div>
+                <hr class="mt-10 dashed" style="display: none;"/>
+                <div id="buy" class="mt-20" style="display: none;">
+                    <label id="sale" class="black3">购买：</label>
+<a href="javascript:buyHistory(0, 'https://mall.hep.com.cn/index.php/search.php?keywords=49683-00');" class="lanchang mr-15" style="background: url('/static/internal/common/image/mall_ico.png') no-repeat;"></a>
+<input id="wuliao" type="hidden" value="49683-00"/>
+                    <input id="wbs" type="hidden" value="18-00753-006"/>
+                    <input id="isbn" type="hidden" value="978-7-04-049683-3"/>
+                    <input id="qrcodeSize" type="hidden" value="0"/>
+                </div>
+                <hr class="mt-20 dashed"/>
+                <div class="mt-20">
+                    <div class="form-inline">
+                        <input id="book-id" type="hidden" value="5ad8da07f18f967ee7f36d46"/>
+                        <div class="form-group">
+                            <button onclick="window.open('/front/book/previewBookResource?bookId=5ad8da07f18f967ee7f36d46')"
+                                    id="preview-book" type="button" class="btn btn-default pl-30 pr-30">
+                                样章阅读
+                            </button>
+                            </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="plate mt-30">
+        <ul class="nav nav-tabs">
+            <li class="active">
+                <a href="#introduce" data-toggle="tab">图书详情</a>
+            </li>
+
+            <li class="split">|</li>
+            <li><a href="#catalog" data-toggle="tab">图书目录</a></li>
+
+            <li class="split">|</li>
+            <li>
+                <a href="#resource" data-toggle="tab">数字化资源</a>
+            </li>
+            <input type="hidden" id="hasQrcodeResource" value="false">
+            </ul>
+        <div class="tab-content p-20 lh-25">
+            <div id="introduce" class="tab-pane fade in active">
+                <p>﻿本书第1 版于1983 年出版，至今已修订至第5 版。第5 版被列入“十二五”普通高等教育本科国家级规划教材。相应课程于2004 年被评为北京市精品课程，2005 年被评为国家精品课程，2014 年被批准为国家级精品资源共享课。</p><p>本书系统全面地阐述了数据库系统的基础理论、基本技术和基本方法。全书分为4 篇16 章。第一篇基础篇，包括绪论、关系数据库、关系数据库标准语言SQL、数据库安全性和数据库完整性，共5 章；第二篇设计与应用开发篇，包括关系数据理论、数据库设计和数据库编程，共3 章；第三篇系统篇，包括关系查询处理和查询优化、数据库恢复技术、并发控制和数据库管理系统，共4 章；第四篇新技术篇，包括数据库技术发展概述、大数据管理、内存数据库系统和数据仓库与联机分析处理技术，共4 章。</p><p>本书可以作为高等学校计算机类专业、信息管理与信息系统等相关专业数据库课程的教材。也可供从事数据库系统研究、开发和应用的研究人员和工程技术人员参考。</p></div>
+
+            <div id="catalog" class="tab-pane fade">
+                <ul><li>前辅文</li><li>第一篇 基础篇<ul class="pl-40"><li>第1 章 绪论<ul class="pl-40"><li>1.1 数据库系统概述<ul class="pl-40"><li>1.1.1 数据库的4 个基本概念</li><li>1.1.2 数据管理技术的产生和发展</li><li>1.1.3 数据库系统的特点</li></ul></li><li>1.2 数据模型<ul class="pl-40"><li>1.2.1 两类数据模型</li><li>1.2.2 概念模型</li><li>1.2.3 数据模型的组成要素</li><li>1.2.4 常用的数据模型</li><li>1.2.5 层次模型</li><li>1.2.6 网状模型</li><li>1.2.7 关系模型</li></ul></li><li>1.3 数据库系统的结构<ul class="pl-40"><li>1.3.1 数据库系统模式的概念</li><li>1.3.2 数据库系统的三级模式结构</li><li>1.3.3 数据库的二级映像功能与数据独立性</li></ul></li><li>1.4 数据库系统的组成</li><li>1.5 小结</li><li>习题</li><li>本章参考文献</li></ul></li><li>第2 章 关系数据库<ul class="pl-40"><li>2.1 关系数据结构及形式化定义<ul class="pl-40"><li>2.1.1 关系</li><li>2.1.2 关系模式</li><li>2.1.3 关系数据库</li><li>2.1.4 关系模型的存储结构</li></ul></li><li>2.2 关系操作<ul class="pl-40"><li>2.2.1 基本的关系操作</li><li>2.2.2 关系数据语言的分类</li></ul></li><li>2.3 关系的完整性<ul class="pl-40"><li>2.3.1 实体完整性</li><li>2.3.2 参照完整性</li><li>2.3.3 用户定义的完整性</li></ul></li><li>2.4 关系代数<ul class="pl-40"><li>2.4.1 传统的集合运算</li><li>2.4.2 专门的关系运算</li></ul></li><li>*2.5 关系演算<ul class="pl-40"><li>*2.5.1 元组关系演算语言ALPHA</li><li>*2.5.2 元组关系演算</li><li>*2.5.3 域关系演算语言QBE</li></ul></li><li>2.6 小结</li><li>习题</li><li>实验</li><li>本章参考文献</li></ul></li><li>第3 章 关系数据库标准语言SQL<ul class="pl-40"><li>3.1 SQL 概述<ul class="pl-40"><li>3.1.1 SQL 的产生与发展</li><li>3.1.2 SQL 的特点</li><li>3.1.3 SQL 的基本概念</li></ul></li><li>3.2 学生-课程数据库</li><li>3.3 数据定义<ul class="pl-40"><li>3.3.1 模式的定义与删除</li><li>3.3.2 基本表的定义、删除与修改</li><li>3.3.3 索引的建立与删除</li><li>3.3.4 数据字典</li></ul></li><li>3.4 数据查询<ul class="pl-40"><li>3.4.1 单表查询</li><li>3.4.2 连接查询</li><li>3.4.3 嵌套查询</li><li>3.4.4 集合查询</li><li>3.4.5 基于派生表的查询</li><li>3.4.6 SELECT 语句的一般格式</li></ul></li><li>3.5 数据更新<ul class="pl-40"><li>3.5.1 插入数据</li><li>3.5.2 修改数据</li><li>3.5.3 删除数据</li></ul></li><li>3.6 空值的处理</li><li>3.7 视图<ul class="pl-40"><li>3.7.1 定义视图</li><li>3.7.2 查询视图</li><li>3.7.3 更新视图</li><li>3.7.4 视图的作用</li></ul></li><li>3.8 小结</li><li>习题</li><li>实验</li><li>本章参考文献</li></ul></li><li>第4 章 数据库安全性<ul class="pl-40"><li>4.1 数据库安全性概述<ul class="pl-40"><li>4.1.1 数据库的不安全因素</li><li>4.1.2 安全标准简介</li></ul></li><li>4.2 数据库安全性控制<ul class="pl-40"><li>4.2.1 用户身份鉴别</li><li>4.2.2 存取控制</li><li>4.2.3 自主存取控制方法</li><li>4.2.4 授权：授予与收回</li><li>4.2.5 数据库角色</li><li>4.2.6 强制存取控制方法</li></ul></li><li>4.3 视图机制</li><li>4.4 审计</li><li>4.5 数据加密</li><li>4.6 其他安全性保护</li><li>4.7 小结</li><li>习题</li><li>实验</li><li>本章参考文献</li></ul></li><li>第5 章 数据库完整性<ul class="pl-40"><li>5.1 实体完整性<ul class="pl-40"><li>5.1.1 定义实体完整性</li><li>5.1.2 实体完整性检查和违约处理</li></ul></li><li>5.2 参照完整性<ul class="pl-40"><li>5.2.1 定义参照完整性</li><li>5.2.2 参照完整性检查和违约处理</li></ul></li><li>5.3 用户定义的完整性<ul class="pl-40"><li>5.3.1 属性上的约束条件</li><li>5.3.2 元组上的约束条件</li></ul></li><li>5.4 完整性约束命名子句</li><li>*5.5 域中的完整性限制</li><li>5.6 断言</li><li>5.7 触发器<ul class="pl-40"><li>5.7.1 定义触发器</li><li>5.7.2 激活触发器</li><li>5.7.3 删除触发器</li></ul></li><li>5.8 小结</li><li>习题</li><li>实验</li><li>本章参考文献</li></ul></li></ul></li><li>第二篇 设计与应用开发篇<ul class="pl-40"><li>第6 章 关系数据理论<ul class="pl-40"><li>6.1 问题的提出</li><li>6.2 规范化<ul class="pl-40"><li>6.2.1 函数依赖</li><li>6.2.2 码</li><li>6.2.3 范式</li><li>6.2.4 2NF</li><li>6.2.5 3NF</li><li>6.2.6 BCNF</li><li>6.2.7 多值依赖</li><li>6.2.8 4NF</li><li>6.2.9 规范化小结</li></ul></li><li>6.3 数据依赖的公理系统</li><li>*6.4 模式的分解<ul class="pl-40"><li>6.4.1 模式分解的三个定义</li><li>6.4.2 分解的无损连接性和保持函数依赖性</li><li>6.4.3 模式分解的算法</li></ul></li><li>6.5 小结</li><li>习题</li><li>本章参考文献</li></ul></li><li>第7 章 数据库设计<ul class="pl-40"><li>7.1 数据库设计概述<ul class="pl-40"><li>7.1.1 数据库设计的特点</li><li>7.1.2 数据库设计方法</li><li>7.1.3 数据库设计的基本步骤</li><li>7.1.4 数据库设计过程中的各级模式</li></ul></li><li>7.2 需求分析<ul class="pl-40"><li>7.2.1 需求分析的任务</li><li>7.2.2 需求分析的方法</li><li>7.2.3 数据字典</li></ul></li><li>7.3 概念结构设计<ul class="pl-40"><li>7.3.1 概念模型</li><li>7.3.2 E-R 模型</li><li>*7.3.3 扩展的E-R 模型</li><li>*7.3.4 UML</li><li>7.3.5 概念结构设计</li></ul></li><li>7.4 逻辑结构设计<ul class="pl-40"><li>7.4.1 E-R 图向关系模型的转换</li><li>7.4.2 数据模型的优化</li><li>7.4.3 设计用户子模式</li></ul></li><li>7.5 物理结构设计<ul class="pl-40"><li>7.5.1 数据库物理设计的内容和方法</li><li>7.5.2 关系模式存取方法选择</li><li>7.5.3 确定数据库的存储结构</li><li>7.5.4 评价物理结构</li></ul></li><li>7.6 数据库的实施和维护<ul class="pl-40"><li>7.6.1 数据的载入和应用程序的调试</li><li>7.6.2 数据库的试运行</li><li>7.6.3 数据库的运行和维护</li></ul></li><li>7.7 小结</li><li>习题</li><li>实验</li><li>本章参考文献</li></ul></li><li>第8 章 数据库编程<ul class="pl-40"><li>8.1 嵌入式SQL<ul class="pl-40"><li>8.1.1 嵌入式SQL 的处理过程</li><li>8.1.2 嵌入式SQL 语句与主语言之间的通信</li><li>8.1.3 不用游标的SQL 语句</li><li>8.1.4 使用游标的SQL 语句</li><li>8.1.5 动态SQL</li></ul></li><li>8.2 过程化SQL<ul class="pl-40"><li>8.2.1 过程化SQL 的块结构</li><li>8.2.2 变量和常量的定义</li><li>8.2.3 流程控制</li></ul></li><li>8.3 存储过程和函数<ul class="pl-40"><li>8.3.1 存储过程</li><li>8.3.2 函数</li><li>*8.3.3 过程化SQL 中的游标</li></ul></li><li>8.4 ODBC 编程<ul class="pl-40"><li>8.4.1 ODBC 概述</li><li>8.4.2 ODBC 工作原理概述</li><li>8.4.3 ODBC API 基础</li><li>8.4.4 ODBC 的工作流程</li></ul></li><li>*8.5 OLE DB</li><li>*8.6 JDBC 编程</li><li>8.7 小结</li><li>习题</li><li>实验</li><li>本章参考文献</li></ul></li></ul></li><li>第三篇 系统篇<ul class="pl-40"><li>第9 章 关系查询处理和查询优化<ul class="pl-40"><li>9.1 关系数据库系统的查询处理<ul class="pl-40"><li>9.1.1 查询处理步骤</li><li>9.1.2 实现查询操作的算法示例</li></ul></li><li>9.2 关系数据库系统的查询优化<ul class="pl-40"><li>9.2.1 查询优化概述</li><li>9.2.2 一个实例</li></ul></li><li>9.3 代数优化<ul class="pl-40"><li>9.3.1 关系代数表达式等价变换规则</li><li>9.3.2 查询树的启发式优化</li></ul></li><li>9.4 物理优化<ul class="pl-40"><li>9.4.1 基于启发式规则的存取路径选择优化</li><li>9.4.2 基于代价估算的优化</li></ul></li><li>*9.5 查询计划的执行</li><li>9.6 小结</li><li>习题</li><li>实验</li><li>本章参考文献</li></ul></li><li>第10 章 数据库恢复技术<ul class="pl-40"><li>10.1 事务的基本概念</li><li>10.2 数据库恢复概述</li><li>10.3 故障的种类</li><li>10.4 恢复的实现技术<ul class="pl-40"><li>10.4.1 数据转储</li><li>10.4.2 登记日志文件</li></ul></li><li>10.5 恢复策略<ul class="pl-40"><li>10.5.1 事务故障的恢复</li><li>10.5.2 系统故障的恢复</li><li>10.5.3 介质故障的恢复</li></ul></li><li>10.6 具有检查点的恢复技术</li><li>10.7 数据库镜像</li><li>10.8 小结</li><li>习题</li><li>实验</li><li>本章参考文献</li></ul></li><li>第11 章 并发控制<ul class="pl-40"><li>11.1 并发控制概述</li><li>11.2 封锁</li><li>11.3 封锁协议</li><li>11.4 活锁和死锁<ul class="pl-40"><li>11.4.1 活锁</li><li>11.4.2 死锁</li></ul></li><li>11.5 并发调度的可串行性<ul class="pl-40"><li>11.5.1 可串行化调度</li><li>11.5.2 冲突可串行化调度</li></ul></li><li>11.6 两段锁协议</li><li>11.7 封锁的粒度<ul class="pl-40"><li>11.7.1 多粒度封锁</li><li>11.7.2 意向锁</li></ul></li><li>*11.8 其他并发控制机制<ul class="pl-40"><li>11.8.1 多版本并发控制</li><li>11.8.2 改进的多版本并发控制</li></ul></li><li>11.9 小结</li><li>习题</li><li>实验</li><li>本章参考文献</li></ul></li><li>*第12 章 数据库管理系统<ul class="pl-40"><li>12.1 数据库管理系统的基本功能</li><li>12.2 数据库管理系统的系统结构<ul class="pl-40"><li>12.2.1 数据库管理系统的层次结构</li><li>12.2.2 关系数据库管理系统的运行过程示例</li></ul></li><li>12.3 语言处理层<ul class="pl-40"><li>12.3.1 语言处理层的任务和工作步骤</li><li>12.3.2 解释方法</li><li>12.3.3 预编译方法</li></ul></li><li>12.4 数据存取层<ul class="pl-40"><li>12.4.1 数据存取层的系统结构</li><li>12.4.2 数据存取层的功能子系统</li></ul></li><li>12.5 缓冲区管理</li><li>12.6 数据库的物理组织</li><li>12.7 小结</li><li>习题</li><li>本章参考文献</li></ul></li></ul></li><li>第四篇 新技术篇<ul class="pl-40"><li>第13 章 数据库技术发展概述<ul class="pl-40"><li>13.1 数据库技术发展历史回顾</li><li>13.2 数据库发展的三个阶段<ul class="pl-40"><li>13.2.1 第一代数据库系统</li><li>13.2.2 第二代数据库系统</li><li>13.2.3 新一代数据库系统</li></ul></li><li>13.3 数据库系统发展的特点<ul class="pl-40"><li>13.3.1 数据模型的发展</li><li>13.3.2 数据库技术与相关技术相结合</li><li>13.3.3 面向应用领域的数据库新技术</li></ul></li><li>13.4 数据管理技术的发展趋势<ul class="pl-40"><li>13.4.1 数据管理技术面临的挑战</li><li>13.4.2 数据管理技术的发展与展望</li></ul></li><li>13.5 小结</li><li>习题</li><li>本章参考文献</li></ul></li><li>第14 章 大数据管理<ul class="pl-40"><li>14.1 大数据概述<ul class="pl-40"><li>14.1.1 什么是大数据</li><li>14.1.2 大数据的特征</li></ul></li><li>14.2 大数据的应用<ul class="pl-40"><li>14.2.1 感知现在 预测未来—互联网文本大数据管理与挖掘</li><li>14.2.2 数据服务 实时推荐—基于大数据分析的用户建模</li></ul></li><li>14.3 大数据管理系统<ul class="pl-40"><li>14.3.1 NoSQL 数据管理系统</li><li>14.3.2 NewSQL 数据库系统</li><li>14.3.3 MapReduce 技术</li><li>14.3.4 大数据管理系统的新格局</li></ul></li><li>14.4 小结</li><li>习题</li><li>本章参考文献</li></ul></li><li>第15 章 内存数据库系统<ul class="pl-40"><li>15.1 概述</li><li>15.2 内存数据库的发展历程</li><li>15.3 内存数据库的特性</li><li>15.4 内存数据库的关键技术<ul class="pl-40"><li>15.4.1 数据存储</li><li>15.4.2 查询处理及优化</li><li>15.4.3 并发与恢复</li></ul></li><li>15.5 小结</li><li>习题</li><li>本章参考文献</li></ul></li><li>第16 章 数据仓库与联机分析处理技术<ul class="pl-40"><li>16.1 数据仓库技术</li><li>16.2 联机分析处理技术</li><li>16.3 数据挖掘技术</li><li>16.4 大数据时代的新型数据仓库</li><li>16.5 小结</li><li>习题</li><li>本章参考文献</li></ul></li></ul></li><li>数字资源使用说明</li></ul></div>
+
+            <div id="resource" class="tab-pane fade">
+                <div class='ptb-10'><div class='right'><a class="orange" href="javascript:downloadRes('TEACHER_RESOURCE');"><i>&#57347;</i></a></div><div><a href="javascript:downloadRes('TEACHER_RESOURCE');">数据库系统概论第5版PPT版本.zip</a></div></div><hr class='dashed'/></div>
+            </div>
+    </div>
+
+    <div class="plate mt-30">
+        <h2 class="pt-10 pb-15 pl-25 f-14">相关图书</h2>
+        <hr>
+        <div class="carousel-books">
+            <i class="carousel-left">&#57385;</i>
+            <i class="carousel-right">&#57386;</i>
+            <div class="carousel-box">
+                <div class="wrap">
+                    <div class="book-info">
+                        <a href="/front/book/findBookDetails?bookId=59cf150fba9eb884cf82094c" class="image">
+                            <img src="https://hepshow-image-formal.oss-cn-beijing.aliyuncs.com/bookCover/2024-09-4w/66ef6a110cf260893b8b6208.jpg"/>
+                        </a>
+                        <h3>
+                            <a href="/front/book/findBookDetails?bookId=59cf150fba9eb884cf82094c">
+                                内存数据库技术与实现</a>
+                        </h3>
+                        <h4>
+                            张延松 王珊</h4>
+                        <div class="mt-10 f-12">
+                            <span class="red mr-15">48.00 元</span>
+                            <a class="black2" href="javascript:favoriteBook('59cf150fba9eb884cf82094c')">
+                                <i class="orange mr-5">&#57354;</i>收藏
+                            </a>
+                        </div>
+                    </div>
+                    <div class="book-info">
+                        <a href="/front/book/findBookDetails?bookId=59cc1234ba9eb884cf8154be" class="image">
+                            <img src="https://hepshow-image-formal.oss-cn-beijing.aliyuncs.com/bookCover/2024-09-4w/66efa5810cf260893b8bdc75.jpg"/>
+                        </a>
+                        <h3>
+                            <a href="/front/book/findBookDetails?bookId=59cc1234ba9eb884cf8154be">
+                                数据仓库与数据分析教程</a>
+                        </h3>
+                        <h4>
+                            王珊 李翠平 李胜恩 等</h4>
+                        <div class="mt-10 f-12">
+                            <span class="red mr-15">30.00 元</span>
+                            <a class="black2" href="javascript:favoriteBook('59cc1234ba9eb884cf8154be')">
+                                <i class="orange mr-5">&#57354;</i>收藏
+                            </a>
+                        </div>
+                    </div>
+                    <div class="book-info">
+                        <a href="/front/book/findBookDetails?bookId=5f25a195b0b2bda7c523cf1d" class="image">
+                            <img src="https://hepshow-image-formal.oss-cn-beijing.aliyuncs.com/bookCover/2025-12-1w/6931c5f7e4b0d7692d3231f5.jpg"/>
+                        </a>
+                        <h3>
+                            <a href="/front/book/findBookDetails?bookId=5f25a195b0b2bda7c523cf1d">
+                                数据仓库与数据分析教程（第2版）</a>
+                        </h3>
+                        <h4>
+                            李翠平 王珊 李盛恩</h4>
+                        <div class="mt-10 f-12">
+                            <span class="red mr-15">38.00 元</span>
+                            <a class="black2" href="javascript:favoriteBook('5f25a195b0b2bda7c523cf1d')">
+                                <i class="orange mr-5">&#57354;</i>收藏
+                            </a>
+                        </div>
+                    </div>
+                    <div class="book-info">
+                        <a href="/front/book/findBookDetails?bookId=59ccb988ba9eb884cf817e60" class="image">
+                            <img src="https://hepshow-image-formal.oss-cn-beijing.aliyuncs.com/bookCover/2024-09-4w/66ef0dcd0cf260893b8a7e24.jpg"/>
+                        </a>
+                        <h3>
+                            <a href="/front/book/findBookDetails?bookId=59ccb988ba9eb884cf817e60">
+                                数据库原理与应用(第2版)</a>
+                        </h3>
+                        <h4>
+                            李红</h4>
+                        <div class="mt-10 f-12">
+                            <span class="red mr-15">34.00 元</span>
+                            <a class="black2" href="javascript:favoriteBook('59ccb988ba9eb884cf817e60')">
+                                <i class="orange mr-5">&#57354;</i>收藏
+                            </a>
+                        </div>
+                    </div>
+                    <div class="book-info">
+                        <a href="/front/book/findBookDetails?bookId=5cbdffebb0b2bda7c523b3d6" class="image">
+                            <img src="https://hepshow-image-formal.oss-cn-beijing.aliyuncs.com/bookCover/2024-09-4w/66ef97930cf260893b8bc77c.jpg"/>
+                        </a>
+                        <h3>
+                            <a href="/front/book/findBookDetails?bookId=5cbdffebb0b2bda7c523b3d6">
+                                数据库原理与应用(第3版)</a>
+                        </h3>
+                        <h4>
+                            李红</h4>
+                        <div class="mt-10 f-12">
+                            <span class="red mr-15">48.00 元</span>
+                            <a class="black2" href="javascript:favoriteBook('5cbdffebb0b2bda7c523b3d6')">
+                                <i class="orange mr-5">&#57354;</i>收藏
+                            </a>
+                        </div>
+                    </div>
+                    <div class="book-info">
+                        <a href="/front/book/findBookDetails?bookId=6468fdfe938b7cc2960efe0f" class="image">
+                            <img src="https://hepshow-image-formal.oss-cn-beijing.aliyuncs.com/bookCover/2024-11-4w/6738d086e4b0c7626d777efb.jpg"/>
+                        </a>
+                        <h3>
+                            <a href="/front/book/findBookDetails?bookId=6468fdfe938b7cc2960efe0f">
+                                数据库管理系统——从基本原理到系统构建</a>
+                        </h3>
+                        <h4>
+                            李国良 冯建华 柴成亮 李辉 编著</h4>
+                        <div class="mt-10 f-12">
+                            <span class="red mr-15">86.00 元</span>
+                            <a class="black2" href="javascript:favoriteBook('6468fdfe938b7cc2960efe0f')">
+                                <i class="orange mr-5">&#57354;</i>收藏
+                            </a>
+                        </div>
+                    </div>
+                    <div class="book-info">
+                        <a href="/front/book/findBookDetails?bookId=66fc2ac7e4efbc722ba484de" class="image">
+                            <img src="https://hepshow-image-formal.oss-cn-beijing.aliyuncs.com/bookCover/2025-12-1w/6931d47fe4b0d7692d32bdb1.jpg"/>
+                        </a>
+                        <h3>
+                            <a href="/front/book/findBookDetails?bookId=66fc2ac7e4efbc722ba484de">
+                                数据库管理系统——从基本原理到系统构建</a>
+                        </h3>
+                        <h4>
+                            李国良 冯建华 柴成亮 李辉 编著</h4>
+                        <div class="mt-10 f-12">
+                            <span class="red mr-15">106.00 元</span>
+                            <a class="black2" href="javascript:favoriteBook('66fc2ac7e4efbc722ba484de')">
+                                <i class="orange mr-5">&#57354;</i>收藏
+                            </a>
+                        </div>
+                    </div>
+                    <div class="book-info">
+                        <a href="/front/book/findBookDetails?bookId=59cc6c7bba9eb884cf816ef4" class="image">
+                            <img src="https://hepshow-image-formal.oss-cn-beijing.aliyuncs.com/bookCover/2024-09-4w/66f071b40cf260893b8d6c8d.jpg"/>
+                        </a>
+                        <h3>
+                            <a href="/front/book/findBookDetails?bookId=59cc6c7bba9eb884cf816ef4">
+                                数据库系统——面向应用的方法(第二版 影印版）</a>
+                        </h3>
+                        <h4>
+                            [美]Michael Kifer等</h4>
+                        <div class="mt-10 f-12">
+                            <span class="red mr-15">49.50 元</span>
+                            <a class="black2" href="javascript:favoriteBook('59cc6c7bba9eb884cf816ef4')">
+                                <i class="orange mr-5">&#57354;</i>收藏
+                            </a>
+                        </div>
+                    </div>
+                    <div class="book-info">
+                        <a href="/front/book/findBookDetails?bookId=59cd4bbaba9eb884cf819be6" class="image">
+                            <img src="https://hepshow-image-formal.oss-cn-beijing.aliyuncs.com/bookCover/2022-07-3w/62cd9a6e0cf2b04a1a748509.jpg"/>
+                        </a>
+                        <h3>
+                            <a href="/front/book/findBookDetails?bookId=59cd4bbaba9eb884cf819be6">
+                                数据库系统及应用(第3版)</a>
+                        </h3>
+                        <h4>
+                            崔巍</h4>
+                        <div class="mt-10 f-12">
+                            <span class="red mr-15">31.00 元</span>
+                            <a class="black2" href="javascript:favoriteBook('59cd4bbaba9eb884cf819be6')">
+                                <i class="orange mr-5">&#57354;</i>收藏
+                            </a>
+                        </div>
+                    </div>
+                    <div class="book-info">
+                        <a href="/front/book/findBookDetails?bookId=59fa2593f18f967ee7f36384" class="image">
+                            <img src="https://hepshow-image-formal.oss-cn-beijing.aliyuncs.com/bookCover/2024-09-4w/66ef59c20cf260893b8b40e3.jpg"/>
+                        </a>
+                        <h3>
+                            <a href="/front/book/findBookDetails?bookId=59fa2593f18f967ee7f36384">
+                                数据库系统及应用(第4版)</a>
+                        </h3>
+                        <h4>
+                            崔巍</h4>
+                        <div class="mt-10 f-12">
+                            <span class="red mr-15">43.00 元</span>
+                            <a class="black2" href="javascript:favoriteBook('59fa2593f18f967ee7f36384')">
+                                <i class="orange mr-5">&#57354;</i>收藏
+                            </a>
+                        </div>
+                    </div>
+                    <div class="book-info">
+                        <a href="/front/book/findBookDetails?bookId=67aa31023e46f5f63ffe387e" class="image">
+                            <img src="https://hepshow-image-formal.oss-cn-beijing.aliyuncs.com/bookCover/2026-02-2w/698cb6cbe4b07ba27ad892c7.jpg"/>
+                        </a>
+                        <h3>
+                            <a href="/front/book/findBookDetails?bookId=67aa31023e46f5f63ffe387e">
+                                数据库系统及应用（第5版）</a>
+                        </h3>
+                        <h4>
+                            崔巍、车蕾</h4>
+                        <div class="mt-10 f-12">
+                            <span class="red mr-15">52.00 元</span>
+                            <a class="black2" href="javascript:favoriteBook('67aa31023e46f5f63ffe387e')">
+                                <i class="orange mr-5">&#57354;</i>收藏
+                            </a>
+                        </div>
+                    </div>
+                    <div class="book-info">
+                        <a href="/front/book/findBookDetails?bookId=59cc8b39ba9eb884cf817620" class="image">
+                            <img src="https://hepshow-image-formal.oss-cn-beijing.aliyuncs.com/bookCover/2022-07-3w/62cd9a620cf2b04a1a748500.jpg"/>
+                        </a>
+                        <h3>
+                            <a href="/front/book/findBookDetails?bookId=59cc8b39ba9eb884cf817620">
+                                数据库系统实用教程</a>
+                        </h3>
+                        <h4>
+                            徐洁磐等</h4>
+                        <div class="mt-10 f-12">
+                            <span class="red mr-15">26.90 元</span>
+                            <a class="black2" href="javascript:favoriteBook('59cc8b39ba9eb884cf817620')">
+                                <i class="orange mr-5">&#57354;</i>收藏
+                            </a>
+                        </div>
+                    </div>
+                    <div class="book-info">
+                        <a href="/front/book/findBookDetails?bookId=59cd13d5ba9eb884cf818d68" class="image">
+                            <img src="https://hepshow-image-formal.oss-cn-beijing.aliyuncs.com/bookCover/2022-07-3w/62cd9a6c0cf2b04a1a748507.jpg"/>
+                        </a>
+                        <h3>
+                            <a href="/front/book/findBookDetails?bookId=59cd13d5ba9eb884cf818d68">
+                                数据库系统教程(第3版)</a>
+                        </h3>
+                        <h4>
+                            施伯乐 丁宝康 汪卫</h4>
+                        <div class="mt-10 f-12">
+                            <span class="red mr-15">35.00 元</span>
+                            <a class="black2" href="javascript:favoriteBook('59cd13d5ba9eb884cf818d68')">
+                                <i class="orange mr-5">&#57354;</i>收藏
+                            </a>
+                        </div>
+                    </div>
+                    <div class="book-info">
+                        <a href="/front/book/findBookDetails?bookId=59cd8d5fba9eb884cf81b124" class="image">
+                            <img src="https://hepshow-image-formal.oss-cn-beijing.aliyuncs.com/bookCover/2024-11-3w/673389b2e4b02024dce84a3d.jpg"/>
+                        </a>
+                        <h3>
+                            <a href="/front/book/findBookDetails?bookId=59cd8d5fba9eb884cf81b124">
+                                数据库系统教程(第3版)</a>
+                        </h3>
+                        <h4>
+                            施伯乐 丁宝康 汪卫</h4>
+                        <div class="mt-10 f-12">
+                            <span class="red mr-15">33.20 元</span>
+                            <a class="black2" href="javascript:favoriteBook('59cd8d5fba9eb884cf81b124')">
+                                <i class="orange mr-5">&#57354;</i>收藏
+                            </a>
+                        </div>
+                    </div>
+                    <div class="book-info">
+                        <a href="/front/book/findBookDetails?bookId=59cc0979ba9eb884cf815118" class="image">
+                            <img src="https://hepshow-image-formal.oss-cn-beijing.aliyuncs.com/default/default-book-cover.png"/>
+                        </a>
+                        <h3>
+                            <a href="/front/book/findBookDetails?bookId=59cc0979ba9eb884cf815118">
+                                数据库系统教程(第3版)</a>
+                        </h3>
+                        <h4>
+                            施伯乐 丁宝康 汪卫</h4>
+                        <div class="mt-10 f-12">
+                            <span class="red mr-15">0.00 元</span>
+                            <a class="black2" href="javascript:favoriteBook('59cc0979ba9eb884cf815118')">
+                                <i class="orange mr-5">&#57354;</i>收藏
+                            </a>
+                        </div>
+                    </div>
+                    </div>
+            </div>
+        </div>
+    </div>
+    </div>
+
+<link rel="stylesheet" href="/static/ztree/css/zTreeStyle/zTreeStyle.css"/>
+<link rel="stylesheet" href="/static/ztree/css/hepStyle/hepStyle.css"/>
+<script src="/static/ztree/js/jquery.ztree.hep.js"></script>
+<script src="/static/doT/doT.js"></script>
+<script src="/static/jquery/jquery.form.js"></script>
+<script id="address-template" type="text/html">
+    {{ if(it.length === 0) { }}
+    <td colspan="5">
+        <h3 class="ptb-20 text-center black3">您还没有收货地址，请使用新地址！</h3>
+    </td>
+    {{ } }}
+    {{ $.each(it, function(i){ }}
+    <tr>
+        <td>
+            {{ if(this.isDefaultAddress) { }}
+            <input value="{{=this.id}}" name="address" type="radio" checked/>
+            {{ } else { }}
+            <input value="{{=this.id}}" name="address" type="radio"/>
+            {{ } }}
+        </td>
+        <td>{{!this.deliveryUser}}</td>
+        <td>
+            {{ $.each(this.areas, function(i) { if(i === 0) { return; } }}
+            {{!this.areaName}}
+            {{ }); }}
+            {{!this.detailAddress}}
+        </td>
+        <td>{{!this.contactWay}}</td>
+        <td>
+            {{ if(this.isDefaultAddress) { }}
+            <span class="label label-success">默认地址</span>
+            {{ } }}
+        </td>
+    </tr>
+    {{ }); }}
+</script>
+<div id="modal-address" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">
+                    <i>&#57370;</i>
+                </button>
+                <h4 class="modal-title">选择收货地址</h4>
+            </div>
+            <div class="modal-body">
+                <div>
+                    <table class="simple-table check-table th-center td-center">
+                        <colgroup>
+                            <col width="40"/>
+                            <col width="110"/>
+                            <col/>
+                            <col width="110"/>
+                            <col width="100"/>
+                        </colgroup>
+                        <thead>
+                        <tr>
+                            <th></th>
+                            <th>收货人</th>
+                            <th>地址</th>
+                            <th>联系方式</th>
+                            <th></th>
+                        </tr>
+                        </thead>
+                        <tbody id="address-content">
+                        </tbody>
+                    </table>
+                </div>
+                <div class="mt-20">
+                    <button id="add-new-address" class="btn btn-default blue border-blue">
+                        <i>&#57348;</i>
+                        <span>使用新地址</span>
+                    </button>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-info" id="execute-apply">确定</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="modal-new-address" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+        <form action="/front/user/createDeliveryAddress" method="post" id="address-form" class="form-inline">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">
+                        <i>&#57370;</i>
+                    </button>
+                    <h4 class="modal-title">使用新地址</h4>
+                </div>
+                <div class="modal-body">
+                    <div>
+                        <table class="form-table">
+                            <colgroup>
+                                <col width="100"/>
+                                <col/>
+                            </colgroup>
+                            <tbody>
+                            <tr>
+                                <td>所在地区</td>
+                                <td>
+                                    <div class="selector form-control dropdown">
+                                        <div class="placeholder" data-placeholder="请选择" data-toggle="dropdown">请选择</div>
+                                        <i class="dropdown">&#57361;</i>
+                                        <input name="areaPath" type="hidden"/>
+                                        <div class="dropdown-tree">
+                                            <ul class="ztree" data-min-level="2" data-name-key="areaName" data-url="/public/findNormalAreas"></ul>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="top">详细地址</td>
+                                <td><textarea name="detailAddress" style="width: 100%" placeholder="请输入详细地址" class="form-control"></textarea></td>
+                            </tr>
+                            <tr>
+                                <td>收货人</td>
+                                <td><input name="deliveryUser" placeholder="请输入收货人" class="form-control"></td>
+                            </tr>
+                            <tr>
+                                <td>联系电话</td>
+                                <td><input name="contactWay" placeholder="请输入联系电话" class="form-control"></td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <span class="middle">设为默认</span>
+                                </td>
+                                <td>
+                                    <label>
+                                        <input name="isDefaultAddress" value="true" type="checkbox"/>
+                                        <span class="middle">设为默认收货地址</span>
+                                    </label>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                    <button class="btn btn-info">确定</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<footer>
+    <div class="front-bottom">
+        <div class="container">
+            <p>秉承一贯的严谨态度，为您提供优质产品</p>
+            <p><img src="/static/internal/common/image/hep-qrcode.jpg"></p>
+            <p class="black3">客服邮箱：jsxt@hep.com.cn</p>
+        </div>
+    </div>
+    <div class="front-bottom bg-black0">
+        <div class="container black3">
+            <p>高等教育出版社 版权所有</p>
+            <p>京ICP备12020869号 京公网安备11010802014853</p>
+        </div>
+    </div>
+</footer></body>
+</html>

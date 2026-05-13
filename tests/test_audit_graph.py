@@ -3,6 +3,7 @@ from sqlalchemy.orm import sessionmaker
 
 from app.core.db import Base
 from app.models import DocumentVersion, ExtractedDocument, Measurement, OCRResult, Record, RecordFile, User
+from app.repositories.knowledge_repository import DEFAULT_KNOWLEDGE_CHUNKS
 from app.services.audit_graph.engine import AUDIT_GRAPH_EDGES, AuditGraphEngine
 from app.services.audit_report_service import AuditReportService
 
@@ -56,6 +57,9 @@ def _initial_graph_state() -> dict:
         "consistency_findings": [],
         "conflict_findings": [],
         "risk_findings": [],
+        "knowledge_chunks": DEFAULT_KNOWLEDGE_CHUNKS,
+        "knowledge_queries": [],
+        "knowledge_context": [],
         "compliance_findings": [],
         "report_draft": {},
         "citation_issues": [],
@@ -163,14 +167,28 @@ def test_audit_graph_is_cyclic_state_machine_and_generates_cited_report():
 
     assert ("audit_router", "risk_agent") in edges
     assert ("risk_agent", "audit_router") in edges
+    assert ("audit_router", "knowledge_retrieval_agent") in edges
+    assert ("knowledge_retrieval_agent", "audit_router") in edges
     assert ("final_router", "audit_router") in edges
 
     final_state = AuditGraphEngine().run(_initial_graph_state())
 
     assert final_state["final_report"]["title"] == "多文档医疗审计综合报告"
     assert final_state["route_history"].count("audit_router") >= 5
+    assert "knowledge_retrieval_agent" in final_state["route_history"]
+    assert final_state["knowledge_context"]
+    assert final_state["final_report"]["knowledge_context"]
+    assert final_state["final_report"]["knowledge_sources"]
+    assert final_state["final_report"]["rag_summary"]["source_count"] >= 1
+    assert any(
+        source["source_url"].startswith("https://www.msdmanuals.cn/home/")
+        for source in final_state["final_report"]["knowledge_sources"]
+        if source.get("source_url")
+    )
     assert final_state["risk_findings"]
     assert all(finding["evidence_ids"] for finding in final_state["risk_findings"])
+    assert any(item["kind"] == "knowledge_chunk" for item in final_state["evidence_items"])
+    assert any(item["kind"] == "knowledge_chunk" and item.get("source_url") for item in final_state["evidence_items"])
     assert final_state["citation_issues"] == []
     assert final_state["safety_issues"] == []
 
@@ -192,7 +210,35 @@ def test_audit_report_service_persists_real_node_events_and_report():
 
     assert completed.status == "completed"
     assert completed.final_report["title"] == "多文档医疗审计综合报告"
+    assert completed.final_report["knowledge_sources"]
+    assert any(source.get("source_url") for source in completed.final_report["knowledge_sources"])
     assert any(event.event_type == "edge_traversed" for event in events)
     assert any(event.event_type == "node_completed" and event.node_name == "risk_agent" for event in events)
+    assert any(event.event_type == "node_completed" and event.node_name == "knowledge_retrieval_agent" for event in events)
     assert any(event.event_type == "report_ready" for event in events)
-    assert {state.node_name for state in node_states} >= {"audit_router", "risk_agent", "persist_report"}
+    assert {state.node_name for state in node_states} >= {
+        "audit_router",
+        "risk_agent",
+        "knowledge_retrieval_agent",
+        "persist_report",
+    }
+
+
+def test_audit_report_service_does_not_reexecute_processing_run():
+    session = _build_session()
+    user, version = _seed_document(session)
+    service = AuditReportService(session=session, step_delay_seconds=0)
+
+    run = service.create_run(
+        user_id=user.id,
+        selected_document_version_ids=[version.id],
+        title="并发执行保护",
+        max_iterations=8,
+    )
+    service.repository.mark_processing(run)
+
+    result = service.execute_run(run_id=run.id, user_id=user.id)
+    events = service.list_events(run_id=run.id, user_id=user.id)
+
+    assert result.status == "processing"
+    assert events == []

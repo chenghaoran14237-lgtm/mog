@@ -6,16 +6,33 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 from app.providers.base import ProviderConfig
 
 
+DEFAULT_DATABASE_URL = "mysql+pymysql://root:hjknmb@127.0.0.1:3306/mog_v2?charset=utf8mb4"
+DEFAULT_AUTH_SECRET_KEY = "change-me-in-production"
+DEFAULT_DEV_CORS_ORIGINS = (
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+)
+DEFAULT_UPLOAD_CONTENT_TYPES = (
+    "image/png",
+    "image/jpeg",
+    "application/pdf",
+    "text/plain",
+    "application/octet-stream",
+)
+
+
 class Settings(BaseSettings):
     app_name: str = Field(default="Health Record API", alias="APP_NAME")
     app_env: str = Field(default="development", alias="APP_ENV")
     app_host: str = Field(default="0.0.0.0", alias="APP_HOST")
     app_port: int = Field(default=8000, alias="APP_PORT")
     database_url: str = Field(
-        default="mysql+pymysql://root:hjknmb@127.0.0.1:3306/mog_v2?charset=utf8mb4",
+        default=DEFAULT_DATABASE_URL,
         alias="DATABASE_URL",
     )
-    auth_secret_key: str = Field(default="change-me-in-production", alias="AUTH_SECRET_KEY")
+    auth_secret_key: str = Field(default=DEFAULT_AUTH_SECRET_KEY, alias="AUTH_SECRET_KEY")
     auth_token_expire_minutes: int = Field(default=60, alias="AUTH_TOKEN_EXPIRE_MINUTES")
 
     ocr_provider: str = Field(default="stub", alias="OCR_PROVIDER")
@@ -56,7 +73,19 @@ class Settings(BaseSettings):
     llm_provider_timeout_seconds: float = Field(default=30.0, alias="LLM_PROVIDER_TIMEOUT_SECONDS")
     llm_provider_max_retries: int = Field(default=0, alias="LLM_PROVIDER_MAX_RETRIES")
 
-    is_docs_enabled: bool = True
+    is_docs_enabled: bool | None = Field(
+        default=None,
+        validation_alias=AliasChoices("IS_DOCS_ENABLED", "DOCS_ENABLED"),
+    )
+    enable_api_test_page: bool | None = Field(default=None, alias="ENABLE_API_TEST_PAGE")
+    auto_sync_database_schema: bool | None = Field(default=None, alias="AUTO_SYNC_DATABASE_SCHEMA")
+    cors_allow_origins: str = Field(default="", alias="CORS_ALLOW_ORIGINS")
+    cors_allow_credentials: bool = Field(default=True, alias="CORS_ALLOW_CREDENTIALS")
+    upload_max_bytes: int = Field(default=20 * 1024 * 1024, alias="UPLOAD_MAX_BYTES")
+    upload_allowed_content_types: str = Field(
+        default=",".join(DEFAULT_UPLOAD_CONTENT_TYPES),
+        alias="UPLOAD_ALLOWED_CONTENT_TYPES",
+    )
 
     model_config = SettingsConfigDict(
         env_file=".env",
@@ -65,6 +94,61 @@ class Settings(BaseSettings):
         extra="ignore",
         populate_by_name=True,
     )
+
+    @property
+    def is_production(self) -> bool:
+        return self.app_env.strip().lower() in {"prod", "production"}
+
+    @property
+    def docs_enabled(self) -> bool:
+        if self.is_docs_enabled is not None:
+            return self.is_docs_enabled
+        return not self.is_production
+
+    @property
+    def api_test_page_enabled(self) -> bool:
+        if self.enable_api_test_page is not None:
+            return self.enable_api_test_page
+        return not self.is_production
+
+    @property
+    def database_schema_sync_enabled(self) -> bool:
+        if self.auto_sync_database_schema is not None:
+            return self.auto_sync_database_schema
+        return not self.is_production
+
+    @property
+    def allowed_cors_origins(self) -> list[str]:
+        configured = _split_csv(self.cors_allow_origins)
+        if configured:
+            return configured
+        if self.is_production:
+            return []
+        return list(DEFAULT_DEV_CORS_ORIGINS)
+
+    @property
+    def allowed_upload_content_types(self) -> set[str]:
+        return set(_split_csv(self.upload_allowed_content_types))
+
+    def validate_runtime_config(self) -> None:
+        if self.upload_max_bytes <= 0:
+            raise RuntimeError("UPLOAD_MAX_BYTES must be greater than 0")
+
+        allowed_content_types = self.allowed_upload_content_types
+        if not allowed_content_types:
+            raise RuntimeError("UPLOAD_ALLOWED_CONTENT_TYPES must include at least one content type")
+
+        if not self.is_production:
+            return
+
+        if self.auth_secret_key == DEFAULT_AUTH_SECRET_KEY or len(self.auth_secret_key.strip()) < 32:
+            raise RuntimeError("AUTH_SECRET_KEY must be set to a strong value in production")
+        if self.database_url == DEFAULT_DATABASE_URL or "root:hjknmb@" in self.database_url:
+            raise RuntimeError("DATABASE_URL must be set explicitly for production")
+        if "*" in self.allowed_cors_origins:
+            raise RuntimeError("CORS_ALLOW_ORIGINS cannot contain '*' in production")
+        if "*" in allowed_content_types:
+            raise RuntimeError("UPLOAD_ALLOWED_CONTENT_TYPES cannot contain '*' in production")
 
     def provider_matrix(self) -> dict[str, ProviderConfig]:
         return {
@@ -122,3 +206,9 @@ class Settings(BaseSettings):
 @lru_cache
 def get_settings() -> Settings:
     return Settings()
+
+
+def _split_csv(value: str | None) -> list[str]:
+    if not value:
+        return []
+    return [item.strip() for item in value.split(",") if item.strip()]

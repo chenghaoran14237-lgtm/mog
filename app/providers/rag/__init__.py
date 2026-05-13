@@ -1,31 +1,30 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from typing import Any
+
+from app.repositories.knowledge_repository import DEFAULT_KNOWLEDGE_CHUNKS
+from app.services.rag_retrieval import rank_knowledge_chunks
 
 
 class RAGProvider(ABC):
-    """RAG检索接口"""
+    """Retrieval interface used by chat and audit report flows."""
 
     @abstractmethod
     def retrieve(self, query: str, top_k: int = 5) -> list[dict]:
-        """检索相关文档
-
-        Args:
-            query: 查询文本
-            top_k: 返回top-k个结果
-
-        Returns:
-            检索结果列表，每个结果包含:
-            - content: 文档内容
-            - score: 相关性分数
-            - metadata: 元数据
-        """
-        pass
+        raise NotImplementedError
 
 
 class StubRAGProvider(RAGProvider):
-    """Stub RAG Provider - 暂时返回空结果"""
+    def retrieve(self, query: str, top_k: int = 5) -> list[dict]:
+        return []
+
+
+class LexicalRAGProvider(RAGProvider):
+    """Deterministic local RAG provider backed by audit knowledge chunks."""
+
+    def __init__(self, chunks: list[Any] | None = None) -> None:
+        self.chunks = chunks or DEFAULT_KNOWLEDGE_CHUNKS
 
     def retrieve(self, query: str, top_k: int = 5) -> list[dict]:
-        """暂时返回空结果，等待后续实现"""
-        return []
+        return rank_knowledge_chunks(query, self.chunks, top_k=top_k)

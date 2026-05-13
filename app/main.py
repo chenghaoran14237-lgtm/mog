@@ -13,23 +13,24 @@ from app.core.schema import ensure_database_schema
 
 def create_app() -> FastAPI:
     settings = get_settings()
+    settings.validate_runtime_config()
     configure_logging()
     app = FastAPI(
         title=settings.app_name,
         version="0.1.0",
         openapi_url="/openapi.json",
-        docs_url="/docs" if settings.is_docs_enabled else None,
-        redoc_url="/redoc" if settings.is_docs_enabled else None,
+        docs_url="/docs" if settings.docs_enabled else None,
+        redoc_url="/redoc" if settings.docs_enabled else None,
     )
 
-    # CORS配置 - 允许前端访问
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=["*"],  # 开发环境允许所有来源
-        allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
-    )
+    if settings.allowed_cors_origins:
+        app.add_middleware(
+            CORSMiddleware,
+            allow_origins=settings.allowed_cors_origins,
+            allow_credentials=settings.cors_allow_credentials,
+            allow_methods=["*"],
+            allow_headers=["*"],
+        )
 
     app.middleware("http")(request_context_middleware)
     register_exception_handlers(app)
@@ -37,16 +38,17 @@ def create_app() -> FastAPI:
 
     @app.on_event("startup")
     def _startup_schema_sync() -> None:
-        ensure_database_schema()
+        if settings.database_schema_sync_enabled:
+            ensure_database_schema()
+
+    if settings.api_test_page_enabled:
+        api_test_page = Path(__file__).with_name("api_test.html")
+
+        @app.get("/api-test", include_in_schema=False)
+        def api_test_page_route() -> FileResponse:
+            return FileResponse(api_test_page, media_type="text/html; charset=utf-8")
 
     return app
 
 
 app = create_app()
-
-API_TEST_PAGE = Path(__file__).with_name("api_test.html")
-
-
-@app.get("/api-test", include_in_schema=False)
-def api_test_page() -> FileResponse:
-    return FileResponse(API_TEST_PAGE, media_type="text/html; charset=utf-8")

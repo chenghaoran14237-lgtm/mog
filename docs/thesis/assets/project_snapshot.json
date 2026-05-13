@@ -1,0 +1,411 @@
+{
+  "providers": {
+    "ocr": "plaintext",
+    "normalization": "llm_direct",
+    "llm": "openai_compatible",
+    "storage": "database_inline"
+  },
+  "routes": {
+    "auth": [
+      "POST /auth/register",
+      "POST /auth/login",
+      "GET /auth/me"
+    ],
+    "audit-reports": [
+      "POST /audit-reports",
+      "POST /audit-reports/{run_id}/execute",
+      "GET /audit-reports",
+      "GET /audit-reports/{run_id}",
+      "GET /audit-reports/{run_id}/events",
+      "GET /audit-reports/{run_id}/nodes"
+    ],
+    "chat": [
+      "POST /chat/conversations",
+      "GET /chat/conversations",
+      "GET /chat/conversations/{conversation_id}",
+      "GET /chat/conversations/{conversation_id}/messages",
+      "POST /chat/conversations/{conversation_id}/messages",
+      "POST /chat/conversations/batch-analyze",
+      "POST /chat/conversations/batch-analyze/stream",
+      "GET /chat/analysis-runs",
+      "GET /chat/analysis-runs/{analysis_run_id}",
+      "DELETE /chat/analysis-runs/{analysis_run_id}"
+    ],
+    "files": [
+      "POST /files/upload",
+      "GET /files/{file_id}/documents",
+      "GET /files/{file_id}/measurements"
+    ],
+    "health": [
+      "GET /health"
+    ],
+    "ingestion": [
+      "POST /ingestion/ocr-results/{ocr_result_id}/normalize"
+    ],
+    "insight": [
+      "GET /insight/sessions",
+      "GET /insight/sessions/{session_id}",
+      "GET /insight/sessions/{session_id}/messages",
+      "DELETE /insight/sessions/{session_id}",
+      "POST /insight/sessions/stream",
+      "POST /insight/sessions/{session_id}/messages/stream"
+    ],
+    "ocr": [
+      "POST /ocr/files/{record_file_id}/extract",
+      "GET /ocr/files/{record_file_id}/revisions",
+      "GET /ocr/files/{record_file_id}/revisions/current",
+      "GET /ocr/revisions/compare",
+      "GET /ocr/revisions/{ocr_result_id}"
+    ],
+    "documents": [
+      "GET /documents",
+      "GET /documents/{document_id}",
+      "GET /documents/{document_id}/versions",
+      "GET /documents/{document_id}/versions/current",
+      "GET /documents/{document_id}/measurements",
+      "DELETE /documents/{document_id}",
+      "PATCH /documents/{document_id}/rename"
+    ],
+    "document-versions": [
+      "GET /document-versions/compare",
+      "GET /document-versions/{version_id}"
+    ],
+    "records": [
+      "GET /records/{record_id}/documents",
+      "GET /records/{record_id}/measurements"
+    ],
+    "measurements": [
+      "GET /measurements",
+      "GET /measurements/search",
+      "GET /measurements/timeseries"
+    ],
+    "query": [
+      "POST /query/selections"
+    ],
+    "tasks": [
+      "GET /tasks",
+      "GET /tasks/{task_id}",
+      "GET /tasks/{task_id}/events",
+      "GET /tasks/{task_id}/provider-events",
+      "GET /tasks/{task_id}/result",
+      "POST /tasks/{task_id}/retry"
+    ]
+  },
+  "audit_graph_edges": [
+    [
+      "__start__",
+      "load_graph_state"
+    ],
+    [
+      "load_graph_state",
+      "audit_router"
+    ],
+    [
+      "audit_router",
+      "document_quality_agent"
+    ],
+    [
+      "document_quality_agent",
+      "audit_router"
+    ],
+    [
+      "audit_router",
+      "timeline_builder"
+    ],
+    [
+      "timeline_builder",
+      "audit_router"
+    ],
+    [
+      "audit_router",
+      "measurement_consistency_agent"
+    ],
+    [
+      "measurement_consistency_agent",
+      "audit_router"
+    ],
+    [
+      "audit_router",
+      "risk_agent"
+    ],
+    [
+      "risk_agent",
+      "audit_router"
+    ],
+    [
+      "audit_router",
+      "evidence_agent"
+    ],
+    [
+      "evidence_agent",
+      "audit_router"
+    ],
+    [
+      "audit_router",
+      "conflict_agent"
+    ],
+    [
+      "conflict_agent",
+      "audit_router"
+    ],
+    [
+      "audit_router",
+      "compliance_agent"
+    ],
+    [
+      "compliance_agent",
+      "audit_router"
+    ],
+    [
+      "audit_router",
+      "quality_gate"
+    ],
+    [
+      "quality_gate",
+      "audit_router"
+    ],
+    [
+      "audit_router",
+      "report_composer"
+    ],
+    [
+      "report_composer",
+      "citation_checker"
+    ],
+    [
+      "citation_checker",
+      "safety_reviewer"
+    ],
+    [
+      "safety_reviewer",
+      "final_router"
+    ],
+    [
+      "final_router",
+      "audit_router"
+    ],
+    [
+      "final_router",
+      "report_composer"
+    ],
+    [
+      "final_router",
+      "persist_report"
+    ],
+    [
+      "persist_report",
+      "__end__"
+    ]
+  ],
+  "mock_data": {
+    "document_count": 15,
+    "measurement_count": 65,
+    "prose_fact_count": 14,
+    "document_categories": {
+      "structured_metrics": 11,
+      "narrative_context": 4
+    },
+    "document_types": {
+      "physical_exam": 2,
+      "lab_report": 9,
+      "clinical_note": 3,
+      "imaging_report": 1
+    },
+    "monthly_documents": {
+      "2026-01": 3,
+      "2026-02": 2,
+      "2026-03": 4,
+      "2026-04": 3,
+      "2026-05": 3
+    }
+  },
+  "figures": [
+    "docs\\thesis\\assets\\figures\\图1-1_医疗审计场景与系统边界.png",
+    "docs\\thesis\\assets\\figures\\图2-1_Provider抽象与外部能力接入.png",
+    "docs\\thesis\\assets\\figures\\图2-2_LangGraph状态机机制.png",
+    "docs\\thesis\\assets\\figures\\图3-1_系统总体架构.png",
+    "docs\\thesis\\assets\\figures\\图3-2_医疗资料处理与审计业务流程.png",
+    "docs\\thesis\\assets\\figures\\图3-3_后端分层结构.png",
+    "docs\\thesis\\assets\\figures\\图3-4_核心数据库ER图.png",
+    "docs\\thesis\\assets\\figures\\图3-5_API接口分组图.png",
+    "docs\\thesis\\assets\\figures\\图3-6_安全与可追溯设计.png",
+    "docs\\thesis\\assets\\figures\\图4-1_文件上传与OCR处理时序.png",
+    "docs\\thesis\\assets\\figures\\图4-2_标准化与版本化入库流程.png",
+    "docs\\thesis\\assets\\figures\\图4-3_综合审计报告LangGraph状态流转图.png",
+    "docs\\thesis\\assets\\figures\\图4-4_审计事件与节点状态持久化.png",
+    "docs\\thesis\\assets\\figures\\图4-5_前端模块结构.png",
+    "docs\\thesis\\assets\\figures\\图5-1_Mock体检数据分布.png",
+    "docs\\thesis\\assets\\figures\\图5-2_端到端测试链路.png"
+  ],
+  "tables": {
+    "audit_report_events": [
+      "id",
+      "run_id",
+      "user_id",
+      "sequence",
+      "event_type",
+      "node_name",
+      "edge_source",
+      "edge_target",
+      "status",
+      "message",
+      "payload",
+      "created_at"
+    ],
+    "audit_report_node_states": [
+      "id",
+      "run_id",
+      "user_id",
+      "node_name",
+      "status",
+      "visit_count",
+      "last_event_id",
+      "output",
+      "updated_at"
+    ],
+    "audit_report_runs": [
+      "id",
+      "user_id",
+      "title",
+      "status",
+      "selected_document_version_ids",
+      "graph_state",
+      "final_report",
+      "iteration_count",
+      "max_iterations",
+      "stop_reason",
+      "error_message",
+      "started_at",
+      "completed_at",
+      "created_at",
+      "updated_at"
+    ],
+    "document_versions": [
+      "id",
+      "document_id",
+      "version_number",
+      "supersedes_version_id",
+      "is_current",
+      "created_from_ocr_result_id",
+      "snapshot_hash",
+      "report_date",
+      "normalized_payload",
+      "created_at"
+    ],
+    "extracted_documents": [
+      "id",
+      "ocr_result_id",
+      "current_ocr_result_id",
+      "record_id",
+      "record_file_id",
+      "document_type",
+      "document_category",
+      "display_name",
+      "status",
+      "report_date",
+      "normalized_payload",
+      "created_at"
+    ],
+    "measurements": [
+      "id",
+      "extracted_document_id",
+      "document_version_id",
+      "name",
+      "value_text",
+      "value_numeric",
+      "unit",
+      "observed_at",
+      "created_at"
+    ],
+    "ocr_results": [
+      "id",
+      "record_file_id",
+      "revision_number",
+      "supersedes_ocr_result_id",
+      "is_current",
+      "provider_name",
+      "status",
+      "raw_text",
+      "raw_payload",
+      "created_at"
+    ],
+    "provider_events": [
+      "id",
+      "task_id",
+      "user_id",
+      "provider_type",
+      "provider_name",
+      "operation",
+      "resource_type",
+      "resource_id",
+      "status",
+      "error_category",
+      "error_code",
+      "retryable",
+      "duration_ms",
+      "request_id",
+      "payload",
+      "created_at"
+    ],
+    "record_files": [
+      "id",
+      "record_id",
+      "original_filename",
+      "display_name",
+      "content_type",
+      "size_bytes",
+      "content_bytes",
+      "storage_provider",
+      "storage_key",
+      "created_at"
+    ],
+    "records": [
+      "id",
+      "user_id",
+      "source",
+      "status",
+      "created_at"
+    ],
+    "task_events": [
+      "id",
+      "task_id",
+      "event_type",
+      "from_status",
+      "to_status",
+      "request_id",
+      "message",
+      "payload",
+      "created_at"
+    ],
+    "tasks": [
+      "id",
+      "user_id",
+      "task_type",
+      "resource_type",
+      "resource_id",
+      "status",
+      "request_id",
+      "task_payload",
+      "priority",
+      "batch_id",
+      "attempt_count",
+      "max_retries",
+      "result_resource_type",
+      "result_resource_id",
+      "last_error_category",
+      "last_error_code",
+      "last_error_message",
+      "last_error_retryable",
+      "started_at",
+      "completed_at",
+      "created_at",
+      "updated_at"
+    ],
+    "users": [
+      "id",
+      "email",
+      "password_hash",
+      "created_at"
+    ]
+  }
+}

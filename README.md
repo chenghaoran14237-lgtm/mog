@@ -1,370 +1,115 @@
-# Health Record API
+# MOG 医疗审计系统
 
-A full-stack health record management system with backend API and lightweight frontend testing interface.
+面向毕业设计“基于 LangGraph 的多 Agent 协作框架在医疗审计场景的设计与实现”的全栈项目。系统围绕体检/病历/化验文档接入、OCR、标准化入库、指标查询、智能洞察和综合审计报告生成展开；综合审计报告使用 LangGraph 状态机驱动多个 Agent 节点协作，并通过前端流程图展示真实数据流转。
 
-## Overview
+## 当前核心能力
 
-This system provides a complete workflow for managing health records:
+- 文档接入：文件上传、OCR 提取、标准化解析、文档版本管理。
+- 结构化入库：体检指标、文档原文、报告日期、文档类别与版本快照。
+- 智能洞察：基于所选文档上下文调用 LLM，提供聊天式健康分析。
+- 综合审计报告：通过 LangGraph 图执行生成最终报告，包含质量审计、时间线、指标一致性、风险识别、RAG 知识检索、证据补全、冲突复核、合规审计、质量门控、报告生成、引用校验、安全复核和报告落库。
+- RAG 知识库：内置项目审计规则和《默沙东诊疗手册大众版》来源摘要知识块，落库到 `knowledge_chunks`，使用 BM25 + 关键词 + 医疗同义词混合检索，支持 `/api/knowledge/search` 返回可解释分数，并在审计报告生成链路中作为真实 GraphState 输入。
+- 前端展示：React 单页应用，综合报告模块通过轮询真实 API 高亮 LangGraph 节点和边。
 
-1. **Upload** health record files (images, PDFs, text)
-2. **Process** with OCR and normalization
-3. **Store** structured data with version history
-4. **Query** documents and measurements
-5. **Evaluate** risk based on configurable rules
-6. **Summarize** single reports or trends
-7. **Review** with user-prompted workflows
+## 快速启动
 
-## Key Features
-
-- **Provider Abstraction**: Swap OCR/LLM/storage providers via configuration
-- **Version History**: Track OCR revisions and document versions
-- **User Isolation**: Complete per-user data separation
-- **Modular Architecture**: Five independent modules with clear boundaries
-- **Task Management**: Async task execution with retry logic
-- **Quality Calibration**: Built-in stability and quality testing
-
-## Quick Start
-
-### Backend
+### 后端
 
 ```bash
-# Install dependencies
-pip install -e .
-
-# Configure environment
 cp .env.example .env
-
-# Run migrations
+pip install -e .
 alembic upgrade head
-
-# Start server
 uvicorn app.main:app --reload
 ```
 
-### Frontend
+### 前端
 
 ```bash
-# Simply open in browser
-open frontend/index.html
-# or on Windows
-start frontend/index.html
+cd frontend
+npm install
+npm run dev
 ```
 
-See [Quick Start Guide](docs/quick_start.md) for detailed instructions.
-See [Frontend Guide](frontend/README.md) for testing interface usage.
-
-### Docker Deployment
+### Mock 数据
 
 ```bash
-cp .env.docker.example .env.docker
-docker compose --env-file .env.docker up -d --build
+python scripts/seed_mock_exam_data.py
+python scripts/seed_msd_manual_rag.py
+python scripts/check_rag_sources.py
 ```
 
-See [Docker Deployment](docs/docker_deploy.md) for server deployment details.
+默认测试账户见脚本输出；当前 mock 脚本会创建可用于综合审计报告的体检/病历/化验文档。RAG 脚本会补齐真实来源知识块，不会整站复制默沙东正文，只保存摘要化审计知识和来源 URL。来源检查脚本会联网验证这些 URL 是否仍可访问。
 
-For small servers, build `frontend/dist` locally and use:
+## 本机演示与上线配置
+
+默认配置面向本机毕设演示：启用 `/docs`、`/api-test`、启动时 schema sync，并允许常见本地前端 origin。设置 `APP_ENV=production` 后，应用会自动关闭这些演示便利项，并在启动时强制检查生产配置。
+
+上线前至少需要设置：
 
 ```bash
-docker compose -f docker-compose.lite.yml --env-file .env.docker up -d --build
+APP_ENV=production
+DATABASE_URL=mysql+pymysql://<user>:<password>@<host>:3306/<db>?charset=utf8mb4
+AUTH_SECRET_KEY=<至少 32 位的随机密钥>
+CORS_ALLOW_ORIGINS=https://your-domain.example
+DOCS_ENABLED=false
+ENABLE_API_TEST_PAGE=false
+AUTO_SYNC_DATABASE_SCHEMA=false
+UPLOAD_MAX_BYTES=20971520
+UPLOAD_ALLOWED_CONTENT_TYPES=image/png,image/jpeg,application/pdf,text/plain
 ```
 
-## Documentation
+生产环境默认不执行 `ensure_database_schema()`，请使用 `alembic upgrade head` 管理数据库结构。上传接口会限制文件大小和 content type；如果需要更大的作品集演示文件，优先通过环境变量调大限制，不要改代码常量。
 
-- **[Project Guide](PROJECT_GUIDE.md)** - 项目导读（中文）
-- **[Frontend Guide](frontend/README.md)** - 前端测试面板使用说明
-- **[Quick Start Guide](docs/quick_start.md)** - Installation and setup
-- **[API Documentation](docs/api_documentation.md)** - Complete API reference
-- **[Project Overview](docs/project_overview.md)** - Architecture and design
-- **[AGENTS.md](AGENTS.md)** - Development rules and guidelines
+## 主要 API
 
-## Architecture
+- `POST /api/auth/register`：注册用户。
+- `POST /api/auth/login`：登录并获取 token。
+- `POST /api/files/upload`：上传健康档案文件。
+- `POST /api/ocr/files/{record_file_id}/extract`：执行 OCR。
+- `POST /api/ingestion/ocr-results/{ocr_result_id}/normalize`：标准化入库。
+- `GET /api/documents`：查询文档库。
+- `GET /api/measurements/search`：查询结构化指标。
+- `POST /api/insight/sessions/stream`：创建智能洞察会话并流式返回。
+- `POST /api/audit-reports`：创建综合审计报告运行。
+- `POST /api/audit-reports/{run_id}/execute`：同步执行指定报告运行。
+- `GET /api/audit-reports/{run_id}`：获取报告、事件流和节点状态。
+- `GET /api/knowledge/chunks`：查看知识库块。
+- `GET /api/knowledge/sources`：查看知识库来源统计和来源 URL。
+- `GET /api/knowledge/search`：检索 RAG 知识依据。
 
-### Five-Module System
+## LangGraph 审计节点
 
-```
-┌─────────────────────────────────────────────────────────┐
-│                    Module 5: User System                 │
-│              (Authentication & Authorization)            │
-└─────────────────────────────────────────────────────────┘
-                            │
-        ┌───────────────────┼───────────────────┐
-        │                   │                   │
-┌───────▼────────┐  ┌──────▼───────┐  ┌────────▼────────┐
-│   Module 1:    │  │  Module 2:   │  │   Module 3:     │
-│   Perception   │  │    Review    │  │  Summary/Trend  │
-│                │  │              │  │                 │
-│ • File Upload  │  │ • Prompts    │  │ • Single Report │
-│ • OCR          │  │ • Conflicts  │  │ • Trends        │
-│ • Normalize    │  │ • Evidence   │  │ • Charts        │
-└────────┬───────┘  └──────┬───────┘  └────────┬────────┘
-         │                 │                   │
-         └─────────────────┼───────────────────┘
-                           │
-                  ┌────────▼────────┐
-                  │   Module 4:     │
-                  │   Fast Query    │
-                  │                 │
-                  │ • Documents     │
-                  │ • Measurements  │
-                  │ • History       │
-                  └─────────────────┘
+```text
+load_graph_state
+  -> audit_router
+  -> document_quality_agent -> audit_router
+  -> timeline_builder -> audit_router
+  -> measurement_consistency_agent -> audit_router
+  -> risk_agent -> audit_router
+  -> knowledge_retrieval_agent -> audit_router
+  -> evidence_agent -> audit_router
+  -> conflict_agent -> audit_router
+  -> compliance_agent -> audit_router
+  -> quality_gate -> audit_router
+  -> report_composer -> citation_checker -> safety_reviewer -> final_router
+final_router 可回到 audit_router 或 report_composer，形成可循环状态机；通过后进入 persist_report。
 ```
 
-### Provider Architecture
-
-All external services go through provider abstractions:
-
-```
-Business Logic
-      │
-      ▼
-Provider Interface (OCRProvider, LLMProvider, etc.)
-      │
-      ├─► Mistral OCR
-      ├─► Google Vision
-      ├─► OpenAI Compatible
-      └─► Local/Stub
-```
-
-## API Endpoints
-
-### Authentication
-- `POST /api/auth/register` - Register new user
-- `POST /api/auth/login` - Login and get token
-- `GET /api/auth/me` - Get current user
-
-### File Upload
-- `POST /api/files/upload` - Upload health record file
-
-### Ingestion
-- `POST /api/ingestion/ingest` - Run full ingestion pipeline
-
-### Query
-- `GET /api/documents` - List documents
-- `GET /api/document-versions/{id}` - Get version details
-- `GET /api/measurements` - Query measurements
-
-### Risk
-- `POST /api/risk/documents/{id}/evaluate` - Run risk evaluation
-- `GET /api/risk/document-versions/{id}/results` - Get risk results
-
-### Summary
-- `POST /api/summary/single` - Generate single report summary
-- `POST /api/summary/trend` - Generate trend summary
-- `GET /api/summary/runs` - List summary history
-
-### Review
-- `POST /api/review/run` - Run review workflow
-- `GET /api/review/sessions` - List review sessions
-- `GET /api/review/sessions/{id}` - Get review details
-
-See [API Documentation](docs/api_documentation.md) for complete reference.
-
-## Demo Scripts
-
-### End-to-End Demo
+## 测试
 
 ```bash
-# Minimal demo (1 document)
-python scripts/demo_e2e.py --scenario minimal
-
-# Quick demo (2 documents)
-python scripts/demo_e2e.py --scenario quick
-
-# Full demo (all features)
-python scripts/demo_e2e.py --scenario full
+python -m pytest -q
+cd frontend
+npm test
+npm run build
 ```
 
-### Performance Benchmark
+## 关键目录
 
-```bash
-# Run performance tests
-python scripts/benchmark_performance.py --iterations 5
-
-# Save results to file
-python scripts/benchmark_performance.py --format json --output results.json
-```
-
-### Quality Calibration
-
-```bash
-# Run quality checks
-python scripts/quality_calibration_run.py --format text
-```
-
-## Testing
-
-```bash
-# Run all tests
-pytest
-
-# Run specific module tests
-pytest tests/test_module1_contract.py
-pytest tests/test_module2_contract.py
-pytest tests/test_module3_contract.py
-pytest tests/test_module4_contract.py
-
-# Run with coverage
-pytest --cov=app --cov-report=html
-```
-
-## Performance Targets
-
-| Operation | Target | Typical |
-|-----------|--------|---------|
-| Authentication | < 100ms | ~60ms |
-| File Upload | < 200ms | ~20ms |
-| Full Ingestion | < 2000ms | ~250ms |
-| Query Operations | < 100ms | ~10ms |
-| Risk Evaluation | < 500ms | ~65ms |
-| Summary Generation | < 1000ms | ~15ms |
-
-## Configuration
-
-### Environment Variables
-
-Key configuration options in `.env`:
-
-```env
-# Database
-DATABASE_URL=sqlite:///./health_records.db
-
-# Authentication
-AUTH_SECRET_KEY=your-secret-key
-AUTH_TOKEN_EXPIRE_MINUTES=60
-
-# OCR Provider
-OCR_PROVIDER=plaintext
-OCR_BASE_URL=https://api.example.com/v1
-OCR_API_KEY=your-api-key
-
-# LLM Provider
-LLM_PROVIDER=stub
-LLM_PROVIDER_BASE_URL=https://api.example.com/v1
-LLM_PROVIDER_API_KEY=your-api-key
-```
-
-### Supported Providers
-
-**OCR Providers:**
-- `plaintext` - Simple text parser (testing)
-- `openai_compatible_vision` - OpenAI-compatible vision API
-- `baidu_ocr` - Baidu OCR REST API
-- `stub` - No-op stub (testing)
-
-**LLM Providers:**
-- `stub` - Template-based responses (testing)
-- `openai_compatible` - OpenAI-compatible API (future)
-
-**Storage Providers:**
-- `database_inline` - Store files in database (default)
-- `local_filesystem` - Store files on disk (future)
-- `s3` - Store files in S3 (future)
-
-## Project Structure
-
-```
-mog_v2/
-├── app/
-│   ├── api/v1/           # API routes
-│   ├── core/             # Configuration and utilities
-│   ├── models/           # Database models
-│   ├── schemas/          # Request/response schemas
-│   ├── services/         # Business logic
-│   ├── providers/        # External service abstractions
-│   ├── repositories/     # Data access layer
-│   ├── modules/          # Module façades
-│   └── main.py           # Application entry point
-├── migrations/           # Database migrations
-├── tests/                # Test suite
-├── scripts/              # Utility scripts
-├── docs/                 # Documentation
-├── sample_data/          # Sample test data
-└── .env.example          # Example configuration
-```
-
-## Development Guidelines
-
-### Architecture Rules (from AGENTS.md)
-
-1. **No frontend code** - Backend-only API
-2. **Provider abstraction** - All external services through interfaces
-3. **Module boundaries** - Keep modules loosely coupled
-4. **User isolation** - Complete per-user data separation
-5. **Version history** - Preserve all OCR and document revisions
-6. **No PII in logs** - Sanitize all logging output
-
-### Adding Features
-
-1. Identify which module owns the feature
-2. Write tests first (TDD)
-3. Implement following module boundaries
-4. Run tests and quality checks
-5. Update documentation
-
-### Database Migrations
-
-```bash
-# Create migration
-alembic revision --autogenerate -m "Description"
-
-# Review and edit migration file
-
-# Apply migration
-alembic upgrade head
-
-# Rollback if needed
-alembic downgrade -1
-```
-
-## Current Status
-
-### Completed
-- ✅ Five-module architecture
-- ✅ User authentication and isolation
-- ✅ File upload and OCR processing
-- ✅ Document normalization and versioning
-- ✅ Measurement extraction and querying
-- ✅ Risk evaluation engine
-- ✅ Summary generation (single and trend)
-- ✅ Review workflow
-- ✅ Provider abstraction layer
-- ✅ Task management and retry logic
-- ✅ Quality calibration framework
-
-### In Progress
-- 🔄 OCR stability improvements
-- 🔄 Provider diversity (multiple OCR options)
-- 🔄 Production hardening
-
-### Future
-- 📋 Real LLM integration
-- 📋 Guideline retrieval (RAG)
-- 📋 Frontend application
-- 📋 Advanced analytics
-
-## Known Issues
-
-### OCR Stability
-The current OCR provider shows variability across repeated runs on the same image. This is being addressed through:
-- Stability probing and measurement
-- Provider comparison testing
-- Quality scoring and intelligent retry
-
-See [Quality Hardening Notes](docs/quality_hardening_notes.md) for details.
-
-## Contributing
-
-Please read [AGENTS.md](AGENTS.md) for development guidelines and architecture rules.
-
-## License
-
-[Specify your license here]
-
-## Support
-
-For issues or questions, please refer to the project repository.
-
----
-
-**Interactive Documentation**: http://localhost:8000/docs (when server is running)
+- `docs/INDEX.md`：文档目录索引和归档规则。
+- `app/services/audit_graph/`：LangGraph 状态机、节点和 GraphState。
+- `app/services/audit_report_service.py`：报告运行编排、事件落库、节点状态落库。
+- `app/repositories/knowledge_repository.py`：RAG 默认知识块、落库和检索入口。
+- `app/services/rag_retrieval.py`：本地可解释词法检索器。
+- `frontend/src/App.jsx`：前端模块和综合报告流程图。
+- `migrations/versions/`：数据库迁移。

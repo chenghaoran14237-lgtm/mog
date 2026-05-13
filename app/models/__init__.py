@@ -10,6 +10,7 @@ from app.models.document_version import DocumentVersion
 from app.models.extracted_document import ExtractedDocument
 from app.models.insight_message import InsightMessage
 from app.models.insight_session import InsightSession
+from app.models.knowledge_chunk import KnowledgeChunk
 from app.models.measurement import Measurement
 from app.models.ocr_result import OCRResult
 from app.models.provider_event import ProviderEvent
@@ -33,6 +34,7 @@ __all__ = [
     "ConversationMessage",
     "InsightSession",
     "InsightMessage",
+    "KnowledgeChunk",
     "OCRResult",
     "ExtractedDocument",
     "DocumentVersion",

@@ -10,5 +10,7 @@ __pycache__/
 venv/
 logs/
 *.log
+*.egg-info/
 frontend/dist/
 node_modules/
+docs/private/

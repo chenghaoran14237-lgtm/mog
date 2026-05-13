@@ -8,7 +8,7 @@ const root = dirname(dirname(fileURLToPath(import.meta.url)));
 const read = (path) => readFileSync(join(root, path), "utf8");
 
 describe("React source baseline", () => {
-  it("restores a maintainable React frontend source tree", () => {
+  it("keeps a maintainable React frontend source tree", () => {
     for (const path of [
       "package.json",
       "index.html",
@@ -25,10 +25,11 @@ describe("React source baseline", () => {
     const app = read("src/App.jsx");
     for (const text of [
       "HealthDoc.OS",
-      "一体化健康数据",
       "文档接入流程",
       "文档库",
+      "综合审计报告",
       "智能洞察",
+      "RAG 知识库",
       "指标探索",
       "OCR 提取",
       "结构化标准化",
@@ -49,6 +50,8 @@ describe("React source baseline", () => {
       "/measurements/search",
       "/insight/sessions/stream",
       "/audit-reports",
+      "/knowledge/search",
+      "/knowledge/sources",
     ]) {
       assert.match(api, new RegExp(endpoint.replaceAll("/", "\\/")));
     }

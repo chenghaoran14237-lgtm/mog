@@ -13,6 +13,7 @@ from app.services.audit_graph.nodes import (
     document_quality_agent,
     evidence_agent,
     final_router,
+    knowledge_retrieval_agent,
     load_graph_state,
     measurement_consistency_agent,
     persist_report,
@@ -36,6 +37,8 @@ AUDIT_GRAPH_EDGES = [
     ("measurement_consistency_agent", "audit_router"),
     ("audit_router", "risk_agent"),
     ("risk_agent", "audit_router"),
+    ("audit_router", "knowledge_retrieval_agent"),
+    ("knowledge_retrieval_agent", "audit_router"),
     ("audit_router", "evidence_agent"),
     ("evidence_agent", "audit_router"),
     ("audit_router", "conflict_agent"),
@@ -101,6 +104,7 @@ def build_audit_graph():
     graph.add_node("timeline_builder", timeline_builder)
     graph.add_node("measurement_consistency_agent", measurement_consistency_agent)
     graph.add_node("risk_agent", risk_agent)
+    graph.add_node("knowledge_retrieval_agent", knowledge_retrieval_agent)
     graph.add_node("evidence_agent", evidence_agent)
     graph.add_node("conflict_agent", conflict_agent)
     graph.add_node("compliance_agent", compliance_agent)
@@ -121,6 +125,7 @@ def build_audit_graph():
             "timeline_builder": "timeline_builder",
             "measurement_consistency_agent": "measurement_consistency_agent",
             "risk_agent": "risk_agent",
+            "knowledge_retrieval_agent": "knowledge_retrieval_agent",
             "evidence_agent": "evidence_agent",
             "conflict_agent": "conflict_agent",
             "compliance_agent": "compliance_agent",
@@ -133,6 +138,7 @@ def build_audit_graph():
         "timeline_builder",
         "measurement_consistency_agent",
         "risk_agent",
+        "knowledge_retrieval_agent",
         "evidence_agent",
         "conflict_agent",
         "compliance_agent",

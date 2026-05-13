@@ -3,8 +3,11 @@ from fastapi import HTTPException
 
 from app.api.v1 import chat
 from app.models.user import User
+from app.providers.base import OCRExtractionResult, ProviderConfig
 from app.providers.errors import ProviderExternalServiceError
 from app.providers.normalization.llm_direct import LLMDirectNormalizationProvider
+from app.providers.ocr.auto import AutoRoutingOCRProvider
+from app.providers.ocr.baidu_ocr import BaiduOCRProvider
 from app.repositories.task_repository import TaskRepository
 
 
@@ -59,3 +62,37 @@ def test_llm_direct_normalization_falls_back_to_rule_based_when_gateway_fails(mo
     assert result.measurements
     assert result.normalized_payload["extraction_method"] == "rule_based_fallback"
     assert result.normalized_payload["fallback_reason"]["code"] == "llm_request_failed"
+
+
+def test_auto_ocr_routes_octet_stream_text_to_plaintext():
+    provider = AutoRoutingOCRProvider(ProviderConfig(provider_type="ocr", name="auto"))
+
+    result = provider.extract("空腹血糖 6.8 mmol/L".encode("utf-8"), content_type="application/octet-stream")
+
+    assert result.provider_name == "plaintext"
+    assert result.raw_text == "空腹血糖 6.8 mmol/L"
+    assert result.raw_payload["auto_router"]["selected_provider"] == "plaintext"
+
+
+def test_auto_ocr_routes_images_to_baidu(monkeypatch):
+    provider = AutoRoutingOCRProvider(
+        ProviderConfig(
+            provider_type="ocr",
+            name="auto",
+            base_url="https://aip.baidubce.com",
+            variant="accurate",
+            api_key="key",
+            secret_ref="secret",
+        )
+    )
+
+    def fake_extract(self, file_bytes, content_type=None):
+        return OCRExtractionResult(provider_name="baidu_ocr", raw_text="体检中心检验报告", raw_payload={"variant": self.config.variant})
+
+    monkeypatch.setattr(BaiduOCRProvider, "extract", fake_extract)
+
+    result = provider.extract(b"image-bytes", content_type="image/png")
+
+    assert result.provider_name == "baidu_ocr"
+    assert result.raw_payload["variant"] == "accurate"
+    assert result.raw_payload["auto_router"]["selected_provider"] == "baidu_ocr"

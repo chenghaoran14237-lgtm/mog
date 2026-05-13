@@ -10,6 +10,7 @@ from app.providers.base import (
     StorageProvider,
 )
 from app.providers.errors import ProviderConfigurationError
+from app.providers.ocr.auto import AutoRoutingOCRProvider
 from app.providers.ocr.openai_compatible_vision import OpenAICompatibleVisionOCRProvider
 from app.providers.ocr.baidu_ocr import BaiduOCRProvider
 from app.providers.llm.stub import StubLLMProvider
@@ -26,6 +27,7 @@ class ProviderRegistry:
         self.settings = settings or get_settings()
         self._registries: dict[str, Mapping[str, type[Any]]] = {
             "ocr": {
+                "auto": AutoRoutingOCRProvider,
                 "stub": StubOCRProvider,
                 "plaintext": PlaintextOCRProvider,
                 "openai_compatible_vision": OpenAICompatibleVisionOCRProvider,

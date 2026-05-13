@@ -45,6 +45,8 @@ def _ensure_columns() -> None:
                 connection.execute(text("ALTER TABLE record_files MODIFY content_bytes LONGBLOB NOT NULL"))
 
         extracted_document_columns = {column["name"] for column in inspector.get_columns("extracted_documents")}
+        if "display_name" not in extracted_document_columns:
+            connection.execute(text("ALTER TABLE extracted_documents ADD COLUMN display_name VARCHAR(255)"))
         if "document_category" not in extracted_document_columns:
             connection.execute(text("ALTER TABLE extracted_documents ADD COLUMN document_category VARCHAR(64) DEFAULT 'narrative_context'"))
         if "report_date" not in extracted_document_columns:
@@ -96,6 +98,12 @@ def _backfill_semantic_fields() -> None:
                     document_type=None,
                     normalized_payload=version_payload,
                 )
+                if (
+                    version_payload.get("document_category") == STRUCTURED_METRICS
+                    and measurement_input
+                    and version_category != STRUCTURED_METRICS
+                ):
+                    version_category = STRUCTURED_METRICS
 
                 if version.report_date != version_report_date:
                     version.report_date = version_report_date
@@ -150,7 +158,12 @@ def _backfill_semantic_fields() -> None:
 
             document.document_category = current_category
             document.report_date = current_report_date
-            document.document_type = "lab_report" if current_category == STRUCTURED_METRICS else "clinical_note"
+            if not document.document_type or document.document_type in {
+                "generic_record",
+                "structured_metrics",
+                "narrative_context",
+            }:
+                document.document_type = "lab_report" if current_category == STRUCTURED_METRICS else "clinical_note"
             document.normalized_payload = current_payload or {
                 "raw_text": current_raw_text,
                 "document_category": current_category,

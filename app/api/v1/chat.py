@@ -5,13 +5,16 @@ import time
 
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user, get_session
 from app.models.user import User
 from app.providers.errors import ProviderError
 from app.providers.registry import ProviderRegistry
+from app.providers.rag import LexicalRAGProvider
 from app.repositories.document_version_repository import DocumentVersionRepository
+from app.repositories.knowledge_repository import DEFAULT_KNOWLEDGE_CHUNKS, KnowledgeRepository, knowledge_chunk_to_dict
 from app.repositories.measurement_repository import MeasurementRepository
 from app.schemas.conversation import (
     AnalysisRunDetailResponse,
@@ -39,7 +42,12 @@ def get_conversation_service(session: Session = Depends(get_session)) -> Convers
     document_version_repo = DocumentVersionRepository(session)
     measurement_repo = MeasurementRepository(session)
     context_service = ConversationContextService(document_version_repo, measurement_repo)
-    return ConversationService(session, llm_provider, context_service)
+    try:
+        knowledge_chunks = [knowledge_chunk_to_dict(chunk) for chunk in KnowledgeRepository(session).ensure_default_chunks()]
+    except SQLAlchemyError:
+        session.rollback()
+        knowledge_chunks = DEFAULT_KNOWLEDGE_CHUNKS
+    return ConversationService(session, llm_provider, context_service, rag_provider=LexicalRAGProvider(knowledge_chunks))
 
 
 def _build_batch_analysis_messages(

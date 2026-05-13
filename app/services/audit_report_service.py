@@ -4,12 +4,18 @@ from time import sleep
 from typing import Any
 
 from sqlalchemy import select
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session, selectinload
 
 from app.models.document_version import DocumentVersion
 from app.models.extracted_document import ExtractedDocument
 from app.models.record import Record
 from app.repositories.audit_report_repository import AuditReportRepository
+from app.repositories.knowledge_repository import (
+    DEFAULT_KNOWLEDGE_CHUNKS,
+    KnowledgeRepository,
+    knowledge_chunk_to_dict,
+)
 from app.services.audit_graph.engine import AuditGraphEngine
 from app.services.audit_graph.state import AuditGraphState, create_initial_state
 
@@ -50,6 +56,8 @@ class AuditReportService:
         run = self.repository.get_run(run_id=run_id, user_id=user_id)
         if run is None:
             raise ValueError("Audit report run not found")
+        if run.status in {"processing", "completed"}:
+            return run
 
         state: AuditGraphState | None = None
         try:
@@ -151,6 +159,7 @@ class AuditReportService:
         if run is None:
             raise ValueError("Audit report run not found")
         versions = self._load_versions(user_id=user_id, version_ids=run.selected_document_version_ids)
+        knowledge_chunks = self._load_knowledge_chunks()
         found_ids = {version.id for version in versions}
         missing_ids = [version_id for version_id in run.selected_document_version_ids if version_id not in found_ids]
         if missing_ids:
@@ -210,6 +219,7 @@ class AuditReportService:
             selected_document_version_ids=list(run.selected_document_version_ids),
             documents=documents,
             measurements=measurements,
+            knowledge_chunks=knowledge_chunks,
             max_iterations=run.max_iterations,
         )
 
@@ -227,11 +237,19 @@ class AuditReportService:
         by_id = {version.id: version for version in versions}
         return [by_id[version_id] for version_id in version_ids if version_id in by_id]
 
+    def _load_knowledge_chunks(self) -> list[dict[str, Any]]:
+        try:
+            chunks = KnowledgeRepository(self.session).ensure_default_chunks()
+            return [knowledge_chunk_to_dict(chunk) for chunk in chunks]
+        except SQLAlchemyError:
+            self.session.rollback()
+            return [dict(item) for item in DEFAULT_KNOWLEDGE_CHUNKS]
+
 
 def _summarize_node_output(output: dict) -> dict:
     summary: dict[str, Any] = {}
     for key, value in output.items():
-        if key in {"documents", "measurements", "evidence_items", "route_history"} and isinstance(value, list):
+        if key in {"documents", "measurements", "evidence_items", "knowledge_context", "route_history"} and isinstance(value, list):
             summary[f"{key}_count"] = len(value)
         elif key in {
             "next_action",

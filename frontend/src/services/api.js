@@ -260,6 +260,17 @@ export const api = {
       return request(`/audit-reports/${id}/events`);
     },
   },
+  knowledge: {
+    chunks(params = {}) {
+      return request("/knowledge/chunks", { params });
+    },
+    sources(params = {}) {
+      return request("/knowledge/sources", { params });
+    },
+    search(params = {}) {
+      return request("/knowledge/search", { params });
+    },
+  },
   health: {
     check() {
       return request("/health", { token: null });

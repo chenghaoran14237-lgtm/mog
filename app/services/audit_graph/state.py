@@ -15,6 +15,9 @@ class AuditGraphState(TypedDict, total=False):
     consistency_findings: list[dict[str, Any]]
     conflict_findings: list[dict[str, Any]]
     risk_findings: list[dict[str, Any]]
+    knowledge_chunks: list[dict[str, Any]]
+    knowledge_queries: list[str]
+    knowledge_context: list[dict[str, Any]]
     compliance_findings: list[dict[str, Any]]
     report_draft: dict[str, Any]
     citation_issues: list[dict[str, Any]]
@@ -38,6 +41,7 @@ def create_initial_state(
     selected_document_version_ids: list[int],
     documents: list[dict[str, Any]],
     measurements: list[dict[str, Any]],
+    knowledge_chunks: list[dict[str, Any]] | None = None,
     max_iterations: int = 8,
 ) -> AuditGraphState:
     return {
@@ -52,6 +56,9 @@ def create_initial_state(
         "consistency_findings": [],
         "conflict_findings": [],
         "risk_findings": [],
+        "knowledge_chunks": knowledge_chunks or [],
+        "knowledge_queries": [],
+        "knowledge_context": [],
         "compliance_findings": [],
         "report_draft": {},
         "citation_issues": [],

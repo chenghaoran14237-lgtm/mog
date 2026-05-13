@@ -25,7 +25,7 @@ import { api } from "./services/api.js";
 const MODULES = [
   {
     id: "console",
-    title: "系统控制台",
+    title: "工作台",
     subtitle: "HealthDoc.OS",
     icon: HeartPulse,
     summary: "查看当前系统状态、数据资产和处理链路。",
@@ -35,7 +35,7 @@ const MODULES = [
     title: "文档接入流程",
     subtitle: "上传 / OCR / 标准化",
     icon: UploadCloud,
-    summary: "复现当前 dist 的上传、OCR 提取与结构化标准化流程。",
+    summary: "完成医疗文档上传、OCR 提取与结构化标准化流程。",
   },
   {
     id: "vault",
@@ -59,6 +59,13 @@ const MODULES = [
     summary: "选择文档后发起多份报告的批量 AI 分析。",
   },
   {
+    id: "rag",
+    title: "RAG 知识库",
+    subtitle: "默沙东来源 / 检索增强",
+    icon: Database,
+    summary: "查看知识库来源、检索命中和 BM25+同义词混合评分解释。",
+  },
+  {
     id: "metrics",
     title: "指标探索",
     subtitle: "结构化指标检索",
@@ -70,6 +77,9 @@ const MODULES = [
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const formatDate = (value) => (value ? new Date(value).toLocaleDateString("zh-CN") : "--");
 const formatDateTime = (value) => (value ? new Date(value).toLocaleString("zh-CN") : "--");
+const MAX_LOCAL_UPLOAD_BYTES = 20 * 1024 * 1024;
+const ACCEPTED_UPLOAD_TYPES = "image/png,image/jpeg,application/pdf,text/plain,application/octet-stream";
+const formatBytes = (value) => `${(value / 1024 / 1024).toFixed(0)} MB`;
 const statusLabel = (value) =>
   ({ pending: "排队中", processing: "处理中", completed: "已完成", failed: "失败" })[value] || value || "--";
 const taskLabel = (value) => ({ ocr: "OCR 识别", normalization: "标准化" })[value] || value || "--";
@@ -365,7 +375,7 @@ function Workspace({ currentUser, onLogout }) {
     loadDocuments();
   }, []);
 
-  const moduleTitle = activeModule ? MODULES.find((item) => item.id === activeModule)?.title : "系统控制台";
+  const moduleTitle = activeModule ? MODULES.find((item) => item.id === activeModule)?.title : "工作台";
   const activeConfig = MODULES.find((item) => item.id === activeModule);
 
   return (
@@ -425,6 +435,7 @@ function Workspace({ currentUser, onLogout }) {
                 <AuditReportModule documents={documents} loadingDocuments={documentLoading} onRefreshDocuments={loadDocuments} />
               ) : null}
               {activeModule === "agent" ? <InsightModule documents={documents} loadingDocuments={documentLoading} /> : null}
+              {activeModule === "rag" ? <RagKnowledgeModule /> : null}
               {activeModule === "metrics" ? <MetricsModule /> : null}
             </div>
           </section>
@@ -449,14 +460,16 @@ function ConsoleHome({ currentUser, documents, loading, error, onOpen }) {
   return (
     <section className="console-home">
       <div className="console-copy">
-        <span className="eyebrow">HEALTHDOC OS / CONTROL PLANE</span>
-        <h1>系统控制台</h1>
-        <p>当前 React 源码复现了旧版 dist 的工作台结构：文档接入流程、文档库、智能洞察和指标探索。</p>
+        <div>
+          <span className="eyebrow">HEALTHDOC OS / WORKSPACE</span>
+          <p>医疗资料智能管理与审计工作台。</p>
+        </div>
+        <span className="console-badge">{loading ? "文档加载中" : `${documents.length} 份文档`}</span>
       </div>
 
       <div className="metric-grid">
         <StatCard label="当前用户" value={currentUser?.email || "--"} helper="已登录工作区" />
-        <StatCard label="文档总数" value={loading ? "..." : documents.length} helper={error || "来自 /api/documents"} />
+        <StatCard label="文档总数" value={loading ? "..." : documents.length} helper={error || "资料库已同步"} />
         <StatCard label="结构化指标" value={structuredCount} helper="可用于趋势与检索" />
         <StatCard label="病历叙事" value={narrativeCount} helper="可用于智能洞察上下文" />
       </div>
@@ -508,6 +521,10 @@ function IntakeModule({ onDocumentsChanged }) {
       setMessage("请先选择一个文件。");
       return;
     }
+    if (file.size > MAX_LOCAL_UPLOAD_BYTES) {
+      setMessage(`文件过大，请选择不超过 ${formatBytes(MAX_LOCAL_UPLOAD_BYTES)} 的文件。`);
+      return;
+    }
     setBusy(true);
     setMessage("");
     setSteps([]);
@@ -548,13 +565,17 @@ function IntakeModule({ onDocumentsChanged }) {
     <div className="two-column">
       <section className="panel">
         <h3>文档接入流程</h3>
-        <p className="muted">上传文件后顺序执行 OCR 提取与结构化标准化，复现当前 dist 的核心链路。</p>
+        <p className="muted">上传文件后顺序执行 OCR 提取与结构化标准化，形成可追溯的健康资料版本。</p>
 
         <label className="dropzone">
           <UploadCloud size={28} />
           <strong>{file ? file.name : "选择医疗报告文件"}</strong>
-          <span>支持当前后端 OCR provider 可识别的图片或文本输入</span>
-          <input type="file" onChange={(event) => setFile(event.target.files?.[0] || null)} />
+          <span>支持图片、PDF 或文本输入，单文件不超过 {formatBytes(MAX_LOCAL_UPLOAD_BYTES)}</span>
+          <input
+            type="file"
+            accept={ACCEPTED_UPLOAD_TYPES}
+            onChange={(event) => setFile(event.target.files?.[0] || null)}
+          />
         </label>
 
         <label className="field">
@@ -636,8 +657,9 @@ const AUDIT_GRAPH_NODES = [
   { id: "timeline_builder", label: "时间线构建", x: 42, y: 34 },
   { id: "measurement_consistency_agent", label: "指标一致性", x: 42, y: 52 },
   { id: "risk_agent", label: "风险 Agent", x: 42, y: 70 },
-  { id: "evidence_agent", label: "证据补全", x: 61, y: 30 },
-  { id: "conflict_agent", label: "冲突复核", x: 61, y: 50 },
+  { id: "knowledge_retrieval_agent", label: "知识检索 RAG", x: 58, y: 18 },
+  { id: "evidence_agent", label: "证据补全", x: 61, y: 35 },
+  { id: "conflict_agent", label: "冲突复核", x: 61, y: 52 },
   { id: "compliance_agent", label: "合规审计", x: 61, y: 70 },
   { id: "quality_gate", label: "质量门控", x: 75, y: 48 },
   { id: "report_composer", label: "报告生成", x: 86, y: 30 },
@@ -657,6 +679,8 @@ const AUDIT_GRAPH_EDGES = [
   ["measurement_consistency_agent", "audit_router"],
   ["audit_router", "risk_agent"],
   ["risk_agent", "audit_router"],
+  ["audit_router", "knowledge_retrieval_agent"],
+  ["knowledge_retrieval_agent", "audit_router"],
   ["audit_router", "evidence_agent"],
   ["evidence_agent", "audit_router"],
   ["audit_router", "conflict_agent"],
@@ -792,7 +816,9 @@ function AuditReportModule({ documents, loadingDocuments, onRefreshDocuments }) 
             打开完整报告
           </button>
         </div>
-        <AuditGraphCanvas events={events} nodeStates={nodeStates} status={run?.status} />
+        <div className="audit-graph-scroll">
+          <AuditGraphCanvas events={events} nodeStates={nodeStates} status={run?.status} />
+        </div>
         {terminal && run?.status === "failed" ? <p className="error-text">{run.error_message || "审计图执行失败"}</p> : null}
       </section>
 
@@ -825,7 +851,7 @@ function AuditGraphCanvas({ events, nodeStates, status }) {
 
   return (
     <div className="audit-graph-canvas">
-      <svg className="audit-edges" viewBox="0 0 1000 620" aria-hidden="true">
+      <svg className="audit-edges" viewBox="0 0 1000 620" preserveAspectRatio="none" aria-hidden="true">
         <defs>
           <marker id="auditArrow" markerHeight="8" markerWidth="8" orient="auto" refX="7" refY="4">
             <path d="M 0 0 L 8 4 L 0 8 z" />
@@ -877,6 +903,12 @@ function auditEdgePath(from, to) {
 }
 
 function AuditReportModal({ report, onClose }) {
+  const knowledgeSources = report.knowledge_sources || [];
+  const ragSummary = report.rag_summary || {};
+  const evidenceItems = report.evidence_items || [];
+  const knowledgeEvidence = evidenceItems.filter((item) => item.kind === "knowledge_chunk");
+  const documentEvidence = evidenceItems.filter((item) => item.kind !== "knowledge_chunk");
+
   return (
     <div className="report-modal-backdrop" role="presentation" onClick={onClose}>
       <article className="report-modal" role="dialog" aria-modal="true" onClick={(event) => event.stopPropagation()}>
@@ -891,16 +923,58 @@ function AuditReportModal({ report, onClose }) {
         </header>
         <div className="report-content">
           <p className="report-summary">{report.summary}</p>
+          {knowledgeSources.length ? (
+            <section className="rag-source-panel">
+              <div className="rag-source-metrics">
+                <span>RAG 查询 {ragSummary.query_count ?? "--"}</span>
+                <span>命中知识 {ragSummary.context_count ?? knowledgeSources.length}</span>
+                <span>默沙东来源 {ragSummary.msd_manual_count ?? "--"}</span>
+              </div>
+              <div className="rag-source-list">
+                {knowledgeSources.map((source) => (
+                  <div className="rag-source-card" key={source.source_url || `${source.source_title}-${source.section_title}`}>
+                    <span>{source.source_name || "知识来源"}</span>
+                    <strong>{source.section_title || source.source_title}</strong>
+                    {source.source_url ? (
+                      <a href={source.source_url} rel="noreferrer" target="_blank">
+                        查看来源
+                      </a>
+                    ) : (
+                      <small>{source.source_type || "知识库"}</small>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </section>
+          ) : null}
           {(report.sections || []).map((section) => (
             <section key={section.id || section.title}>
               <h3>{section.title}</h3>
               <p>{section.content}</p>
             </section>
           ))}
+          {knowledgeEvidence.length ? (
+            <section>
+              <h3>RAG 知识证据</h3>
+              {knowledgeEvidence.map((item) => (
+                <p className="evidence-line" key={item.id}>
+                  <strong>{item.source_label || item.id}</strong>：{item.quote}
+                  {item.source_url ? (
+                    <>
+                      {" "}
+                      <a href={item.source_url} rel="noreferrer" target="_blank">
+                        来源
+                      </a>
+                    </>
+                  ) : null}
+                </p>
+              ))}
+            </section>
+          ) : null}
           <section>
             <h3>证据清单</h3>
-            {(report.evidence_items || []).length === 0 ? <p>暂无证据项。</p> : null}
-            {(report.evidence_items || []).map((item) => (
+            {documentEvidence.length === 0 ? <p>暂无文档或指标证据项。</p> : null}
+            {documentEvidence.map((item) => (
               <p className="evidence-line" key={item.id}>
                 <strong>{item.id}</strong>：{item.quote}
               </p>
@@ -1048,6 +1122,132 @@ function InsightModule({ documents, loadingDocuments }) {
             <Send size={15} />
             {busy ? "生成中" : sessionId ? "继续追问" : "发起洞察"}
           </button>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function RagKnowledgeModule() {
+  const [sources, setSources] = useState([]);
+  const [results, setResults] = useState([]);
+  const [query, setQuery] = useState("空腹血糖 ALT LDL-C 审计复核");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    let cancelled = false;
+    api.knowledge
+      .sources()
+      .then((items) => {
+        if (!cancelled) setSources(items || []);
+      })
+      .catch((err) => {
+        if (!cancelled) setError(err.message || "加载 RAG 来源失败");
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  async function searchKnowledge() {
+    if (!query.trim()) {
+      setError("请输入检索问题。");
+      return;
+    }
+    setLoading(true);
+    setError("");
+    try {
+      const items = await api.knowledge.search({ query: query.trim(), top_k: 8 });
+      setResults(items || []);
+    } catch (err) {
+      setError(err.message || "RAG 检索失败");
+      setResults([]);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const msdCount = sources.filter((item) => item.source_name === "默沙东诊疗手册大众版").length;
+  const chunkCount = sources.reduce((sum, item) => sum + (item.chunk_count || 0), 0);
+
+  return (
+    <div className="rag-layout">
+      <section className="panel rag-search-panel">
+        <div className="section-toolbar">
+          <div>
+            <h3>RAG 知识检索</h3>
+            <p className="muted">BM25 + 关键词 + 医疗同义词混合检索，结果用于 LangGraph 审计报告。</p>
+          </div>
+          <Database size={18} />
+        </div>
+        <div className="rag-query-box">
+          <textarea value={query} onChange={(event) => setQuery(event.target.value)} />
+          <button className="primary-button compact" disabled={loading} onClick={searchKnowledge} type="button">
+            <Search size={15} />
+            {loading ? "检索中" : "检索知识库"}
+          </button>
+        </div>
+        {error ? <p className="error-text">{error}</p> : null}
+        <div className="rag-results">
+          {results.length === 0 ? <p className="empty">输入问题后查看相关知识、来源和匹配依据。</p> : null}
+          {results.map((item) => (
+            <article className="rag-result-card" key={`${item.id}-${item.section_title}`}>
+              <div>
+                <span>{item.source_title}</span>
+                <strong>{item.section_title}</strong>
+              </div>
+              <p>{item.content}</p>
+              <div className="rag-score-row">
+                <span>总分 {item.score}</span>
+                <span>BM25 {item.score_breakdown?.bm25 ?? "--"}</span>
+                <span>关键词 {item.score_breakdown?.keyword ?? "--"}</span>
+                <span>同义词 {item.score_breakdown?.synonym ?? "--"}</span>
+              </div>
+              <div className="rag-tags">
+                {(item.matched_terms || []).slice(0, 8).map((term) => (
+                  <em key={term}>{term}</em>
+                ))}
+              </div>
+              {item.metadata_json?.source_url ? (
+                <a href={item.metadata_json.source_url} rel="noreferrer" target="_blank">
+                  打开来源
+                </a>
+              ) : null}
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="panel rag-source-side">
+        <h3>知识库来源</h3>
+        <div className="rag-kpi-grid">
+          <span>
+            <strong>{sources.length}</strong>
+            来源
+          </span>
+          <span>
+            <strong>{chunkCount}</strong>
+            知识块
+          </span>
+          <span>
+            <strong>{msdCount}</strong>
+            默沙东来源
+          </span>
+        </div>
+        <div className="rag-source-stack">
+          {sources.map((source) => (
+            <article key={`${source.source_name}-${source.source_url || source.source_title}`}>
+              <span>{source.source_type}</span>
+              <strong>{source.source_name}</strong>
+              <small>{source.sections?.join(" / ")}</small>
+              {source.source_url ? (
+                <a href={source.source_url} rel="noreferrer" target="_blank">
+                  来源页面
+                </a>
+              ) : null}
+            </article>
+          ))}
         </div>
       </section>
     </div>

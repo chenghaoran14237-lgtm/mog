@@ -3,6 +3,7 @@ from __future__ import annotations
 from datetime import datetime, timezone
 
 from sqlalchemy import func, select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.models.audit_report_event import AuditReportEvent
@@ -53,6 +54,9 @@ class AuditReportRepository:
         )
 
     def mark_processing(self, run: AuditReportRun) -> AuditReportRun:
+        self.session.refresh(run)
+        if run.status in {"processing", "completed"}:
+            return run
         run.status = "processing"
         run.started_at = datetime.now(timezone.utc)
         self.session.commit()
@@ -156,6 +160,21 @@ class AuditReportRepository:
                 output=output,
             )
             self.session.add(node_state)
+            try:
+                self.session.commit()
+                self.session.refresh(node_state)
+                return node_state
+            except IntegrityError:
+                self.session.rollback()
+                node_state = self.session.scalar(
+                    select(AuditReportNodeState).where(
+                        AuditReportNodeState.run_id == run_id,
+                        AuditReportNodeState.user_id == user_id,
+                        AuditReportNodeState.node_name == node_name,
+                    )
+                )
+                if node_state is None:
+                    raise
         else:
             node_state.status = status
             node_state.visit_count += 1
