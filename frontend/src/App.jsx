@@ -87,6 +87,8 @@ const formatBytes = (value) => `${(value / 1024 / 1024).toFixed(0)} MB`;
 const statusLabel = (value) =>
   ({ pending: "排队中", processing: "处理中", completed: "已完成", failed: "失败" })[value] || value || "--";
 const taskLabel = (value) => ({ ocr: "OCR 识别", normalization: "标准化" })[value] || value || "--";
+const WORKFLOW_TASK_TYPES = new Set(["ocr", "normalization"]);
+const ACTIVE_TASK_STATUSES = new Set(["pending", "processing"]);
 const categoryLabel = (value) =>
   ({ structured_metrics: "结构化指标", narrative_context: "病历叙事" })[value] || value || "--";
 const documentTitle = (doc) => doc?.display_name || `文件 ${doc?.record_file_id ?? "--"}`;
@@ -183,6 +185,15 @@ async function waitTask(taskId, timeoutMs = 180000) {
 
 function classNames(...items) {
   return items.filter(Boolean).join(" ");
+}
+
+function sortTasksNewest(tasks) {
+  return [...tasks].sort((left, right) => {
+    const leftTime = new Date(left.updated_at || left.created_at || 0).getTime();
+    const rightTime = new Date(right.updated_at || right.created_at || 0).getTime();
+    if (rightTime !== leftTime) return rightTime - leftTime;
+    return (right.id || 0) - (left.id || 0);
+  });
 }
 
 export default function App() {
@@ -434,6 +445,12 @@ function Workspace({ currentUser, onLogout }) {
   const [documentError, setDocumentError] = useState("");
   const [providerStats, setProviderStats] = useState([]);
   const [providerStatsError, setProviderStatsError] = useState("");
+  const [taskQueueOpen, setTaskQueueOpen] = useState(false);
+  const [taskItems, setTaskItems] = useState([]);
+  const [taskQueueLoading, setTaskQueueLoading] = useState(false);
+  const [taskQueueError, setTaskQueueError] = useState("");
+  const [taskQueueUpdatedAt, setTaskQueueUpdatedAt] = useState(null);
+  const taskQueueRequestRef = useRef(0);
   const [clock, setClock] = useState("");
 
   useEffect(() => {
@@ -466,10 +483,54 @@ function Workspace({ currentUser, onLogout }) {
     }
   }
 
+  async function loadTaskQueue(options = {}) {
+    const { silent = false } = options;
+    const requestId = taskQueueRequestRef.current + 1;
+    taskQueueRequestRef.current = requestId;
+    if (!silent) setTaskQueueLoading(true);
+    setTaskQueueError("");
+    try {
+      const response = await api.tasks.list();
+      if (requestId !== taskQueueRequestRef.current) return;
+      const items = sortTasksNewest((response.items || []).filter((task) => WORKFLOW_TASK_TYPES.has(task.task_type)));
+      setTaskItems(items);
+      setTaskQueueUpdatedAt(new Date());
+    } catch (error) {
+      if (requestId === taskQueueRequestRef.current) {
+        setTaskQueueError(error.message || "任务状态加载失败");
+      }
+    } finally {
+      if (!silent) {
+        setTaskQueueLoading(false);
+      }
+    }
+  }
+
   useEffect(() => {
     loadDocuments();
     loadProviderStats();
+    loadTaskQueue({ silent: true });
+    const timer = setInterval(() => loadTaskQueue({ silent: true }), 5000);
+    return () => clearInterval(timer);
   }, []);
+
+  const taskQueueSummary = useMemo(() => {
+    const activeCount = taskItems.filter((task) => ACTIVE_TASK_STATUSES.has(task.status)).length;
+    const failedCount = taskItems.filter((task) => task.status === "failed").length;
+    const ocrTotal = taskItems.filter((task) => task.task_type === "ocr").length;
+    const normalizationTotal = taskItems.filter((task) => task.task_type === "normalization").length;
+    const ocrActive = taskItems.filter((task) => task.task_type === "ocr" && ACTIVE_TASK_STATUSES.has(task.status)).length;
+    const normalizationActive = taskItems.filter(
+      (task) => task.task_type === "normalization" && ACTIVE_TASK_STATUSES.has(task.status),
+    ).length;
+    return { activeCount, failedCount, ocrTotal, normalizationTotal, ocrActive, normalizationActive };
+  }, [taskItems]);
+
+  function toggleTaskQueue() {
+    const nextOpen = !taskQueueOpen;
+    setTaskQueueOpen(nextOpen);
+    if (nextOpen) loadTaskQueue();
+  }
 
   const moduleTitle = activeModule ? MODULES.find((item) => item.id === activeModule)?.title : "工作台";
   const activeConfig = MODULES.find((item) => item.id === activeModule);
@@ -501,10 +562,34 @@ function Workspace({ currentUser, onLogout }) {
           <span className="hide-md">{currentUser?.email}</span>
           <span>{clock}</span>
         </div>
-        <button className="logout-button" onClick={onLogout} type="button">
-          <LogOut size={13} />
-          退出登录
-        </button>
+        <div className="nav-actions">
+          <div className="task-monitor">
+            <button
+              className={classNames("task-monitor-button", taskQueueOpen && "active", taskQueueSummary.activeCount > 0 && "busy")}
+              type="button"
+              aria-expanded={taskQueueOpen}
+              onClick={toggleTaskQueue}
+            >
+              <Activity size={13} />
+              任务
+              {taskQueueSummary.activeCount > 0 ? <strong>{taskQueueSummary.activeCount}</strong> : null}
+            </button>
+            {taskQueueOpen ? (
+              <TaskQueuePopover
+                error={taskQueueError}
+                loading={taskQueueLoading}
+                onRefresh={() => loadTaskQueue()}
+                summary={taskQueueSummary}
+                tasks={taskItems.slice(0, 8)}
+                updatedAt={taskQueueUpdatedAt}
+              />
+            ) : null}
+          </div>
+          <button className="logout-button" onClick={onLogout} type="button">
+            <LogOut size={13} />
+            退出登录
+          </button>
+        </div>
       </nav>
 
       <main className="workspace-main">
@@ -523,7 +608,7 @@ function Workspace({ currentUser, onLogout }) {
               </button>
             </header>
             <div className="module-body">
-              {activeModule === "intake" ? <IntakeModule onDocumentsChanged={loadDocuments} /> : null}
+              {activeModule === "intake" ? <IntakeModule onDocumentsChanged={loadDocuments} onTasksChanged={loadTaskQueue} /> : null}
               {activeModule === "vault" ? (
                 <VaultModule documents={documents} loading={documentLoading} error={documentError} onRefresh={loadDocuments} />
               ) : null}
@@ -547,6 +632,61 @@ function Workspace({ currentUser, onLogout }) {
           />
         )}
       </main>
+    </div>
+  );
+}
+
+function TaskQueuePopover({ tasks, summary, loading, error, updatedAt, onRefresh }) {
+  return (
+    <section className="task-queue-popover" aria-label="OCR 与标准化任务状态">
+      <div className="task-queue-head">
+        <div>
+          <h3>任务队列</h3>
+          <p>{updatedAt ? `更新于 ${formatDateTime(updatedAt)}` : "等待同步"}</p>
+        </div>
+        <button className="ghost-button mini" disabled={loading} onClick={onRefresh} type="button">
+          {loading ? "刷新中" : "刷新"}
+        </button>
+      </div>
+
+      <div className="task-queue-stats">
+        <TaskQueueStat label="OCR" value={summary.ocrActive} helper={`总计 ${summary.ocrTotal}`} />
+        <TaskQueueStat label="标准化" value={summary.normalizationActive} helper={`总计 ${summary.normalizationTotal}`} />
+        <TaskQueueStat label="异常" value={summary.failedCount} helper="需复核" tone={summary.failedCount ? "danger" : "muted"} />
+      </div>
+
+      {error ? <div className="notice error compact">{error}</div> : null}
+      {!error && tasks.length === 0 ? <p className="empty compact">暂无 OCR 或标准化任务。</p> : null}
+      {tasks.length > 0 ? (
+        <div className="task-queue-list">
+          {tasks.map((task) => (
+            <article className="task-queue-row" key={task.id}>
+              <div className="task-queue-row-head">
+                <strong>{taskLabel(task.task_type)}</strong>
+                <span className={classNames("task-status-pill", task.status)}>{statusLabel(task.status)}</span>
+              </div>
+              <div className="task-queue-row-meta">
+                <span>#{task.id}</span>
+                <span>
+                  {task.resource_type} #{task.resource_id}
+                </span>
+                <span>{formatDateTime(task.updated_at || task.created_at)}</span>
+              </div>
+              {task.last_error_message ? <p className="task-error-text">{task.last_error_message}</p> : null}
+            </article>
+          ))}
+        </div>
+      ) : null}
+    </section>
+  );
+}
+
+function TaskQueueStat({ label, value, helper, tone = "default" }) {
+  return (
+    <div className={classNames("task-queue-stat", tone)}>
+      <span>{label}</span>
+      <strong>{value}</strong>
+      <small>{helper}</small>
     </div>
   );
 }
@@ -612,7 +752,7 @@ function StatCard({ label, value, helper }) {
   );
 }
 
-function IntakeModule({ onDocumentsChanged }) {
+function IntakeModule({ onDocumentsChanged, onTasksChanged }) {
   const [file, setFile] = useState(null);
   const [displayName, setDisplayName] = useState("");
   const [busy, setBusy] = useState(false);
@@ -643,14 +783,18 @@ function IntakeModule({ onDocumentsChanged }) {
 
       pushStep({ title: "OCR 提取", status: "processing", detail: "调用 /ocr/files/{id}/extract" });
       const ocrTask = await api.ocr.extract(upload.file.id);
+      onTasksChanged?.({ silent: true });
       const completedOcrTask = await waitTask(ocrTask.task.id);
+      onTasksChanged?.({ silent: true });
       const ocrResult = await api.tasks.getResult(completedOcrTask.id);
       const ocrResultId = ocrResult.data.id;
       pushStep({ title: "OCR 提取", status: "completed", detail: `ocr_result_id=${ocrResultId}` });
 
       pushStep({ title: "结构化标准化", status: "processing", detail: "调用 /ingestion/ocr-results/{id}/normalize" });
       const normalizeTask = await api.ingestion.normalize(ocrResultId);
+      onTasksChanged?.({ silent: true });
       const completedNormalizeTask = await waitTask(normalizeTask.task.id);
+      onTasksChanged?.({ silent: true });
       const normalized = await api.tasks.getResult(completedNormalizeTask.id);
       pushStep({
         title: "结构化标准化",
@@ -661,6 +805,7 @@ function IntakeModule({ onDocumentsChanged }) {
       setMessage("处理完成，文档库已可查看。");
       onDocumentsChanged?.();
     } catch (error) {
+      onTasksChanged?.({ silent: true });
       pushStep({ title: "流程失败", status: "failed", detail: error.message || "未知错误" });
       setMessage(error.message || "处理失败");
     } finally {
