@@ -73,3 +73,17 @@ class ProviderEventResponse(BaseModel):
 
 class ProviderEventListResponse(BaseModel):
     items: list[ProviderEventResponse]
+
+
+class ProviderEventSummaryItemResponse(BaseModel):
+    provider_type: str
+    provider_name: str
+    status: str
+    event_count: int
+    avg_duration_ms: float | None
+    last_event_at: datetime | None
+
+
+class ProviderEventSummaryResponse(BaseModel):
+    window_hours: int
+    items: list[ProviderEventSummaryItemResponse]

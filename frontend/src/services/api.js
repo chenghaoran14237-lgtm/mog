@@ -203,6 +203,9 @@ export const api = {
     getResult(id) {
       return request(`/tasks/${id}/result`);
     },
+    providerSummary(params = {}) {
+      return request("/tasks/provider-events/summary", { params });
+    },
   },
   measurements: {
     list(params = {}) {

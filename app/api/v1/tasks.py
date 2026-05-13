@@ -1,9 +1,12 @@
+from datetime import datetime, timedelta, timezone
 from typing import Literal
 
 from fastapi import APIRouter, BackgroundTasks, Depends, Query, Request
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user_dependency, get_session_dependency
+from app.models.provider_event import ProviderEvent
 from app.models.user import User
 from app.providers.registry import ProviderRegistry
 from app.repositories.document_version_repository import DocumentVersionRepository
@@ -15,6 +18,8 @@ from app.repositories.record_repository import RecordRepository
 from app.repositories.task_repository import TaskRepository
 from app.schemas.task import (
     ProviderEventListResponse,
+    ProviderEventSummaryItemResponse,
+    ProviderEventSummaryResponse,
     TaskEventListResponse,
     TaskListResponse,
     TaskResponse,
@@ -51,6 +56,44 @@ def list_tasks(
         current_user_id=current_user.id,
         task_type=task_type,
         status_value=status_value,
+    )
+
+
+@router.get("/provider-events/summary", response_model=ProviderEventSummaryResponse)
+def summarize_provider_events(
+    window_hours: int = Query(default=24, ge=1, le=720),
+    current_user: User = Depends(get_current_user_dependency),
+    session: Session = Depends(get_session_dependency),
+) -> ProviderEventSummaryResponse:
+    cutoff = datetime.now(timezone.utc) - timedelta(hours=window_hours)
+    rows = session.execute(
+        select(
+            ProviderEvent.provider_type,
+            ProviderEvent.provider_name,
+            ProviderEvent.status,
+            func.count(ProviderEvent.id),
+            func.avg(ProviderEvent.duration_ms),
+            func.max(ProviderEvent.created_at),
+        )
+        .where(ProviderEvent.user_id == current_user.id)
+        .where(ProviderEvent.created_at >= cutoff)
+        .group_by(ProviderEvent.provider_type, ProviderEvent.provider_name, ProviderEvent.status)
+        .order_by(func.max(ProviderEvent.created_at).desc())
+    ).all()
+
+    return ProviderEventSummaryResponse(
+        window_hours=window_hours,
+        items=[
+            ProviderEventSummaryItemResponse(
+                provider_type=provider_type,
+                provider_name=provider_name,
+                status=status,
+                event_count=int(event_count),
+                avg_duration_ms=round(float(avg_duration_ms), 1) if avg_duration_ms is not None else None,
+                last_event_at=last_event_at,
+            )
+            for provider_type, provider_name, status, event_count, avg_duration_ms, last_event_at in rows
+        ],
     )
 
 

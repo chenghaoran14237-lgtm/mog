@@ -5,6 +5,7 @@ import {
   Bot,
   CheckCircle2,
   Database,
+  Download,
   FileSearch,
   FileText,
   Github,
@@ -86,6 +87,78 @@ const taskLabel = (value) => ({ ocr: "OCR 识别", normalization: "标准化" })
 const categoryLabel = (value) =>
   ({ structured_metrics: "结构化指标", narrative_context: "病历叙事" })[value] || value || "--";
 const documentTitle = (doc) => doc?.display_name || `文件 ${doc?.record_file_id ?? "--"}`;
+const metricDisplayValue = (metric) => {
+  const value =
+    metric?.value_text || (metric?.value_numeric !== null && metric?.value_numeric !== undefined ? String(metric.value_numeric) : "--");
+  return `${value}${metric?.unit ? ` ${metric.unit}` : ""}`;
+};
+
+function escapeHtml(value) {
+  return String(value ?? "").replace(/[&<>"']/g, (char) => {
+    const replacements = {
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#39;",
+    };
+    return replacements[char];
+  });
+}
+
+function downloadAuditReport(report) {
+  const sections = (report.sections || [])
+    .map(
+      (section) => `
+        <section>
+          <h2>${escapeHtml(section.title || "报告段落")}</h2>
+          <p>${escapeHtml(section.content || "")}</p>
+        </section>`,
+    )
+    .join("");
+  const evidence = (report.evidence_items || [])
+    .map((item) => `<li><strong>${escapeHtml(item.id || item.source_label || "证据")}</strong>${escapeHtml(item.quote || "")}</li>`)
+    .join("");
+  const html = `<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <title>${escapeHtml(report.title || "综合审计报告")}</title>
+  <style>
+    body { margin: 0; padding: 48px; color: #18181b; font: 14px/1.75 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    main { max-width: 860px; margin: 0 auto; }
+    h1 { margin: 0; font-size: 28px; }
+    .meta { margin: 8px 0 26px; color: #71717a; }
+    .summary { padding: 16px 18px; border: 1px solid #e4e4e7; border-radius: 14px; background: #fafafa; }
+    h2 { margin: 28px 0 8px; font-size: 18px; }
+    p { white-space: pre-wrap; }
+    li { margin: 8px 0; }
+    strong { margin-right: 6px; }
+    @media print { body { padding: 24px; } }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>${escapeHtml(report.title || "综合审计报告")}</h1>
+    <div class="meta">${escapeHtml(report.generated_at ? formatDateTime(report.generated_at) : "已生成")}</div>
+    <p class="summary">${escapeHtml(report.summary || "")}</p>
+    ${sections}
+    <section>
+      <h2>证据清单</h2>
+      <ol>${evidence || "<li>暂无证据项</li>"}</ol>
+    </section>
+  </main>
+</body>
+</html>`;
+  const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  const filename = `${(report.title || "综合审计报告").replace(/[\\/:*?"<>|]+/g, "_")}.html`;
+  link.href = url;
+  link.download = filename;
+  link.click();
+  URL.revokeObjectURL(url);
+}
 
 async function waitTask(taskId, timeoutMs = 180000) {
   const started = Date.now();
@@ -349,6 +422,8 @@ function Workspace({ currentUser, onLogout }) {
   const [documents, setDocuments] = useState([]);
   const [documentLoading, setDocumentLoading] = useState(false);
   const [documentError, setDocumentError] = useState("");
+  const [providerStats, setProviderStats] = useState([]);
+  const [providerStatsError, setProviderStatsError] = useState("");
   const [clock, setClock] = useState("");
 
   useEffect(() => {
@@ -371,8 +446,19 @@ function Workspace({ currentUser, onLogout }) {
     }
   }
 
+  async function loadProviderStats() {
+    setProviderStatsError("");
+    try {
+      const response = await api.tasks.providerSummary({ window_hours: 24 });
+      setProviderStats(response.items || []);
+    } catch (error) {
+      setProviderStatsError(error.message || "运行统计加载失败");
+    }
+  }
+
   useEffect(() => {
     loadDocuments();
+    loadProviderStats();
   }, []);
 
   const moduleTitle = activeModule ? MODULES.find((item) => item.id === activeModule)?.title : "工作台";
@@ -445,6 +531,8 @@ function Workspace({ currentUser, onLogout }) {
             documents={documents}
             loading={documentLoading}
             error={documentError}
+            providerStats={providerStats}
+            providerStatsError={providerStatsError}
             onOpen={setActiveModule}
           />
         )}
@@ -453,9 +541,13 @@ function Workspace({ currentUser, onLogout }) {
   );
 }
 
-function ConsoleHome({ currentUser, documents, loading, error, onOpen }) {
+function ConsoleHome({ currentUser, documents, loading, error, providerStats, providerStatsError, onOpen }) {
   const structuredCount = documents.filter((item) => item.document_category === "structured_metrics").length;
   const narrativeCount = documents.filter((item) => item.document_category === "narrative_context").length;
+  const providerEventCount = providerStats.reduce((sum, item) => sum + (item.event_count || 0), 0);
+  const providerFailedCount = providerStats
+    .filter((item) => item.status === "failed")
+    .reduce((sum, item) => sum + (item.event_count || 0), 0);
 
   return (
     <section className="console-home">
@@ -472,6 +564,11 @@ function ConsoleHome({ currentUser, documents, loading, error, onOpen }) {
         <StatCard label="文档总数" value={loading ? "..." : documents.length} helper={error || "资料库已同步"} />
         <StatCard label="结构化指标" value={structuredCount} helper="可用于趋势与检索" />
         <StatCard label="病历叙事" value={narrativeCount} helper="可用于智能洞察上下文" />
+        <StatCard
+          label="近 24h 链路调用"
+          value={providerEventCount}
+          helper={providerStatsError || (providerFailedCount ? `${providerFailedCount} 次异常` : "运行链路可追踪")}
+        />
       </div>
 
       <div className="module-grid">
@@ -617,6 +714,55 @@ function IntakeModule({ onDocumentsChanged }) {
 }
 
 function VaultModule({ documents, loading, error, onRefresh }) {
+  const [reviewState, setReviewState] = useState({
+    open: false,
+    fallbackDoc: null,
+    detail: null,
+    ocr: null,
+    loading: false,
+    error: "",
+  });
+  const reviewRequestRef = useRef(0);
+
+  async function openReview(doc) {
+    const requestId = reviewRequestRef.current + 1;
+    reviewRequestRef.current = requestId;
+    setReviewState({
+      open: true,
+      fallbackDoc: doc,
+      detail: null,
+      ocr: null,
+      loading: true,
+      error: "",
+    });
+    try {
+      const detail = await api.documents.getById(doc.id);
+      const ocrResultId = detail.current_ocr_result_id || detail.ocr_result_id;
+      const ocr = ocrResultId ? await api.ocr.getRevision(ocrResultId) : null;
+      if (reviewRequestRef.current !== requestId) return;
+      setReviewState({
+        open: true,
+        fallbackDoc: doc,
+        detail,
+        ocr,
+        loading: false,
+        error: "",
+      });
+    } catch (err) {
+      if (reviewRequestRef.current !== requestId) return;
+      setReviewState((state) => ({
+        ...state,
+        loading: false,
+        error: err.message || "加载文档审阅详情失败",
+      }));
+    }
+  }
+
+  function closeReview() {
+    reviewRequestRef.current += 1;
+    setReviewState((state) => ({ ...state, open: false }));
+  }
+
   return (
     <section className="panel full">
       <div className="section-toolbar">
@@ -633,7 +779,7 @@ function VaultModule({ documents, loading, error, onRefresh }) {
         {loading ? <p className="empty">加载文档中...</p> : null}
         {!loading && documents.length === 0 ? <p className="empty">暂无文档。</p> : null}
         {documents.map((doc) => (
-          <article className="document-card" key={doc.id}>
+          <button className="document-card document-card-button" key={doc.id} onClick={() => openReview(doc)} type="button">
             <div className="doc-icon">{doc.document_category === "structured_metrics" ? "验" : "病"}</div>
             <div>
               <h4>{documentTitle(doc)}</h4>
@@ -643,10 +789,91 @@ function VaultModule({ documents, loading, error, onRefresh }) {
                 报告日期 {formatDate(doc.report_date)} | 上传于 {formatDate(doc.uploaded_at || doc.created_at)}
               </small>
             </div>
-          </article>
+          </button>
         ))}
       </div>
+      {reviewState.open ? (
+        <DocumentReviewModal
+          detail={reviewState.detail}
+          error={reviewState.error}
+          fallbackDoc={reviewState.fallbackDoc}
+          loading={reviewState.loading}
+          ocr={reviewState.ocr}
+          onClose={closeReview}
+        />
+      ) : null}
     </section>
+  );
+}
+
+function DocumentReviewModal({ detail, fallbackDoc, ocr, loading, error, onClose }) {
+  const doc = detail || fallbackDoc || {};
+  const measurements = detail?.measurements || [];
+  const normalizedPayload = detail?.normalized_payload || {};
+  const rawText = ocr?.raw_text || "";
+
+  return (
+    <div className="report-modal-backdrop" role="presentation" onClick={onClose}>
+      <article
+        className="report-modal document-review-modal"
+        role="dialog"
+        aria-modal="true"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <header>
+          <div>
+            <h2>{documentTitle(doc)}</h2>
+            <p>
+              {categoryLabel(doc.document_category)} | 版本 {doc.current_version_number || "--"} | 报告日期 {formatDate(doc.report_date)}
+            </p>
+          </div>
+          <button className="ghost-button" onClick={onClose} type="button">
+            关闭
+          </button>
+        </header>
+        <div className="report-content">
+          {error ? <div className="notice error">{error}</div> : null}
+          {loading ? (
+            <div className="review-loading">
+              <span className="spinner tiny" />
+              加载审阅详情...
+            </div>
+          ) : (
+            <>
+              <div className="review-meta">
+                <span>OCR：{ocr?.provider_name || "--"}</span>
+                <span>修订：{ocr?.revision_number || "--"}</span>
+                <span>指标：{measurements.length}</span>
+                <span>文件 ID：{doc.record_file_id || "--"}</span>
+              </div>
+              <div className="review-grid">
+                <section className="review-panel">
+                  <h3>OCR 原文</h3>
+                  <pre className="review-pre">{rawText || "暂无 OCR 原文。"}</pre>
+                </section>
+                <section className="review-panel">
+                  <h3>结构化指标</h3>
+                  {measurements.length === 0 ? <p className="empty">暂无结构化指标。</p> : null}
+                  <div className="review-metric-list">
+                    {measurements.map((metric) => (
+                      <div className="review-metric-row" key={metric.id}>
+                        <strong>{metric.name}</strong>
+                        <span>{metricDisplayValue(metric)}</span>
+                        <small>{formatDate(metric.observed_at)}</small>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              </div>
+              <details className="review-payload">
+                <summary>标准化载荷</summary>
+                <pre className="review-pre">{JSON.stringify(normalizedPayload, null, 2)}</pre>
+              </details>
+            </>
+          )}
+        </div>
+      </article>
+    </div>
   );
 }
 
@@ -917,9 +1144,15 @@ function AuditReportModal({ report, onClose }) {
             <h2>{report.title || "综合审计报告"}</h2>
             <p>{report.generated_at ? formatDateTime(report.generated_at) : "已生成"}</p>
           </div>
-          <button className="ghost-button" onClick={onClose} type="button">
-            关闭
-          </button>
+          <div className="modal-actions">
+            <button className="ghost-button" onClick={() => downloadAuditReport(report)} type="button">
+              <Download size={14} />
+              导出报告
+            </button>
+            <button className="ghost-button" onClick={onClose} type="button">
+              关闭
+            </button>
+          </div>
         </header>
         <div className="report-content">
           <p className="report-summary">{report.summary}</p>
