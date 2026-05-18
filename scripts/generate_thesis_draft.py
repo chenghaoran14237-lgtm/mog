@@ -375,6 +375,21 @@ def set_cell_width(cell, width_cm: float) -> None:
     tc_w.set(qn("w:type"), "dxa")
 
 
+def set_cell_margins(cell, *, left: int = 0, right: int = 0, top: int = 0, bottom: int = 0) -> None:
+    tc_pr = cell._tc.get_or_add_tcPr()
+    tc_mar = tc_pr.find(qn("w:tcMar"))
+    if tc_mar is None:
+        tc_mar = OxmlElement("w:tcMar")
+        tc_pr.append(tc_mar)
+    for edge, value in {"top": top, "left": left, "bottom": bottom, "right": right}.items():
+        node = tc_mar.find(qn(f"w:{edge}"))
+        if node is None:
+            node = OxmlElement(f"w:{edge}")
+            tc_mar.append(node)
+        node.set(qn("w:w"), str(value))
+        node.set(qn("w:type"), "dxa")
+
+
 def add_figure(doc: Document, filename: str, caption: str, *, width_cm: float = 14.8) -> None:
     path = FIGURE_DIR / filename
     add_picture_with_caption(doc, path, caption, width_cm=width_cm)
@@ -408,23 +423,9 @@ def add_cover(doc: Document) -> None:
     add_center_text(doc, SCHOOL, 26, bold=False, font_name="楷体")
     add_cover_blank(doc, centered=True)
     add_center_text(doc, "毕业设计（论文）", 42, bold=True, font_name="楷体")
-    for _ in range(7):
+    for _ in range(8):
         add_cover_blank(doc)
-    title_lines = split_cover_title(TITLE)
-    for index, line in enumerate(title_lines):
-        is_last = index == len(title_lines) - 1
-        add_cover_line(
-            doc,
-            "题    目：" if index == 0 else "",
-            line,
-            width_chars=28 if index == 0 else 36,
-            trailing_blanks=2 if is_last else 0,
-        )
-    add_cover_line(doc, "学    院：", COLLEGE, width_chars=28)
-    add_cover_line(doc, "专    业：", MAJOR, width_chars=28)
-    add_cover_student_line(doc, STUDENT, CLASS_ID.replace("（", "/").replace("）", ""))
-    add_cover_line(doc, "指导老师/督导老师：", ADVISOR, width_chars=22)
-    add_cover_line(doc, "起止时间：", DATE_RANGE, width_chars=28, trailing_blanks=0)
+    add_cover_form(doc)
 
 
 def add_cover_blank(doc: Document, *, centered: bool = False, first_line_indent: float | None = None) -> None:
@@ -441,6 +442,73 @@ def split_cover_title(title: str) -> list[str]:
         left, right = title.split(marker, 1)
         return [left + marker, right]
     return [title]
+
+
+def clear_cell(cell) -> None:
+    cell.text = ""
+    for paragraph in cell.paragraphs:
+        clear_paragraph(paragraph)
+
+
+def set_cover_cell_text(cell, text: str, *, bold: bool = False, underline: bool = False, align=None, size: float = 14) -> None:
+    cell.vertical_alignment = WD_ALIGN_VERTICAL.CENTER
+    set_cell_margins(cell, left=40, right=40, top=0, bottom=0)
+    clear_cell(cell)
+    p = cell.paragraphs[0]
+    set_paragraph_format(p, after=0)
+    if align is not None:
+        p.alignment = align
+    run = p.add_run(text)
+    set_run_font(run, size, bold=bold, name="宋体")
+    run.underline = underline
+
+
+def set_cover_row_widths(row) -> None:
+    for cell, width in zip(row.cells, [3.0, 2.2, 3.0, 7.0], strict=True):
+        set_cell_width(cell, width)
+
+
+def add_cover_form_row(table, label: str, value: str) -> None:
+    row = table.add_row()
+    set_cover_row_widths(row)
+    value_cell = row.cells[1].merge(row.cells[3])
+    set_cover_cell_text(row.cells[0], label, bold=True)
+    set_cover_cell_text(value_cell, value, underline=True)
+
+
+def add_cover_form(doc: Document) -> None:
+    table = doc.add_table(rows=0, cols=4)
+    table.alignment = WD_TABLE_ALIGNMENT.CENTER
+    table.autofit = False
+    remove_table_borders(table)
+
+    title_row = table.add_row()
+    set_cover_row_widths(title_row)
+    title_cell = title_row.cells[1].merge(title_row.cells[3])
+    set_cover_cell_text(title_row.cells[0], "题    目：", bold=True)
+    clear_cell(title_cell)
+    title_cell.vertical_alignment = WD_ALIGN_VERTICAL.CENTER
+    set_cell_margins(title_cell, left=40, right=40, top=0, bottom=0)
+    for index, line in enumerate(split_cover_title(TITLE)):
+        p = title_cell.paragraphs[0] if index == 0 else title_cell.add_paragraph()
+        set_paragraph_format(p, after=0)
+        run = p.add_run(line)
+        set_run_font(run, 14, name="宋体")
+        run.underline = True
+
+    add_cover_form_row(table, "学    院：", COLLEGE)
+    add_cover_form_row(table, "专    业：", MAJOR)
+    add_cover_form_row(table, "学生姓名：", STUDENT)
+    add_cover_form_row(table, "班级/学号：", CLASS_ID.replace("（", "/").replace("）", ""))
+
+    row = table.add_row()
+    set_cover_row_widths(row)
+    label_cell = row.cells[0].merge(row.cells[1])
+    value_cell = row.cells[2].merge(row.cells[3])
+    set_cover_cell_text(label_cell, "指导老师/督导老师：", bold=True)
+    set_cover_cell_text(value_cell, ADVISOR, underline=True)
+
+    add_cover_form_row(table, "起止时间：", DATE_RANGE)
 
 
 def add_cover_line(
