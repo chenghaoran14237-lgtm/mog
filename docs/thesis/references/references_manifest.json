@@ -457,11 +457,24 @@
       "citation": "Thirunavukarasu A J, Ting D S J, Elangovan K, et al. Large language models in medicine[J]. Nature Medicine, 2023,29:1930-1940.",
       "source_url": "https://www.nature.com/articles/s41591-023-02448-8",
       "download_urls": [
-        "https://www.nature.com/articles/s41591-023-02448-8"
+        "https://www.nature.com/articles/s41591-023-02448-8",
+        "https://www.nature.com/articles/s41591-023-02448-8.pdf"
       ],
-      "note": "官方 Nature 条目可核验题名、期刊、卷期页码和 DOI；不下载受版权限制全文。",
-      "downloaded_files": [],
-      "errors": []
+      "note": "已保存官方 Nature HTML 页面用于核验题名、作者、期刊、卷期页码和 DOI；PDF 请求会跳转到 Nature 身份/ Cookie 流程，本机命令行只能取得 HTML，未保存伪 PDF。",
+      "downloaded_files": [
+        {
+          "url": "https://www.nature.com/articles/s41591-023-02448-8",
+          "file": "files/23_llm_medicine_nature_medicine.html",
+          "content_type": "text/html",
+          "bytes": 394432
+        }
+      ],
+      "errors": [
+        {
+          "url": "https://www.nature.com/articles/s41591-023-02448-8.pdf",
+          "error": "Nature PDF request redirected through IDP/cookie flow and returned HTML instead of a PDF; official article HTML was saved for verification."
+        }
+      ]
     },
     {
       "number": 24,
@@ -469,10 +482,24 @@
       "citation": "Wornow M, Xu Y, Thapa R, et al. The shaky foundations of large language models and foundation models for electronic health records[J]. npj Digital Medicine, 2023,6:135.",
       "source_url": "https://www.nature.com/articles/s41746-023-00879-8",
       "download_urls": [
-        "https://www.nature.com/articles/s41746-023-00879-8"
+        "https://www.nature.com/articles/s41746-023-00879-8",
+        "https://www.nature.com/articles/s41746-023-00879-8.pdf"
       ],
-      "note": "官方 Nature 条目可核验题名、期刊、文章号和 DOI；不下载受版权限制全文。",
-      "downloaded_files": [],
+      "note": "已保存官方 Nature HTML 页面和官方 PDF，用于核验题名、作者、期刊、文章号和 DOI。",
+      "downloaded_files": [
+        {
+          "url": "https://www.nature.com/articles/s41746-023-00879-8",
+          "file": "files/24_ehr_foundation_models_npj.html",
+          "content_type": "text/html",
+          "bytes": 458591
+        },
+        {
+          "url": "https://www.nature.com/articles/s41746-023-00879-8.pdf",
+          "file": "files/24_ehr_foundation_models_npj.pdf",
+          "content_type": "application/pdf",
+          "bytes": 1793771
+        }
+      ],
       "errors": []
     }
   ]

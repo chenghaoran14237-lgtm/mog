@@ -123,14 +123,18 @@ LangChain. LangGraph overview[EB/OL]. [2026-05-07]. https://docs.langchain.com/o
 Source: https://docs.langchain.com/oss/python/langgraph/overview
 - files/22_langgraph_overview.html (720106 bytes)
 
-## [23] llm_medicine_nature_medicine - 已核验
+## [23] llm_medicine_nature_medicine - 已下载
 Thirunavukarasu A J, Ting D S J, Elangovan K, et al. Large language models in medicine[J]. Nature Medicine, 2023,29:1930-1940.
 Source: https://www.nature.com/articles/s41591-023-02448-8
 DOI: https://doi.org/10.1038/s41591-023-02448-8
-Note: 保存官方 Nature 条目用于核验，不下载受版权限制全文。
+Note: 已保存官方 Nature HTML 页面用于核验题名、作者、期刊、卷期页码和 DOI；PDF 请求会跳转到 Nature 身份/ Cookie 流程，本机命令行只能取得 HTML，未保存伪 PDF。
+- files/23_llm_medicine_nature_medicine.html (394432 bytes)
+- ERROR https://www.nature.com/articles/s41591-023-02448-8.pdf: Nature PDF request redirected through IDP/cookie flow and returned HTML instead of a PDF.
 
-## [24] ehr_foundation_models_npj - 已核验
+## [24] ehr_foundation_models_npj - 已下载
 Wornow M, Xu Y, Thapa R, et al. The shaky foundations of large language models and foundation models for electronic health records[J]. npj Digital Medicine, 2023,6:135.
 Source: https://www.nature.com/articles/s41746-023-00879-8
 DOI: https://doi.org/10.1038/s41746-023-00879-8
-Note: 保存官方 Nature 条目用于核验，不下载受版权限制全文。
+Note: 已保存官方 Nature HTML 页面和官方 PDF，用于核验题名、作者、期刊、文章号和 DOI。
+- files/24_ehr_foundation_models_npj.html (458591 bytes)
+- files/24_ehr_foundation_models_npj.pdf (1793771 bytes)
