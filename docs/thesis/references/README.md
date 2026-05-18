@@ -122,3 +122,15 @@ Source: https://arxiv.org/abs/2308.08155
 LangChain. LangGraph overview[EB/OL]. [2026-05-07]. https://docs.langchain.com/oss/python/langgraph/overview
 Source: https://docs.langchain.com/oss/python/langgraph/overview
 - files/22_langgraph_overview.html (720106 bytes)
+
+## [23] llm_medicine_nature_medicine - 已核验
+Thirunavukarasu A J, Ting D S J, Elangovan K, et al. Large language models in medicine[J]. Nature Medicine, 2023,29:1930-1940.
+Source: https://www.nature.com/articles/s41591-023-02448-8
+DOI: https://doi.org/10.1038/s41591-023-02448-8
+Note: 保存官方 Nature 条目用于核验，不下载受版权限制全文。
+
+## [24] ehr_foundation_models_npj - 已核验
+Wornow M, Xu Y, Thapa R, et al. The shaky foundations of large language models and foundation models for electronic health records[J]. npj Digital Medicine, 2023,6:135.
+Source: https://www.nature.com/articles/s41746-023-00879-8
+DOI: https://doi.org/10.1038/s41746-023-00879-8
+Note: 保存官方 Nature 条目用于核验，不下载受版权限制全文。

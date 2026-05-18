@@ -450,6 +450,30 @@
         }
       ],
       "errors": []
+    },
+    {
+      "number": 23,
+      "short_name": "llm_medicine_nature_medicine",
+      "citation": "Thirunavukarasu A J, Ting D S J, Elangovan K, et al. Large language models in medicine[J]. Nature Medicine, 2023,29:1930-1940.",
+      "source_url": "https://www.nature.com/articles/s41591-023-02448-8",
+      "download_urls": [
+        "https://www.nature.com/articles/s41591-023-02448-8"
+      ],
+      "note": "官方 Nature 条目可核验题名、期刊、卷期页码和 DOI；不下载受版权限制全文。",
+      "downloaded_files": [],
+      "errors": []
+    },
+    {
+      "number": 24,
+      "short_name": "ehr_foundation_models_npj",
+      "citation": "Wornow M, Xu Y, Thapa R, et al. The shaky foundations of large language models and foundation models for electronic health records[J]. npj Digital Medicine, 2023,6:135.",
+      "source_url": "https://www.nature.com/articles/s41746-023-00879-8",
+      "download_urls": [
+        "https://www.nature.com/articles/s41746-023-00879-8"
+      ],
+      "note": "官方 Nature 条目可核验题名、期刊、文章号和 DOI；不下载受版权限制全文。",
+      "downloaded_files": [],
+      "errors": []
     }
   ]
 }
