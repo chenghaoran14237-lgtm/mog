@@ -35,13 +35,22 @@ ACCENT = "000000"
 LIGHT = "F2F2F2"
 GRID = "D7DEE5"
 REFERENCE_COUNT = 24
+CITATION_FONT_SIZE = 10.5
 
 
 def load_snapshot() -> dict:
     return json.loads(SNAPSHOT_FILE.read_text(encoding="utf-8"))
 
 
-def set_run_font(run, size: float = 10.5, *, bold: bool = False, name: str = "宋体", color: str | None = None) -> None:
+def set_run_font(
+    run,
+    size: float = 10.5,
+    *,
+    bold: bool = False,
+    name: str = "宋体",
+    color: str | None = None,
+    superscript: bool = False,
+) -> None:
     latin_name = "Times New Roman" if name == "Times New Roman" else name
     run.font.name = name
     run.font.size = Pt(size)
@@ -57,6 +66,7 @@ def set_run_font(run, size: float = 10.5, *, bold: bool = False, name: str = "�
     r_fonts.set(qn("w:cs"), latin_name)
     if color:
         run.font.color.rgb = RGBColor.from_string(color)
+    run.font.superscript = superscript
 
 
 def set_paragraph_format(paragraph, *, first_line: bool = False, align=None, before: float = 0, after: float = 0) -> None:
@@ -214,27 +224,27 @@ def citation_numbers(text: str) -> list[int]:
 def add_reference_field(paragraph, number: int, *, size: float) -> None:
     # Use Word REF fields so citation numbers are cross-references, not static text.
     run = add_field(paragraph, f"REF {reference_bookmark_name(number)} \\h", str(number))
-    set_run_font(run, size, name="Times New Roman")
+    set_run_font(run, size, name="Times New Roman", superscript=True)
 
 
 def add_citation_run(paragraph, citation: str, *, size: float) -> None:
     inner = citation[1:-1]
     if not citation_numbers(inner):
         run = paragraph.add_run(citation)
-        set_run_font(run, size, name="Times New Roman")
+        set_run_font(run, CITATION_FONT_SIZE, name="Times New Roman", superscript=True)
         return
     run = paragraph.add_run("[")
-    set_run_font(run, size, name="Times New Roman")
+    set_run_font(run, CITATION_FONT_SIZE, name="Times New Roman", superscript=True)
     for part in re.split(r"(\d+)", inner):
         if not part:
             continue
         if part.isdigit():
-            add_reference_field(paragraph, int(part), size=size)
+            add_reference_field(paragraph, int(part), size=CITATION_FONT_SIZE)
         else:
             run = paragraph.add_run(part)
-            set_run_font(run, size, name="Times New Roman")
+            set_run_font(run, CITATION_FONT_SIZE, name="Times New Roman", superscript=True)
     run = paragraph.add_run("]")
-    set_run_font(run, size, name="Times New Roman")
+    set_run_font(run, CITATION_FONT_SIZE, name="Times New Roman", superscript=True)
 
 
 def add_bookmarked_reference_number(paragraph, number: int, *, size: float) -> None:
