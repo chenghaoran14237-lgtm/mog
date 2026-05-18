@@ -7,7 +7,7 @@ from pathlib import Path
 from docx import Document
 from docx.enum.section import WD_SECTION_START
 from docx.enum.table import WD_ALIGN_VERTICAL, WD_TABLE_ALIGNMENT
-from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_BREAK, WD_TAB_ALIGNMENT, WD_TAB_LEADER
+from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_BREAK
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 from docx.shared import Cm, Pt, RGBColor
@@ -203,7 +203,6 @@ def add_runs_with_citations(paragraph, text: str, *, bold: bool = False) -> None
         if re.fullmatch(r"\[[0-9,\-\s]+\]", part):
             run = paragraph.add_run(part)
             set_run_font(run, 10.5, name="Times New Roman")
-            run.font.superscript = True
         else:
             run = paragraph.add_run(part)
             set_run_font(run, 10.5, bold=bold)
@@ -280,6 +279,32 @@ def add_table(doc: Document, caption: str, headers: list[str], rows: list[list[s
         for idx, value in enumerate(row):
             set_cell_text(cells[idx], value)
     doc.add_paragraph()
+
+
+def remove_table_borders(table) -> None:
+    tbl_pr = table._tbl.tblPr
+    borders = tbl_pr.first_child_found_in("w:tblBorders")
+    if borders is not None:
+        tbl_pr.remove(borders)
+    borders = OxmlElement("w:tblBorders")
+    for edge in ("top", "left", "bottom", "right", "insideH", "insideV"):
+        border = OxmlElement(f"w:{edge}")
+        border.set(qn("w:val"), "nil")
+        border.set(qn("w:sz"), "0")
+        border.set(qn("w:space"), "0")
+        border.set(qn("w:color"), "FFFFFF")
+        borders.append(border)
+    tbl_pr.append(borders)
+
+
+def set_cell_width(cell, width_cm: float) -> None:
+    tc_pr = cell._tc.get_or_add_tcPr()
+    tc_w = tc_pr.find(qn("w:tcW"))
+    if tc_w is None:
+        tc_w = OxmlElement("w:tcW")
+        tc_pr.append(tc_w)
+    tc_w.set(qn("w:w"), str(int(width_cm * 567)))
+    tc_w.set(qn("w:type"), "dxa")
 
 
 def add_figure(doc: Document, filename: str, caption: str, *, width_cm: float = 14.8) -> None:
@@ -488,7 +513,7 @@ def load_toc_pages() -> dict[str, str]:
         "第二章 相关技术与系统基础": "5",
         "2.1 医疗资料标准化与电子病历文本挖掘": "5",
         "2.2 医疗大模型、知识增强与 RAG 方法": "5",
-        "2.3 Agent 工作流、工具调用与状态机编排": "6",
+        "2.3 Agent 工作流与状态机编排": "6",
         "2.4 Provider 抽象与外部能力接入": "7",
         "2.5 本项目已有实现基础": "8",
         "第三章 需求分析与总体设计": "10",
@@ -501,7 +526,7 @@ def load_toc_pages() -> dict[str, str]:
         "第四章 系统详细实现": "19",
         "4.1 文件上传与 OCR 处理实现": "19",
         "4.2 标准化与版本化入库实现": "19",
-        "4.3 综合审计报告 LangGraph 状态机实现": "20",
+        "4.3 综合审计报告 LangGraph 实现": "20",
         "4.4 审计事件与节点状态持久化": "22",
         "4.5 前端模块实现": "23",
         "第五章 测试与运行效果分析": "26",
@@ -518,17 +543,22 @@ def load_toc_pages() -> dict[str, str]:
     return defaults
 
 
-def add_toc_line(doc: Document, title: str, page: str, *, level: int = 0, bold: bool = False) -> None:
-    p = doc.add_paragraph()
+def set_toc_cell(cell, text: str, *, level: int = 0, bold: bool = False, align=None) -> None:
+    cell.vertical_alignment = WD_ALIGN_VERTICAL.CENTER
+    cell.text = ""
+    p = cell.paragraphs[0]
+    set_paragraph_format(p, first_line=False, align=align, after=0)
     p.paragraph_format.left_indent = Cm(0.65 * level)
-    p.paragraph_format.space_after = Pt(2)
-    p.paragraph_format.line_spacing = Pt(18)
-    p.paragraph_format.tab_stops.add_tab_stop(Cm(15.2), WD_TAB_ALIGNMENT.RIGHT, WD_TAB_LEADER.DOTS)
-    run = p.add_run(title)
+    run = p.add_run(text)
     set_run_font(run, 10.5 if not bold else 11, bold=bold, name="宋体")
-    p.add_run("\t")
-    page_run = p.add_run(page)
-    set_run_font(page_run, 10.5, bold=bold, name="宋体")
+
+
+def add_toc_line(table, row_index: int, title: str, page: str, *, level: int = 0, bold: bool = False) -> None:
+    row = table.rows[row_index]
+    set_cell_width(row.cells[0], 14.2)
+    set_cell_width(row.cells[1], 1.2)
+    set_toc_cell(row.cells[0], title, level=level, bold=bold)
+    set_toc_cell(row.cells[1], page, bold=bold, align=WD_ALIGN_PARAGRAPH.RIGHT)
 
 
 def add_toc(doc: Document) -> None:
@@ -544,7 +574,7 @@ def add_toc(doc: Document) -> None:
         ("第二章 相关技术与系统基础", "第二章 相关技术与系统基础", 0, True),
         ("2.1 医疗资料标准化与电子病历文本挖掘", "2.1 医疗资料标准化与电子病历文本挖掘", 1, False),
         ("2.2 医疗大模型、知识增强与 RAG 方法", "2.2 医疗大模型、知识增强与 RAG 方法", 1, False),
-        ("2.3 Agent 工作流、工具调用与状态机编排", "2.3 Agent 工作流、工具调用与状态机编排", 1, False),
+        ("2.3 Agent 工作流与状态机编排", "2.3 Agent 工作流与状态机编排", 1, False),
         ("2.4 Provider 抽象与外部能力接入", "2.4 Provider 抽象与外部能力接入", 1, False),
         ("2.5 本项目已有实现基础", "2.5 本项目已有实现基础", 1, False),
         ("第三章 需求分析与总体设计", "第三章 需求分析与总体设计", 0, True),
@@ -557,7 +587,7 @@ def add_toc(doc: Document) -> None:
         ("第四章 系统详细实现", "第四章 系统详细实现", 0, True),
         ("4.1 文件上传与 OCR 处理实现", "4.1 文件上传与 OCR 处理实现", 1, False),
         ("4.2 标准化与版本化入库实现", "4.2 标准化与版本化入库实现", 1, False),
-        ("4.3 综合审计报告 LangGraph 状态机实现", "4.3 综合审计报告 LangGraph 状态机实现", 1, False),
+        ("4.3 综合审计报告 LangGraph 实现", "4.3 综合审计报告 LangGraph 实现", 1, False),
         ("4.4 审计事件与节点状态持久化", "4.4 审计事件与节点状态持久化", 1, False),
         ("4.5 前端模块实现", "4.5 前端模块实现", 1, False),
         ("第五章 测试与运行效果分析", "第五章 测试与运行效果分析", 0, True),
@@ -569,8 +599,12 @@ def add_toc(doc: Document) -> None:
         ("参考文献", "参考文献", 0, True),
         ("致谢", "致谢", 0, True),
     ]
-    for title, key, level, bold in entries:
-        add_toc_line(doc, title, pages.get(key, ""), level=level, bold=bold)
+    table = doc.add_table(rows=len(entries), cols=2)
+    table.alignment = WD_TABLE_ALIGNMENT.CENTER
+    table.autofit = False
+    remove_table_borders(table)
+    for idx, (title, key, level, bold) in enumerate(entries):
+        add_toc_line(table, idx, title, pages.get(key, ""), level=level, bold=bold)
 
 
 EXPANSION_TEXT: dict[str, list[str]] = {
@@ -582,12 +616,12 @@ EXPANSION_TEXT: dict[str, list[str]] = {
         "因此，本文的主要目标可以概括为三个层次。第一，完成医疗资料处理底座，使原始文件、OCR 文本、结构化文档、版本快照和指标表形成稳定的数据链路。第二，完成基于 LangGraph 的综合审计报告状态机，使多个 Agent 节点能够围绕同一份 GraphState 协作执行。第三，完成前端可视化展示，使用户能够看到真实事件如何驱动节点高亮和边流转，而不是只看到静态流程图。这三个层次共同构成本文工程实现的核心。",
     ],
     "chapter_two": [
-        "医疗资料标准化的关键是确定哪些信息必须结构化，哪些信息可以作为叙事事实保存。对于数值型检验指标，系统需要保存指标名称、数值、单位、参考范围、异常标记和观察时间；对于病历摘要、影像结论和总检建议，系统更适合保存为 prose_facts 或 narrative_context，避免把自然语言强行拆成错误的数值字段。这样的区分能够降低标准化失败对后续审计的影响，也使系统在面对不同报告模板时具有更好的容错能力。",
-        "在本文系统中，标准化不是一次性覆盖操作，而是一个可版本化过程。每次 OCR 结果进入标准化服务后，系统会生成 ExtractedDocument 当前投影，同时创建 DocumentVersion 保存版本快照。这样做的原因是 OCR Provider、LLM Provider 和规则库都可能发生变化，若系统直接覆盖旧结果，就无法解释历史报告为何得出当时的结论。版本化设计让每次综合审计报告都可以绑定具体 document_version_id，从而保证报告证据能够回到当时使用的结构化结果。",
-        "Provider 抽象在本项目中承担了工程隔离作用。OCR、LLM、标准化和存储都可能在不同环境下切换具体实现，例如文本样本使用 plaintext，图片样本在密钥配置后使用百度 OCR，部署时还可以接入视觉模型或对象存储；标准化在网络不可用时使用规则兜底，在可用时调用兼容 OpenAI 协议的模型。若业务服务直接依赖某个具体 SDK，后续替换成本会很高。本文通过 ProviderGateway 记录调用事件、耗时、状态和错误信息，使外部能力既可替换，又可被审计。",
-        "LangGraph 状态机的核心不是“多写几个函数”，而是把节点之间的控制权交给状态和条件边。AuditGraphState 中保存 selected_document_version_ids、documents、measurements、knowledge_chunks、knowledge_context、completed_agents、route_history、evidence_items、citation_issues、safety_issues、report_draft 和 final_report 等字段。每个节点只负责读取必要字段并返回局部更新，路由节点根据状态决定下一步。这样可以避免单个服务函数无限膨胀，也便于前端根据事件流展示节点执行过程。",
-        "多 Agent 协作在本文中采用职责拆分，而不是多个模型互相聊天。document_quality_agent 检查资料是否完整，timeline_builder 组织时间线，measurement_consistency_agent 检查指标变化和异常，risk_agent 生成非诊断性关注点，knowledge_retrieval_agent 检索医学审计知识，evidence_agent 负责证据绑定，conflict_agent 检查叙事事实与结构化指标之间的冲突，compliance_agent 检查结论是否缺少证据，report_composer 负责报告组织，citation_checker 和 safety_reviewer 分别进行引用和安全审查。各节点职责边界清晰，便于测试和论文说明。",
-        "项目已有基础包括 FastAPI 路由、SQLAlchemy 模型、Pydantic 数据校验、React 前端模块和 Mock 体检数据脚本。这些基础并不是论文外的附属内容，而是支撑 LangGraph 架构落地的工程条件。若没有稳定的数据模型，状态机无法获得可靠输入；若没有事件表和节点状态表，前端无法展示真实流转；若没有 Mock 数据，测试和答辩演示无法稳定复现。因此本章所述基础技术与后续系统实现之间存在直接对应关系。",
+        "医疗资料标准化的关键是确定哪些信息必须结构化，哪些信息可以作为叙事事实保存。对于数值型检验指标，系统需要保存指标名称、数值、单位、参考范围、异常标记和观察时间；对于病历摘要、影像结论和总检建议，系统更适合保存为 prose_facts 或 narrative_context，避免把自然语言强行拆成错误的数值字段。这样的区分能够降低标准化失败对后续审计的影响，也使系统在面对不同报告模板时具有更好的容错能力[4-8]。",
+        "在本文系统中，标准化不是一次性覆盖操作，而是一个可版本化过程。每次 OCR 结果进入标准化服务后，系统会生成 ExtractedDocument 当前投影，同时创建 DocumentVersion 保存版本快照。这样做的原因是 OCR Provider、LLM Provider 和规则库都可能发生变化，若系统直接覆盖旧结果，就无法解释历史报告为何得出当时的结论。版本化设计让每次综合审计报告都可以绑定具体 document_version_id，从而保证报告证据能够回到当时使用的结构化结果[8,15]。",
+        "Provider 抽象在本项目中承担了工程隔离作用。OCR、LLM、标准化和存储都可能在不同环境下切换具体实现，例如文本样本使用 plaintext，图片样本在密钥配置后使用百度 OCR，部署时还可以接入视觉模型或对象存储；标准化在网络不可用时使用规则兜底，在可用时调用兼容 OpenAI 协议的模型。若业务服务直接依赖某个具体 SDK，后续替换成本会很高。本文通过 ProviderGateway 记录调用事件、耗时、状态和错误信息，使外部能力既可替换，又可被审计[14]。",
+        "LangGraph 状态机的核心不是“多写几个函数”，而是把节点之间的控制权交给状态和条件边。AuditGraphState 中保存 selected_document_version_ids、documents、measurements、knowledge_chunks、knowledge_context、completed_agents、route_history、evidence_items、citation_issues、safety_issues、report_draft 和 final_report 等字段。每个节点只负责读取必要字段并返回局部更新，路由节点根据状态决定下一步。这样可以避免单个服务函数无限膨胀，也便于前端根据事件流展示节点执行过程[22]。",
+        "多 Agent 协作在本文中采用职责拆分，而不是多个模型互相聊天。document_quality_agent 检查资料是否完整，timeline_builder 组织时间线，measurement_consistency_agent 检查指标变化和异常，risk_agent 生成非诊断性关注点，knowledge_retrieval_agent 检索医学审计知识，evidence_agent 负责证据绑定，conflict_agent 检查叙事事实与结构化指标之间的冲突，compliance_agent 检查结论是否缺少证据，report_composer 负责报告组织，citation_checker 和 safety_reviewer 分别进行引用和安全审查。各节点职责边界清晰，便于测试和论文说明[20-22]。",
+        "项目已有基础包括 FastAPI 路由、SQLAlchemy 模型、Pydantic 数据校验、React 前端模块和 Mock 体检数据脚本。这些基础并不是论文外的附属内容，而是支撑 LangGraph 架构落地的工程条件。若没有稳定的数据模型，状态机无法获得可靠输入；若没有事件表和节点状态表，前端无法展示真实流转；若没有 Mock 数据，测试和答辩演示无法稳定复现。因此本章所述基础技术与后续系统实现之间存在直接对应关系[14-15]。",
     ],
     "chapter_three": [
         "需求分析阶段首先需要明确用户角色和使用边界。系统面向普通个人用户和答辩演示场景，用户可以上传体检、化验、病历摘要和影像结论等资料，系统负责将资料转化为结构化记录，并在用户主动选择若干文档后生成综合审计报告。系统不提供诊断结论、不推荐具体治疗方案，也不对医生意见作出替代判断。所有风险提示都应以“关注点”“建议复核”“建议结合医生意见”形式表达，并且必须绑定原始证据。",
@@ -683,7 +717,7 @@ def add_chapter_two(doc: Document, snapshot: dict) -> None:
     ]:
         add_body(doc, text)
 
-    add_section(doc, "2.3 Agent 工作流、工具调用与状态机编排")
+    add_section(doc, "2.3 Agent 工作流与状态机编排")
     for text in [
         "在 Agent 工程方向，ReAct 提出将语言模型的推理轨迹和外部行动交替组织，使系统能够根据环境反馈更新计划，并通过工具或知识库获得额外信息[20]。AutoGen 则强调多个可对话、可配置、可使用工具的 Agent 共同完成复杂任务，适用于数学、代码、问答、决策等多种应用场景[21]。这些研究给本文的启发是：复杂任务不应只依赖一次模型调用，而应拆分为多个职责明确的步骤。",
         "不过，医疗审计场景中的多 Agent 不能简单理解为多个聊天机器人互相对话。审计流程更强调状态可追溯、节点职责清晰、条件路由明确和失败路径可处理。LangGraph 提供了基于状态图的 Agent 工作流实现方式，能够表达 START、END、节点、边、条件路由、循环和状态持久化[22]。相比固定流水线，状态图更适合表达“证据不足回到证据节点”“引用检查失败回到审计节点”“安全审查失败回到报告生成节点”等回环。",
@@ -704,7 +738,7 @@ def add_chapter_two(doc: Document, snapshot: dict) -> None:
     ]
     add_table(doc, "表2-1 Provider 抽象及当前配置", ["抽象接口", "当前配置", "功能说明"], rows)
     for text in [
-        "Provider 抽象的核心作用是隔离业务流程与外部能力。OCR、LLM 和存储服务具有明显的不稳定性和环境差异：本地演示时可能只处理纯文本，生产部署时可能需要百度 OCR、视觉模型或对象存储；标准化能力也可能在规则解析、LLM 解析和混合解析之间切换。如果业务服务直接依赖某个具体 SDK，后续替换成本会很高，也不利于记录调用耗时、错误类别和重试结果。",
+        "Provider 抽象的核心作用是隔离业务流程与外部能力。OCR、LLM 和存储服务具有明显的不稳定性和环境差异：本地演示时可能只处理纯文本，生产部署时可能需要百度 OCR、视觉模型或对象存储；标准化能力也可能在规则解析、LLM 解析和混合解析之间切换。如果业务服务直接依赖某个具体 SDK，后续替换成本会很高，也不利于记录调用耗时、错误类别和重试结果。该设计符合软件工程中通过接口边界降低模块耦合、提高可维护性的基本思想[14]。",
         "图2-2展示了本文系统的 Provider 接入方式。业务服务只依赖统一接口，ProviderGateway 负责记录 provider_events、映射异常、统计耗时并隐藏外部服务差异。论文中的测试环境读取 .env 后得到当前配置：ocr_provider 为 auto，normalization_provider 为 llm_direct，llm_provider 为 openai_compatible，storage_provider 为 database_inline。该图由项目配置和 Provider 代码生成，反映当前真实工程状态。",
     ]:
         add_body(doc, text)
@@ -713,7 +747,7 @@ def add_chapter_two(doc: Document, snapshot: dict) -> None:
     add_section(doc, "2.5 本项目已有实现基础")
     for text in [
         "本文实现不是从空白项目开始，而是在开题报告确定的工程路线基础上完成系统化整理和强化。已有基础包括 FastAPI 后端、SQLAlchemy 模型、MySQL 数据库连接、用户认证、文件上传、OCR 结果保存、标准化服务、指标查询、智能洞察对话、RAG 知识库、综合审计报告接口、React 前端页面和 Mock 体检数据脚本。中期阶段暴露出的主要问题是系统展示没有充分体现 LangGraph 架构，因此本文后续实现重点转向综合审计报告模块和状态机可视化。",
-        "在当前版本中，后端路由统一挂载到 /api，已包含 auth、files、ocr、ingestion、documents、document-versions、records、measurements、query、tasks、knowledge、insight、chat 和 audit-reports 等分组。数据库模型覆盖核心业务对象，测试脚本能够创建 admin@qq.com 测试账户并写入 25 份 Mock 文档，其中包含 20 份体检类单据、5 份报告型单据和 85 条结构化指标。综合审计报告模块已经能够持久化 audit_report_runs、audit_report_events 和 audit_report_node_states。",
+        "在当前版本中，后端路由统一挂载到 /api，已包含 auth、files、ocr、ingestion、documents、document-versions、records、measurements、query、tasks、knowledge、insight、chat 和 audit-reports 等分组。数据库模型覆盖核心业务对象，符合关系数据库通过主键、外键和关系模式组织业务对象的建模思路[15]；测试脚本能够创建 admin@qq.com 测试账户并写入 25 份 Mock 文档，其中包含 20 份体检类单据、5 份报告型单据和 85 条结构化指标。综合审计报告模块已经能够持久化 audit_report_runs、audit_report_events 和 audit_report_node_states。",
         "因此，本文后续章节的图表和表格均以当前源码为依据生成。需要特别说明的是，当前实现中的审计节点以规则审计、知识检索和证据绑定为主，LLM 主要用于标准化、智能洞察和报告生成增强；本文不会虚假描述为每个节点都由大模型自主生成，而是准确表述为“LangGraph 编排多个审计节点，结合规则审计、RAG 检索、证据绑定、条件路由和 LLM 增强能力”。这种表述更符合项目真实状态，也更符合工程类毕业设计的要求。",
     ]:
         add_body(doc, text)
@@ -831,7 +865,7 @@ def add_chapter_four(doc: Document) -> None:
         add_body(doc, text)
     add_figure(doc, "图4-2_标准化与版本化入库流程.png", "图4-2 标准化与版本化入库流程", width_cm=14.8)
 
-    add_section(doc, "4.3 综合审计报告 LangGraph 状态机实现")
+    add_section(doc, "4.3 综合审计报告 LangGraph 实现")
     node_rows = [
         ["load_graph_state", "初始化状态", "读取选中文档版本、指标、运行配置", "next_action、route_history"],
         ["audit_router", "主路由", "根据 completed_agents 和证据状态选择下一个审计节点", "next_action"],
