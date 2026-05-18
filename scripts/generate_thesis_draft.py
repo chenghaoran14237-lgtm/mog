@@ -14,11 +14,12 @@ from docx.shared import Cm, Pt, RGBColor
 
 
 ROOT = Path(__file__).resolve().parents[1]
-ASSET_DIR = ROOT / "docs" / "thesis_assets"
+ASSET_DIR = ROOT / "docs" / "thesis" / "assets"
 FIGURE_DIR = ASSET_DIR / "figures"
+SCREENSHOT_DIR = ASSET_DIR / "screenshots"
 SNAPSHOT_FILE = ASSET_DIR / "project_snapshot.json"
-OUTPUT = ROOT / "docs" / "论文初稿_格式修正版_程浩然_基于LangGraph的多Agent协作框架在医疗审计场景的设计与实现.docx"
-FALLBACK_OUTPUT = ROOT / "docs" / "论文初稿_扩写图修正版_程浩然_基于LangGraph的多Agent协作框架在医疗审计场景的设计与实现.docx"
+OUTPUT = ROOT / "docs" / "thesis" / "drafts" / "论文正文_程浩然_基于LangGraph的多Agent协作框架在医疗审计场景的设计与实现.docx"
+FALLBACK_OUTPUT = ROOT / "docs" / "thesis" / "drafts" / "论文正文_程浩然_自动保存副本.docx"
 TOC_PAGES_FILE = ASSET_DIR / "thesis_toc_pages.json"
 
 TITLE = "基于 LangGraph 的多 Agent 协作框架在医疗审计场景的设计与实现"
@@ -88,7 +89,7 @@ def style_document(doc: Document) -> None:
 
     for style_name, size, bold, outline in [
         ("Heading 1", 16, True, 0),
-        ("Heading 2", 14, True, 1),
+        ("Heading 2", 12, True, 1),
         ("Heading 3", 12, True, 2),
     ]:
         style = doc.styles[style_name]
@@ -220,6 +221,8 @@ def add_body(doc: Document, text: str, *, first_line: bool = True, bold_prefix: 
 
 
 def add_chapter(doc: Document, title: str) -> None:
+    if title.startswith(("第二章", "第三章", "第四章", "第五章", "结束语", "参考文献", "致谢", "附录")):
+        doc.add_page_break()
     p = doc.add_paragraph(style="Heading 1")
     p.alignment = WD_ALIGN_PARAGRAPH.CENTER
     run = p.add_run(title)
@@ -229,7 +232,7 @@ def add_chapter(doc: Document, title: str) -> None:
 def add_section(doc: Document, title: str) -> None:
     p = doc.add_paragraph(style="Heading 2")
     run = p.add_run(title)
-    set_run_font(run, 13, bold=True, name="黑体", color="000000")
+    set_run_font(run, 12, bold=True, name="黑体", color="000000")
 
 
 def add_subsection(doc: Document, title: str) -> None:
@@ -281,6 +284,15 @@ def add_table(doc: Document, caption: str, headers: list[str], rows: list[list[s
 
 def add_figure(doc: Document, filename: str, caption: str, *, width_cm: float = 14.8) -> None:
     path = FIGURE_DIR / filename
+    add_picture_with_caption(doc, path, caption, width_cm=width_cm)
+
+
+def add_screenshot(doc: Document, filename: str, caption: str, *, width_cm: float = 14.8) -> None:
+    path = SCREENSHOT_DIR / filename
+    add_picture_with_caption(doc, path, caption, width_cm=width_cm)
+
+
+def add_picture_with_caption(doc: Document, path: Path, caption: str, *, width_cm: float = 14.8) -> None:
     p = doc.add_paragraph()
     p.alignment = WD_ALIGN_PARAGRAPH.CENTER
     # Body paragraphs use a fixed 18 pt line grid; image paragraphs must override
@@ -404,8 +416,8 @@ def add_abstracts(doc: Document) -> None:
     abstract = (
         "针对个人体检报告、检验单和病历摘要等医疗资料来源分散、格式不统一、处理过程缺少追溯的问题，本文设计并实现了一套基于 LangGraph 的多 Agent 协作医疗审计辅助系统。"
         "系统采用前后端分离架构，后端以 FastAPI、SQLAlchemy 和 MySQL 为基础，围绕原始文件、OCR 结果、文档版本、结构化指标、任务事件和审计事件建立数据模型；"
-        "同时通过 Provider 抽象接入 OCR、标准化和大语言模型能力。综合审计报告模块以 LangGraph 状态图组织文档质量审计、时间线构建、指标一致性检查、风险提示、证据绑定、冲突复核、合规检查、报告生成和安全审查等节点，"
-        "通过条件路由和回环机制保证审计结论能够补充证据、回退复核并持久化。前端实现文档接入、文档库、指标探索、智能洞察和综合审计报告展示，能够直观看到审计节点与边的流转。测试结果表明，系统能够基于 Mock 体检数据完成从资料入库到报告生成的闭环。"
+        "同时通过 Provider 抽象接入 OCR、标准化、大语言模型和 RAG 知识检索能力。综合审计报告模块以 LangGraph 状态图组织文档质量审计、时间线构建、指标一致性检查、风险提示、知识检索、证据绑定、冲突复核、合规检查、报告生成和安全审查等节点，"
+        "通过条件路由和回环机制保证审计结论能够补充证据、回退复核并持久化。前端实现文档接入、文档库、综合审计报告、智能洞察、RAG 知识库、指标探索和任务状态监控，能够直观看到审计节点与边的流转。测试结果表明，系统能够基于 Mock 体检数据完成从资料入库到报告生成的闭环。"
     )
     add_body(doc, abstract)
     add_body(doc, "关键词：LangGraph；多 Agent；医疗审计；OCR；结构化入库；证据追溯；FastAPI", first_line=False, bold_prefix="关键词：")
@@ -419,9 +431,9 @@ def add_abstracts(doc: Document) -> None:
         "The system targets personal health documents such as physical examination reports, laboratory reports and clinical notes. "
         "It builds a traceable data pipeline covering upload, OCR, normalization, versioned storage, metric querying, audit orchestration and frontend visualization. "
         "The backend is implemented with FastAPI, SQLAlchemy and MySQL, and the external OCR, normalization and LLM capabilities are accessed through replaceable providers. "
-        "The audit report module uses LangGraph as a state machine and coordinates document quality checking, timeline construction, metric consistency review, risk analysis, evidence binding, conflict review, compliance checking, report composition and safety review. "
+        "The audit report module uses LangGraph as a state machine and coordinates document quality checking, timeline construction, metric consistency review, risk analysis, RAG-based knowledge retrieval, evidence binding, conflict review, compliance checking, report composition and safety review. "
         "Conditional routing and cyclic transitions make the workflow auditable and suitable for iterative evidence completion. "
-        "The frontend presents document management, metric exploration, intelligent insight and an audit report workspace with visible node and edge transitions. "
+        "The frontend presents document ingestion, document management, RAG knowledge search, task monitoring, metric exploration, intelligent insight and an audit report workspace with visible node and edge transitions. "
         "Tests based on mock health examination data show that the system can complete an end-to-end workflow from document ingestion to final audit report generation."
     )
     set_run_font(run, 12, name="Times New Roman")
@@ -437,8 +449,8 @@ def add_chinese_abstract(doc: Document) -> None:
     abstract = (
         "针对个人体检报告、检验单和病历摘要等医疗资料来源分散、格式不统一、处理过程缺少追溯的问题，本文设计并实现了一套基于 LangGraph 的多 Agent 协作医疗审计辅助系统。"
         "系统采用前后端分离架构，后端以 FastAPI、SQLAlchemy 和 MySQL 为基础，围绕原始文件、OCR 结果、文档版本、结构化指标、任务事件和审计事件建立数据模型；"
-        "同时通过 Provider 抽象接入 OCR、标准化和大语言模型能力。综合审计报告模块以 LangGraph 状态图组织文档质量审计、时间线构建、指标一致性检查、风险提示、证据绑定、冲突复核、合规检查、报告生成和安全审查等节点，"
-        "通过条件路由和回环机制保证审计结论能够补充证据、回退复核并持久化。前端实现文档接入、文档库、指标探索、智能洞察和综合审计报告展示，能够直观看到审计节点与边的流转。测试结果表明，系统能够基于 Mock 体检数据完成从资料入库到报告生成的闭环。"
+        "同时通过 Provider 抽象接入 OCR、标准化、大语言模型和 RAG 知识检索能力。综合审计报告模块以 LangGraph 状态图组织文档质量审计、时间线构建、指标一致性检查、风险提示、知识检索、证据绑定、冲突复核、合规检查、报告生成和安全审查等节点，"
+        "通过条件路由和回环机制保证审计结论能够补充证据、回退复核并持久化。前端实现文档接入、文档库、综合审计报告、智能洞察、RAG 知识库、指标探索和任务状态监控，能够直观看到审计节点与边的流转。测试结果表明，系统能够基于 Mock 体检数据完成从资料入库到报告生成的闭环。"
     )
     add_body(doc, abstract)
     add_body(doc, "关键词：LangGraph；多 Agent；医疗审计；OCR；结构化入库；证据追溯；FastAPI", first_line=False, bold_prefix="关键词：")
@@ -453,9 +465,9 @@ def add_english_abstract(doc: Document) -> None:
         "The system targets personal health documents such as physical examination reports, laboratory reports and clinical notes. "
         "It builds a traceable data pipeline covering upload, OCR, normalization, versioned storage, metric querying, audit orchestration and frontend visualization. "
         "The backend is implemented with FastAPI, SQLAlchemy and MySQL, and the external OCR, normalization and LLM capabilities are accessed through replaceable providers. "
-        "The audit report module uses LangGraph as a state machine and coordinates document quality checking, timeline construction, metric consistency review, risk analysis, evidence binding, conflict review, compliance checking, report composition and safety review. "
+        "The audit report module uses LangGraph as a state machine and coordinates document quality checking, timeline construction, metric consistency review, risk analysis, RAG-based knowledge retrieval, evidence binding, conflict review, compliance checking, report composition and safety review. "
         "Conditional routing and cyclic transitions make the workflow auditable and suitable for iterative evidence completion. "
-        "The frontend presents document management, metric exploration, intelligent insight and an audit report workspace with visible node and edge transitions. "
+        "The frontend presents document ingestion, document management, RAG knowledge search, task monitoring, metric exploration, intelligent insight and an audit report workspace with visible node and edge transitions. "
         "Tests based on mock health examination data show that the system can complete an end-to-end workflow from document ingestion to final audit report generation."
     )
     set_run_font(run, 12, name="Times New Roman")
@@ -467,20 +479,39 @@ def add_english_abstract(doc: Document) -> None:
 
 def load_toc_pages() -> dict[str, str]:
     defaults = {
+        "I": "I",
+        "II": "II",
         "第一章 绪论": "1",
         "1.1 实现背景和意义": "1",
         "1.2 国内外实现现状": "2",
         "1.3 本文主要工作": "3",
-        "第二章 相关技术与系统基础": "4",
-        "2.1 医疗资料标准化与数据治理": "4",
-        "2.2 Provider 抽象与外部能力接入": "5",
-        "2.3 LangGraph 状态机与多 Agent 协作": "6",
-        "2.4 本项目已有实现基础": "7",
-        "第三章 需求分析与总体设计": "8",
-        "第四章 系统详细实现": "14",
-        "第五章 测试与运行效果分析": "24",
-        "结束语": "29",
-        "参考文献": "30",
+        "第二章 相关技术与系统基础": "5",
+        "2.1 医疗资料标准化与电子病历文本挖掘": "5",
+        "2.2 医疗大模型、知识增强与 RAG 方法": "5",
+        "2.3 Agent 工作流、工具调用与状态机编排": "6",
+        "2.4 Provider 抽象与外部能力接入": "7",
+        "2.5 本项目已有实现基础": "8",
+        "第三章 需求分析与总体设计": "10",
+        "3.1 需求分析": "10",
+        "3.2 系统总体架构": "11",
+        "3.3 业务流程设计": "11",
+        "3.4 后端分层与接口设计": "12",
+        "3.5 数据库设计": "14",
+        "3.6 安全与可追溯设计": "16",
+        "第四章 系统详细实现": "19",
+        "4.1 文件上传与 OCR 处理实现": "19",
+        "4.2 标准化与版本化入库实现": "19",
+        "4.3 综合审计报告 LangGraph 状态机实现": "20",
+        "4.4 审计事件与节点状态持久化": "22",
+        "4.5 前端模块实现": "23",
+        "第五章 测试与运行效果分析": "26",
+        "5.1 Mock 体检数据构造": "26",
+        "5.2 接口与端到端测试": "27",
+        "5.3 真实演示运行截图": "29",
+        "5.4 运行效果与不足分析": "32",
+        "结束语": "34",
+        "参考文献": "35",
+        "致谢": "37",
     }
     if TOC_PAGES_FILE.exists():
         defaults.update(json.loads(TOC_PAGES_FILE.read_text(encoding="utf-8")))
@@ -511,15 +542,32 @@ def add_toc(doc: Document) -> None:
         ("1.2 国内外实现现状", "1.2 国内外实现现状", 1, False),
         ("1.3 本文主要工作", "1.3 本文主要工作", 1, False),
         ("第二章 相关技术与系统基础", "第二章 相关技术与系统基础", 0, True),
-        ("2.1 医疗资料标准化与数据治理", "2.1 医疗资料标准化与数据治理", 1, False),
-        ("2.2 Provider 抽象与外部能力接入", "2.2 Provider 抽象与外部能力接入", 1, False),
-        ("2.3 LangGraph 状态机与多 Agent 协作", "2.3 LangGraph 状态机与多 Agent 协作", 1, False),
-        ("2.4 本项目已有实现基础", "2.4 本项目已有实现基础", 1, False),
+        ("2.1 医疗资料标准化与电子病历文本挖掘", "2.1 医疗资料标准化与电子病历文本挖掘", 1, False),
+        ("2.2 医疗大模型、知识增强与 RAG 方法", "2.2 医疗大模型、知识增强与 RAG 方法", 1, False),
+        ("2.3 Agent 工作流、工具调用与状态机编排", "2.3 Agent 工作流、工具调用与状态机编排", 1, False),
+        ("2.4 Provider 抽象与外部能力接入", "2.4 Provider 抽象与外部能力接入", 1, False),
+        ("2.5 本项目已有实现基础", "2.5 本项目已有实现基础", 1, False),
         ("第三章 需求分析与总体设计", "第三章 需求分析与总体设计", 0, True),
+        ("3.1 需求分析", "3.1 需求分析", 1, False),
+        ("3.2 系统总体架构", "3.2 系统总体架构", 1, False),
+        ("3.3 业务流程设计", "3.3 业务流程设计", 1, False),
+        ("3.4 后端分层与接口设计", "3.4 后端分层与接口设计", 1, False),
+        ("3.5 数据库设计", "3.5 数据库设计", 1, False),
+        ("3.6 安全与可追溯设计", "3.6 安全与可追溯设计", 1, False),
         ("第四章 系统详细实现", "第四章 系统详细实现", 0, True),
+        ("4.1 文件上传与 OCR 处理实现", "4.1 文件上传与 OCR 处理实现", 1, False),
+        ("4.2 标准化与版本化入库实现", "4.2 标准化与版本化入库实现", 1, False),
+        ("4.3 综合审计报告 LangGraph 状态机实现", "4.3 综合审计报告 LangGraph 状态机实现", 1, False),
+        ("4.4 审计事件与节点状态持久化", "4.4 审计事件与节点状态持久化", 1, False),
+        ("4.5 前端模块实现", "4.5 前端模块实现", 1, False),
         ("第五章 测试与运行效果分析", "第五章 测试与运行效果分析", 0, True),
+        ("5.1 Mock 体检数据构造", "5.1 Mock 体检数据构造", 1, False),
+        ("5.2 接口与端到端测试", "5.2 接口与端到端测试", 1, False),
+        ("5.3 真实演示运行截图", "5.3 真实演示运行截图", 1, False),
+        ("5.4 运行效果与不足分析", "5.4 运行效果与不足分析", 1, False),
         ("结束语", "结束语", 0, True),
         ("参考文献", "参考文献", 0, True),
+        ("致谢", "致谢", 0, True),
     ]
     for title, key, level, bold in entries:
         add_toc_line(doc, title, pages.get(key, ""), level=level, bold=bold)
@@ -536,16 +584,16 @@ EXPANSION_TEXT: dict[str, list[str]] = {
     "chapter_two": [
         "医疗资料标准化的关键是确定哪些信息必须结构化，哪些信息可以作为叙事事实保存。对于数值型检验指标，系统需要保存指标名称、数值、单位、参考范围、异常标记和观察时间；对于病历摘要、影像结论和总检建议，系统更适合保存为 prose_facts 或 narrative_context，避免把自然语言强行拆成错误的数值字段。这样的区分能够降低标准化失败对后续审计的影响，也使系统在面对不同报告模板时具有更好的容错能力。",
         "在本文系统中，标准化不是一次性覆盖操作，而是一个可版本化过程。每次 OCR 结果进入标准化服务后，系统会生成 ExtractedDocument 当前投影，同时创建 DocumentVersion 保存版本快照。这样做的原因是 OCR Provider、LLM Provider 和规则库都可能发生变化，若系统直接覆盖旧结果，就无法解释历史报告为何得出当时的结论。版本化设计让每次综合审计报告都可以绑定具体 document_version_id，从而保证报告证据能够回到当时使用的结构化结果。",
-        "Provider 抽象在本项目中承担了工程隔离作用。OCR、LLM、标准化和存储都可能在不同环境下切换具体实现，例如本地演示时使用 plaintext OCR，部署时接入真实 OCR；标准化在网络不可用时使用规则兜底，在可用时调用兼容 OpenAI 协议的模型。若业务服务直接依赖某个具体 SDK，后续替换成本会很高。本文通过 ProviderGateway 记录调用事件、耗时、状态和错误信息，使外部能力既可替换，又可被审计。",
-        "LangGraph 状态机的核心不是“多写几个函数”，而是把节点之间的控制权交给状态和条件边。AuditGraphState 中保存 selected_document_version_ids、documents、measurements、completed_agents、route_history、evidence_items、citation_issues、safety_issues、report_draft 和 final_report 等字段。每个节点只负责读取必要字段并返回局部更新，路由节点根据状态决定下一步。这样可以避免单个服务函数无限膨胀，也便于前端根据事件流展示节点执行过程。",
-        "多 Agent 协作在本文中采用职责拆分，而不是多个模型互相聊天。document_quality_agent 检查资料是否完整，timeline_builder 组织时间线，measurement_consistency_agent 检查指标变化和异常，risk_agent 生成非诊断性关注点，evidence_agent 负责证据绑定，conflict_agent 检查叙事事实与结构化指标之间的冲突，compliance_agent 检查结论是否缺少证据，report_composer 负责报告组织，citation_checker 和 safety_reviewer 分别进行引用和安全审查。各节点职责边界清晰，便于测试和论文说明。",
+        "Provider 抽象在本项目中承担了工程隔离作用。OCR、LLM、标准化和存储都可能在不同环境下切换具体实现，例如文本样本使用 plaintext，图片样本在密钥配置后使用百度 OCR，部署时还可以接入视觉模型或对象存储；标准化在网络不可用时使用规则兜底，在可用时调用兼容 OpenAI 协议的模型。若业务服务直接依赖某个具体 SDK，后续替换成本会很高。本文通过 ProviderGateway 记录调用事件、耗时、状态和错误信息，使外部能力既可替换，又可被审计。",
+        "LangGraph 状态机的核心不是“多写几个函数”，而是把节点之间的控制权交给状态和条件边。AuditGraphState 中保存 selected_document_version_ids、documents、measurements、knowledge_chunks、knowledge_context、completed_agents、route_history、evidence_items、citation_issues、safety_issues、report_draft 和 final_report 等字段。每个节点只负责读取必要字段并返回局部更新，路由节点根据状态决定下一步。这样可以避免单个服务函数无限膨胀，也便于前端根据事件流展示节点执行过程。",
+        "多 Agent 协作在本文中采用职责拆分，而不是多个模型互相聊天。document_quality_agent 检查资料是否完整，timeline_builder 组织时间线，measurement_consistency_agent 检查指标变化和异常，risk_agent 生成非诊断性关注点，knowledge_retrieval_agent 检索医学审计知识，evidence_agent 负责证据绑定，conflict_agent 检查叙事事实与结构化指标之间的冲突，compliance_agent 检查结论是否缺少证据，report_composer 负责报告组织，citation_checker 和 safety_reviewer 分别进行引用和安全审查。各节点职责边界清晰，便于测试和论文说明。",
         "项目已有基础包括 FastAPI 路由、SQLAlchemy 模型、Pydantic 数据校验、React 前端模块和 Mock 体检数据脚本。这些基础并不是论文外的附属内容，而是支撑 LangGraph 架构落地的工程条件。若没有稳定的数据模型，状态机无法获得可靠输入；若没有事件表和节点状态表，前端无法展示真实流转；若没有 Mock 数据，测试和答辩演示无法稳定复现。因此本章所述基础技术与后续系统实现之间存在直接对应关系。",
     ],
     "chapter_three": [
         "需求分析阶段首先需要明确用户角色和使用边界。系统面向普通个人用户和答辩演示场景，用户可以上传体检、化验、病历摘要和影像结论等资料，系统负责将资料转化为结构化记录，并在用户主动选择若干文档后生成综合审计报告。系统不提供诊断结论、不推荐具体治疗方案，也不对医生意见作出替代判断。所有风险提示都应以“关注点”“建议复核”“建议结合医生意见”形式表达，并且必须绑定原始证据。",
-        "功能需求可以分为资料接入、资料处理、资料查询、智能交互和综合审计五类。资料接入负责文件上传和元数据保存；资料处理负责 OCR、标准化、版本快照和指标入库；资料查询负责文档列表、文档详情和指标检索；智能交互保留聊天式问答能力，但不承担 LangGraph 审计主流程；综合审计则通过状态机生成最终报告。将智能洞察和综合审计分离，是为了避免所有能力挤在一个卡片中，也能突出课题题目中的多 Agent 协作框架。",
+        "功能需求可以分为资料接入、资料处理、资料查询、知识检索、智能交互、任务监控和综合审计七类。资料接入负责文件上传和元数据保存；资料处理负责 OCR、标准化、版本快照和指标入库；资料查询负责文档列表、文档详情和指标检索；知识检索负责 RAG 知识来源和命中结果展示；智能交互保留聊天式问答能力，但不承担 LangGraph 审计主流程；任务监控负责 OCR 与标准化状态；综合审计则通过状态机生成最终报告。",
         "非功能需求主要包括可追溯性、可复现性、可扩展性和安全边界。可追溯性要求每个结论都能回到文档版本、指标或 OCR 原文；可复现性要求 Mock 数据和测试账户能够稳定重建演示环境；可扩展性要求 Provider 能力和审计节点可以替换或增加；安全边界要求系统输出避免诊断承诺，并且所有用户数据按 user_id 隔离。上述非功能需求决定了系统不能只做简单 CRUD，而必须在数据库和服务层设计审计事件、节点状态和 Provider 调用记录。",
-        "总体架构采用前后端分离设计。前端负责资料选择、模块切换、流程图展示和报告阅读；后端提供认证、文件、OCR、标准化、文档、指标、任务和审计报告等接口；数据库保存用户数据、任务事件、Provider 调用事件和审计运行记录。综合审计报告模块启动后，后端创建 AuditReportRun，并在执行过程中持续写入 AuditReportEvent 和 AuditReportNodeState，前端通过轮询接口读取这些事件，从而把后端真实状态反映到页面上。",
+        "总体架构采用前后端分离设计。前端负责资料选择、模块切换、流程图展示、知识检索、任务状态和报告阅读；后端提供认证、文件、OCR、标准化、文档、指标、任务、知识库和审计报告等接口；数据库保存用户数据、任务事件、Provider 调用事件、知识块和审计运行记录。综合审计报告模块启动后，后端创建 AuditReportRun，并在执行过程中持续写入 AuditReportEvent 和 AuditReportNodeState，前端通过轮询接口读取这些事件，从而把后端真实状态反映到页面上。",
         "数据库设计围绕三条主链路展开。第一条是资料处理链路，从 users 到 records、record_files、ocr_results、extracted_documents、document_versions 和 measurements，负责把原始资料转化为结构化指标。第二条是异步任务链路，从 tasks 到 task_events 和 provider_events，负责记录后台处理过程和外部能力调用。第三条是审计报告链路，从 audit_report_runs 到 audit_report_events 和 audit_report_node_states，负责记录 LangGraph 执行过程。三条链路分别对应论文 ER 图中的蓝色、橙色和紫色区域。",
         "接口设计遵循资源边界清晰的原则。认证接口只负责登录和当前用户信息，文件接口只负责上传和文件元数据，OCR 接口只负责抽取任务，ingestion 接口只负责标准化入库，documents 和 measurements 接口负责查询结构化结果，audit-reports 接口负责创建、执行、轮询和读取综合报告。这样的划分使前端模块可以按业务目标组织页面，也使后端服务在测试时能够逐段验证，不需要通过一个复杂接口完成所有动作。",
         "综合审计报告的状态机设计是本章重点。audit_router 是主路由节点，它根据 completed_agents 和当前状态判断下一个审计节点；普通 Agent 节点执行完毕后不直接进入下一个 Agent，而是回到 audit_router，由路由节点再次判断是否需要继续分派、补充证据或进入报告生成。final_router 是终态路由节点，它在引用检查和安全审查之后决定是否持久化报告，或者回到审计阶段和报告生成阶段。这种双路由结构体现了状态机的必要性。",
@@ -556,11 +604,11 @@ EXPANSION_TEXT: dict[str, list[str]] = {
         "OCR 处理并不是简单返回字符串。系统会为 OCR 创建后台任务，记录 tasks.status，并在 task_events 中保存状态变化。OCRProvider 执行后，系统将 raw_text、raw_payload、provider_name、revision_number 和 is_current 写入 ocr_results。若同一文件重新识别，旧 OCR 结果不会立即删除，而是通过 revision_number 和 supersedes_ocr_result_id 保留历史关系。这样可以解释不同时间生成的标准化结果为何存在差异。",
         "标准化服务读取 OCRResult.raw_text 后调用 NormalizationProvider，得到 document_type、document_category、report_date、measurements 和 prose_facts。对于可数值化的指标，系统写入 measurements；对于病历描述和影像结论，系统保存到 normalized_payload 中。为提升稳定性，服务在 LLM 输出缺字段或解析失败时使用规则兜底，至少保证日期、常见指标和叙事事实能够被提取。这样的处理策略比完全依赖模型输出更适合毕业设计演示和自动化测试。",
         "LangGraph 审计引擎的实现分为状态初始化、节点执行、路由判断、事件输出和结果持久化几个部分。load_graph_state 从数据库读取用户选择的 document_versions 和关联 measurements，构造 AuditGraphState。每个 Agent 节点只负责一个有限任务，并把结果写入对应字段。Engine.stream 在每次节点执行后产出事件，服务层立即写入 audit_report_events，使前端可以在运行过程中轮询到节点变化，而不是等最终报告完成后一次性返回。",
-        "audit_router 的路由策略以 completed_agents 为核心。若文档质量节点尚未执行，则先进入 document_quality_agent；若时间线尚未构建，则进入 timeline_builder；若指标一致性、风险、证据、冲突和合规节点尚未完成，则依次进入对应 Agent；当必要审计节点完成后，进入 quality_gate。quality_gate 不负责生成报告，而是判断当前状态是否具备进入 report_composer 的最低条件。这个设计避免报告生成节点承担过多判断职责。",
+        "audit_router 的路由策略以 completed_agents 为核心。若文档质量节点尚未执行，则先进入 document_quality_agent；若时间线尚未构建，则进入 timeline_builder；若指标一致性、风险、知识检索、证据、冲突和合规节点尚未完成，则依次进入对应 Agent；当必要审计节点完成后，进入 quality_gate。quality_gate 不负责生成报告，而是判断当前状态是否具备进入 report_composer 的最低条件。这个设计避免报告生成节点承担过多判断职责。",
         "final_router 的价值在于处理报告生成后的回环。report_composer 生成草稿后，citation_checker 会检查报告中的关键结论是否绑定 evidence_items；safety_reviewer 会检查报告语言是否越过医疗审计边界。若 citation_issues 存在，final_router 将流程引回 audit_router 补充审计；若 safety_issues 存在，则引回 report_composer 重写报告；只有当引用和安全审查通过，或者达到最大迭代保护条件时，流程才进入 persist_report。该机制体现了 LangGraph 与线性工作流的区别。",
         "审计事件持久化是前端流程图真实流动的基础。AuditReportEvent 保存 sequence、event_type、node_name、edge_source、edge_target、status、message 和 payload；AuditReportNodeState 保存 node_name、status、visit_count、last_event_id 和 output。当前端轮询 events 和 nodes 接口时，可以根据 edge_source 和 edge_target 高亮边，根据 node_name 和 status 高亮节点，根据 visit_count 展示节点是否被回环访问。这样，前端动画不是装饰，而是后端状态的可视化映射。",
-        "综合审计报告的最终结构包括资料概览、时间线、指标异常、风险关注点、证据列表、冲突提示、合规说明和非诊断性声明。报告中的每一条关键结论都应尽量绑定 evidence_items，证据对象包含 document_version_id、measurement_id、source_text 或字段路径。若某条结论无法绑定证据，citation_checker 会把它标记为问题。这样的报告结构比普通自然语言总结更适合医疗资料审计，因为它强调来源、依据和复核边界。",
-        "前端实现中，综合审计报告模块和智能洞察模块保持分离。智能洞察保持 chatbot 形态，左侧选择数据源，中间显示对话，右侧显示历史记录；综合审计报告则以流程图和最终报告为核心。用户选择文档后启动运行，前端周期性请求事件和节点状态，更新图中节点、边和报告按钮。为了避免图被卡片裁切，模块容器需要接近整页大小，并为流程图保留足够画布空间。这一点已经在前端需求中明确体现。",
+        "综合审计报告的最终结构包括资料概览、时间线、指标异常、风险关注点、知识来源、证据列表、冲突提示、合规说明和非诊断性声明。报告中的每一条关键结论都应尽量绑定 evidence_items，证据对象包含 document_version_id、measurement_id、source_text、knowledge_chunk 或字段路径。若某条结论无法绑定证据，citation_checker 会把它标记为问题。这样的报告结构比普通自然语言总结更适合医疗资料审计，因为它强调来源、依据和复核边界。",
+        "前端实现中，综合审计报告模块、智能洞察模块和 RAG 知识库保持分离。智能洞察保持 chatbot 形态并显示历史记录；RAG 知识库展示知识块来源和检索命中；综合审计报告则以流程图和最终报告为核心。用户选择文档后启动运行，前端周期性请求事件和节点状态，更新图中节点、边和报告按钮。任务状态按钮集中展示 OCR 与标准化处理状态，使长耗时流程具有可观察性。",
         "异常处理方面，系统需要处理空文档、无 OCR 文本、标准化失败、缺少 report_date、无 measurements、Provider 超时和 LLM 输出格式错误等情况。当前实现采用任务状态、错误消息和规则兜底降低失败影响。对于综合审计报告，若输入文档不足，document_quality_agent 会输出质量发现；若证据不足，evidence_agent 和 citation_checker 会触发回环；若迭代次数过多，final_router 会根据 max_iterations 保护流程结束，避免无限循环。",
     ],
     "chapter_five": [
@@ -608,7 +656,7 @@ def add_chapter_one(doc: Document) -> None:
         "本文完成的主要工作包括四个方面。第一，设计并实现医疗资料数据底座，覆盖用户、健康记录、原始文件、OCR 结果、结构化文档、文档版本、指标、后台任务、任务事件、Provider 调用事件和审计报告运行记录等对象。所有关键对象均有明确字段和关联关系，能够支持后续论文中的 ER 图、字段表和接口说明。",
         "第二，设计并实现资料处理流程。系统支持文件上传、文本型 OCR 抽取、LLM/规则混合标准化、指标入库、版本快照和指标查询。标准化结果不直接覆盖原文，而是同时保留 OCR 原文、标准化 payload、版本 hash 和结构化指标，从数据结构上支持回溯和复核。",
         "第三，设计并实现基于 LangGraph 的综合审计报告生成流程。该流程不是一条直线，而是包含 audit_router 和 final_router 两个路由节点，并允许 Agent 节点完成后回到 audit_router；当引用检查或安全审查未通过时，final_router 能够回到审计或报告生成节点。该设计体现了状态机、条件边、回环复核和过程持久化。",
-        "第四，完成前端模块和测试数据准备。前端包括文档接入、文档库、指标探索、智能洞察和综合审计报告模块；Mock 数据包括多份体检、化验、病历和影像报告，用于支撑端到端测试与论文图表展示。本文使用真实源码、数据库模型和测试脚本生成图表，避免图表与项目实现脱节。",
+        "第四，完成前端模块和测试数据准备。前端包括文档接入、文档库、综合审计报告、智能洞察、RAG 知识库、指标探索和任务状态监控；Mock 数据包括多份体检、化验、病历、影像和报告型文档，用于支撑端到端测试、真实演示截图与论文图表展示。本文使用真实源码、数据库模型、运行页面和测试脚本生成图表，避免图表与项目实现脱节。",
     ]:
         add_body(doc, text)
     add_expansion(doc, "chapter_one")
@@ -616,44 +664,57 @@ def add_chapter_one(doc: Document) -> None:
 
 def add_chapter_two(doc: Document, snapshot: dict) -> None:
     add_chapter(doc, "第二章 相关技术与系统基础")
-    add_body(doc, "本章介绍系统实现所依赖的医疗资料标准化、Provider 抽象、LangGraph 状态机和项目已有基础，重点说明这些技术如何服务于医疗审计场景中的可追溯、可复核和可展示要求。")
-    add_section(doc, "2.1 医疗资料标准化与数据治理")
+    add_body(doc, "本章从医疗资料标准化、医疗大模型与知识增强、Agent 工作流和 Provider 工程抽象四个方面梳理相关技术与已有研究，并说明本文系统在这些研究基础上的实现取舍。与第一章的问题背景不同，本章重点回答“已有工作通常怎么做、本文为什么这样实现”。")
+    add_section(doc, "2.1 医疗资料标准化与电子病历文本挖掘")
     for text in [
-        "医疗资料的结构化不是简单的文本摘要。以体检和检验报告为例，同一项指标可能出现中文名、英文缩写、不同单位、不同参考范围和不同异常标记；病历摘要中又包含症状、既往史、用药史、检查建议等叙事性事实。若系统只保存自然语言回答，后续无法完成趋势查询、异常复核和证据定位。因此本文将标准化入库作为系统基础能力，而不是把它作为前端展示的附属功能。",
-        "本文采用“原始文件、OCR 结果、当前文档投影、文档版本、结构化指标”五层数据结构。原始文件保存用户上传时的文件名、显示名、类型、大小和字节内容；OCR 结果保存识别文本、原始 payload、provider 名称和修订号；结构化文档保存当前可查询的文档类型、类别、报告日期和标准化 payload；文档版本保存每次标准化快照及 hash；指标表保存可用于搜索和时序分析的 name、value_text、value_numeric、unit 和 observed_at。",
-        "这种设计的意义在于将审计问题拆成可验证的数据问题。若报告结论提到某项血糖异常，系统可以通过 evidence_items 回到 measurements.value_numeric，再通过 document_version_id 回到文档版本和 OCR 原文；若标准化算法发生变化，旧版本仍可保留，新的标准化结果以新版本形式写入，避免覆盖历史证据。该方式与医院信息化建设强调的数据质量、过程留痕和复核要求保持一致[1-3]，也与电子病历文本挖掘和数据治理研究中的结构化处理思路保持一致[4-8]。",
+        "医疗资料标准化首先面对的是非结构化和半结构化文本。医院信息化规范和电子病历分级评价均强调数据质量、标准化、过程留痕和安全管理[1-2]，个人信息安全规范也要求敏感个人信息处理具有明确目的、访问控制和可追溯能力[3]。因此，面向医疗审计的系统不能只保存一段模型摘要，而要把原始文件、识别文本、结构化字段、版本快照和最终证据之间的关系保存下来。",
+        "已有电子病历文本挖掘研究通常把处理流程拆为数据清洗、数据集成、命名实体识别、关系抽取、信息检索和临床问答等环节[4]。在中文电子病历场景中，命名实体识别研究进一步关注疾病、症状、检查、药物、身体部位等实体识别，并指出中文病历文本存在用词不规范、专业术语密集、标注语料不足等挑战[5]。这些研究说明，医疗文本处理的关键不是“生成一段看似通顺的解释”，而是把可复核的信息单元稳定抽取出来。",
+        "具体方法上，传统研究会使用规则词典、条件随机场、支持向量机和深度学习模型；近年来则更多使用 BiLSTM-CRF、注意力机制、BERT 类预训练模型以及多特征融合方法处理中文电子病历实体识别[6-7]。这些方法对专门数据集有效，但在个人体检报告、化验单、影像结论和病历摘要混杂的本项目场景中，难点不只在模型精度，还包括模板差异、指标单位差异、版本留痕和最终审计证据绑定。",
+        "因此，本文没有把医疗资料处理简化为单个 NER 模型，而是采用“原始文件、OCR 结果、当前文档投影、文档版本、结构化指标”五层数据结构。原始文件保存上传元数据和文件内容，OCR 结果保存识别文本和 Provider 信息，当前文档投影保存文档类型、报告日期和标准化 payload，文档版本保存每次标准化快照和 hash，指标表保存可搜索、可比较的数值指标。该设计与真实世界电子病历数据治理中强调的数据质量分析和治理思路一致[8]。",
     ]:
         add_body(doc, text)
 
-    add_section(doc, "2.2 Provider 抽象与外部能力接入")
+    add_section(doc, "2.2 医疗大模型、知识增强与 RAG 方法")
+    for text in [
+        "医疗大语言模型相关研究普遍认为，大模型在医疗文本生成、问答、医学教育和临床文档处理方面具有潜力，但同时存在幻觉、实时性、可解释性、数据安全和责任边界等问题[9-13]。Nature Medicine 的综述也指出，LLM 在医疗场景的效率提升和临床应用价值需要与局限性一起讨论，不能只看生成能力本身[23]。这与本文的系统定位一致：系统可以辅助整理资料和形成审计报告，但不能把生成结果包装成诊断结论。",
+        "知识增强是降低生成式系统脱离事实的重要方向。RAG 方法把参数化语言模型与非参数化检索记忆结合，在回答前检索外部知识或业务文档，以增强知识密集型任务中的事实性和可更新性[19]。对于医疗资料审计来说，RAG 的价值不只是让回答更丰富，而是让报告能够附带知识来源、命中片段和审计依据，从而降低“凭空解释”的风险。",
+        "已有医疗大模型研究也强调，医疗数据来源复杂，包含电子病历、医学影像、检验结果、用药记录和健康档案等多类型数据，模型应用需要数据治理、评测体系和监管机制共同支撑[12]。面向电子健康记录的基础模型研究进一步提醒，EHR 数据具有异质性、缺失性和编码差异，直接套用通用大模型容易忽略数据表示和评估问题[24]。因此，本文在综合审计报告中引入知识检索节点，但仍把文档版本、指标和证据作为主依据。",
+        "在当前实现中，RAG 并不是独立的聊天功能，而是服务于综合审计报告状态机。系统内置医学审计知识块和默沙东医学手册摘要知识块，通过 knowledge_retrieval_agent 根据风险点和异常指标构造查询，使用确定性的词法排序召回相关知识，再将 knowledge_context 写入 AuditGraphState。最终报告中的 rag_summary、knowledge_sources 和 knowledge_chunk 类型证据，用于展示知识命中情况和来源。",
+    ]:
+        add_body(doc, text)
+
+    add_section(doc, "2.3 Agent 工作流、工具调用与状态机编排")
+    for text in [
+        "在 Agent 工程方向，ReAct 提出将语言模型的推理轨迹和外部行动交替组织，使系统能够根据环境反馈更新计划，并通过工具或知识库获得额外信息[20]。AutoGen 则强调多个可对话、可配置、可使用工具的 Agent 共同完成复杂任务，适用于数学、代码、问答、决策等多种应用场景[21]。这些研究给本文的启发是：复杂任务不应只依赖一次模型调用，而应拆分为多个职责明确的步骤。",
+        "不过，医疗审计场景中的多 Agent 不能简单理解为多个聊天机器人互相对话。审计流程更强调状态可追溯、节点职责清晰、条件路由明确和失败路径可处理。LangGraph 提供了基于状态图的 Agent 工作流实现方式，能够表达 START、END、节点、边、条件路由、循环和状态持久化[22]。相比固定流水线，状态图更适合表达“证据不足回到证据节点”“引用检查失败回到审计节点”“安全审查失败回到报告生成节点”等回环。",
+        "本文采用 LangGraph 的原因正来自上述需求。系统中的 document_quality_agent、timeline_builder、measurement_consistency_agent、risk_agent、knowledge_retrieval_agent、evidence_agent、conflict_agent、compliance_agent、report_composer、citation_checker 和 safety_reviewer 都围绕同一个 AuditGraphState 工作。每个节点只负责一个有限任务，路由节点根据 completed_agents、citation_issues、safety_issues、needs_report_revision 等字段决定下一步。",
+        "图2-1说明了本文使用 LangGraph 的基本机制。START 进入状态加载节点后，audit_router 按状态分派多个审计 Agent；普通 Agent 完成后回到 audit_router；报告链路完成后进入 final_router；final_router 根据引用检查和安全审查结果决定回到 audit_router、回到 report_composer 或进入 persist_report。该机制使系统具备状态机和回环能力，也使前端可以根据事件流展示节点高亮和边流转。",
+    ]:
+        add_body(doc, text)
+    add_figure(doc, "图2-2_LangGraph状态机机制.png", "图2-1 LangGraph 状态机机制", width_cm=14.8)
+
+    add_section(doc, "2.4 Provider 抽象与外部能力接入")
+    providers = snapshot["providers"]
+    ocr_config = providers.get("ocr", "auto")
     rows = [
-        ["OCRProvider", snapshot["providers"]["ocr"], "负责从文件字节中抽取文本，当前演示环境使用 plaintext，保留 baidu_ocr 和 openai_compatible_vision 扩展点。"],
-        ["NormalizationProvider", snapshot["providers"]["normalization"], "负责把 OCR 原文转换为文档类型、报告日期、指标数组和叙事事实；当前为 llm_direct，并带规则兜底。"],
-        ["LLMProvider", snapshot["providers"]["llm"], "负责对话、洞察和部分标准化能力，当前通过 openai_compatible 接入兼容模型服务。"],
-        ["StorageProvider", snapshot["providers"]["storage"], "负责文件存储，当前使用 database_inline，便于本地演示和测试复现。"],
+        ["OCRProvider", ocr_config, "负责从文件字节中抽取文本；当前配置为 auto，文本样本走 plaintext，图片样本在密钥配置后走 baidu_ocr accurate。"],
+        ["NormalizationProvider", providers.get("normalization", "llm_direct"), "负责把 OCR 原文转换为文档类型、报告日期、指标数组和叙事事实；当前为 llm_direct，并带规则兜底。"],
+        ["LLMProvider", providers.get("llm", "openai_compatible"), "负责对话、洞察、报告生成增强和部分标准化能力，当前通过 openai_compatible 接入兼容模型服务。"],
+        ["StorageProvider", providers.get("storage", "database_inline"), "负责文件存储，当前使用 database_inline，便于本地演示和测试复现。"],
     ]
     add_table(doc, "表2-1 Provider 抽象及当前配置", ["抽象接口", "当前配置", "功能说明"], rows)
     for text in [
         "Provider 抽象的核心作用是隔离业务流程与外部能力。OCR、LLM 和存储服务具有明显的不稳定性和环境差异：本地演示时可能只处理纯文本，生产部署时可能需要百度 OCR、视觉模型或对象存储；标准化能力也可能在规则解析、LLM 解析和混合解析之间切换。如果业务服务直接依赖某个具体 SDK，后续替换成本会很高，也不利于记录调用耗时、错误类别和重试结果。",
-        "图2-1展示了本文系统的 Provider 接入方式。业务服务只依赖统一接口，ProviderGateway 负责记录 provider_events、映射异常、统计耗时并隐藏外部服务差异。论文中的测试环境读取 .env 后得到当前配置：ocr_provider 为 plaintext，normalization_provider 为 llm_direct，llm_provider 为 openai_compatible，storage_provider 为 database_inline。该图由项目配置和 Provider 代码生成，反映当前真实工程状态。",
+        "图2-2展示了本文系统的 Provider 接入方式。业务服务只依赖统一接口，ProviderGateway 负责记录 provider_events、映射异常、统计耗时并隐藏外部服务差异。论文中的测试环境读取 .env 后得到当前配置：ocr_provider 为 auto，normalization_provider 为 llm_direct，llm_provider 为 openai_compatible，storage_provider 为 database_inline。该图由项目配置和 Provider 代码生成，反映当前真实工程状态。",
     ]:
         add_body(doc, text)
-    add_figure(doc, "图2-1_Provider抽象与外部能力接入.png", "图2-1 Provider 抽象与外部能力接入", width_cm=14.8)
+    add_figure(doc, "图2-1_Provider抽象与外部能力接入.png", "图2-2 Provider 抽象与外部能力接入", width_cm=14.8)
 
-    add_section(doc, "2.3 LangGraph 状态机与多 Agent 协作")
+    add_section(doc, "2.5 本项目已有实现基础")
     for text in [
-        "LangGraph 是面向 Agent 和复杂工作流的状态图框架，适合表达包含状态传递、条件路由、循环和持久化的执行过程[22]。与普通顺序工作流相比，状态图的关键优势在于节点之间并不只是固定下一步，而是可以根据共享状态选择不同边；节点执行结果会写回 GraphState，后续节点基于同一状态继续判断。这种机制非常适合医疗审计场景，因为审计过程经常出现证据不足、结论需要复核、报告需要重写和安全审查不通过等情况。",
-        "本文将多 Agent 理解为多个具有明确职责的审计节点，而不是简单堆叠多个聊天机器人。每个节点只负责一个有限任务，例如文档质量检查、时间线构建、指标一致性检查、风险提示、证据绑定、冲突复核、合规检查、报告生成、引用检查和安全审查。节点之间通过 AuditGraphState 共享数据，路由节点根据 completed_agents、citation_issues、safety_issues、needs_report_revision 等字段决定下一步。",
-        "图2-2说明了本文使用 LangGraph 的基本机制。START 进入状态加载节点后，audit_router 按状态分派多个审计 Agent；普通 Agent 完成后回到 audit_router；报告链路完成后进入 final_router；final_router 根据引用检查和安全审查结果决定回到 audit_router、回到 report_composer 或进入 persist_report。该机制使系统具备状态机和回环能力，也使前端可以根据事件流展示节点高亮和边流转。",
-    ]:
-        add_body(doc, text)
-    add_figure(doc, "图2-2_LangGraph状态机机制.png", "图2-2 LangGraph 状态机机制", width_cm=14.8)
-
-    add_section(doc, "2.4 本项目已有实现基础")
-    for text in [
-        "本文实现不是从空白项目开始，而是在开题报告确定的工程路线基础上完成系统化整理和强化。已有基础包括 FastAPI 后端、SQLAlchemy 模型、MySQL 数据库连接、用户认证、文件上传、OCR 结果保存、标准化服务、指标查询、智能洞察对话、综合审计报告接口、React 前端页面和 Mock 体检数据脚本。中期阶段暴露出的主要问题是系统展示没有充分体现 LangGraph 架构，因此本文后续实现重点转向综合审计报告模块和状态机可视化。",
-        "在当前版本中，后端路由统一挂载到 /api，已包含 auth、files、ocr、ingestion、documents、document-versions、records、measurements、query、tasks、insight、chat 和 audit-reports 等分组。数据库模型覆盖核心业务对象，测试脚本能够创建 exam@healthdoc.local 测试账户并写入 15 份 Mock 文档、65 条结构化指标和 14 条叙事事实。综合审计报告模块已经能够持久化 audit_report_runs、audit_report_events 和 audit_report_node_states。",
-        "因此，本文后续章节的图表和表格均以当前源码为依据生成。需要特别说明的是，当前实现中的审计节点以规则审计和证据绑定为主，LLM 主要用于标准化和洞察能力；本文不会虚假描述为每个节点都由大模型自主生成，而是准确表述为“LangGraph 编排多个审计节点，结合规则审计、证据绑定、条件路由和 LLM 标准化/洞察能力”。这种表述更符合项目真实状态，也更符合工程类毕业设计的要求。",
+        "本文实现不是从空白项目开始，而是在开题报告确定的工程路线基础上完成系统化整理和强化。已有基础包括 FastAPI 后端、SQLAlchemy 模型、MySQL 数据库连接、用户认证、文件上传、OCR 结果保存、标准化服务、指标查询、智能洞察对话、RAG 知识库、综合审计报告接口、React 前端页面和 Mock 体检数据脚本。中期阶段暴露出的主要问题是系统展示没有充分体现 LangGraph 架构，因此本文后续实现重点转向综合审计报告模块和状态机可视化。",
+        "在当前版本中，后端路由统一挂载到 /api，已包含 auth、files、ocr、ingestion、documents、document-versions、records、measurements、query、tasks、knowledge、insight、chat 和 audit-reports 等分组。数据库模型覆盖核心业务对象，测试脚本能够创建 admin@qq.com 测试账户并写入 25 份 Mock 文档，其中包含 20 份体检类单据、5 份报告型单据和 85 条结构化指标。综合审计报告模块已经能够持久化 audit_report_runs、audit_report_events 和 audit_report_node_states。",
+        "因此，本文后续章节的图表和表格均以当前源码为依据生成。需要特别说明的是，当前实现中的审计节点以规则审计、知识检索和证据绑定为主，LLM 主要用于标准化、智能洞察和报告生成增强；本文不会虚假描述为每个节点都由大模型自主生成，而是准确表述为“LangGraph 编排多个审计节点，结合规则审计、RAG 检索、证据绑定、条件路由和 LLM 增强能力”。这种表述更符合项目真实状态，也更符合工程类毕业设计的要求。",
     ]:
         add_body(doc, text)
     add_expansion(doc, "chapter_two")
@@ -696,13 +757,26 @@ def add_chapter_three(doc: Document, snapshot: dict) -> None:
 
     add_section(doc, "3.4 后端分层与接口设计")
     route_rows = []
-    for name in ["auth", "files", "ocr", "ingestion", "documents", "measurements", "tasks", "audit-reports", "insight", "chat"]:
+    for name in [
+        "auth",
+        "files",
+        "ocr",
+        "ingestion",
+        "documents",
+        "document-versions",
+        "measurements",
+        "tasks",
+        "knowledge",
+        "audit-reports",
+        "insight",
+        "chat",
+    ]:
         routes = snapshot["routes"].get(name, [])
         route_rows.append([name, str(len(routes)), "；".join(routes[:3]) + ("；..." if len(routes) > 3 else "")])
     add_table(doc, "表3-2 主要 API 分组", ["接口分组", "数量", "典型接口"], route_rows)
     for text in [
         "后端分层结构如图3-3所示。API 层负责认证、参数解析和响应模型；服务层负责业务编排，例如文件上传、OCR 任务、标准化入库和综合审计报告；Provider 层封装外部能力；模型层由 SQLAlchemy ORM 定义数据库结构。这样的分层避免了接口函数直接操作复杂业务流程，也使论文中的每个功能点都能定位到具体代码层。",
-        "API 设计遵循资源化思路。files 分组负责文件上传和文件关联数据查询；ocr 分组负责 OCR 修订记录；ingestion 分组负责将 OCR 结果标准化；documents 和 document-versions 分组负责文档与版本查询；measurements 分组负责指标搜索和时序；tasks 分组负责后台任务状态和事件；audit-reports 分组负责综合审计报告创建、执行、事件轮询和节点状态查询。表3-2中的接口数量来自当前 FastAPI APIRouter 快照。",
+        "API 设计遵循资源化思路。files 分组负责文件上传和文件关联数据查询；ocr 分组负责 OCR 修订记录；ingestion 分组负责将 OCR 结果标准化；documents 和 document-versions 分组负责文档与版本查询；measurements 分组负责指标搜索和时序；tasks 分组负责后台任务状态、事件和 provider-events/summary 监控；knowledge 分组负责知识块、来源和检索；audit-reports 分组负责综合审计报告创建、执行、事件轮询和节点状态查询。表3-2中的接口数量来自当前 FastAPI APIRouter 快照。",
     ]:
         add_body(doc, text)
     add_figure(doc, "图3-3_后端分层结构.png", "图3-3 后端分层结构", width_cm=14.8)
@@ -742,8 +816,8 @@ def add_chapter_four(doc: Document) -> None:
     add_section(doc, "4.1 文件上传与 OCR 处理实现")
     for text in [
         "文件上传流程由前端提交文件，后端 files API 校验并写入 records 和 record_files。record_files 不仅保存 original_filename 和 display_name，也保存 content_type、size_bytes、storage_provider、storage_key 和 content_bytes。当前演示环境采用 database_inline 存储，便于本地复现和测试；若后续接入对象存储，只需要替换 StorageProvider。",
-        "OCR 处理通过 ocr API 触发。系统创建或更新 tasks，并将具体抽取动作交给 OCRProvider。当前 Provider 为 plaintext，适合处理 Mock 文本报告和本地演示；保留的 baidu_ocr 和 openai_compatible_vision 扩展点可用于真实图片或 PDF 场景。处理完成后，系统写入 ocr_results，字段包括 record_file_id、revision_number、supersedes_ocr_result_id、is_current、provider_name、status、raw_text、raw_payload 和 created_at。",
-        "图4-1展示文件上传与 OCR 处理时序。该图从前端、files API、FileUploadService、数据库、ocr API、TaskProcessor 和 OCRProvider 之间的调用关系出发，说明系统把长耗时任务和外部能力调用从同步页面操作中拆开。即使当前演示 Provider 是 plaintext，任务和事件结构仍然为后续真实 OCR 服务保留了工程扩展空间。",
+        "OCR 处理通过 ocr API 触发。系统创建或更新 tasks，并将具体抽取动作交给 OCRProvider。当前 Provider 配置为 auto：文本型 Mock 报告路由到 plaintext，图片型资料在百度 OCR 密钥配置后路由到 baidu_ocr accurate，后续仍保留 openai_compatible_vision 扩展点。处理完成后，系统写入 ocr_results，字段包括 record_file_id、revision_number、supersedes_ocr_result_id、is_current、provider_name、status、raw_text、raw_payload 和 created_at。",
+        "图4-1展示文件上传与 OCR 处理时序。该图从前端、files API、FileUploadService、数据库、ocr API、TaskProcessor 和 OCRProvider 之间的调用关系出发，说明系统把长耗时任务和外部能力调用从同步页面操作中拆开。即使本地演示仍以文本样本为主，任务和事件结构也已经为真实 OCR 服务、失败重试和状态监控保留了工程扩展空间。",
     ]:
         add_body(doc, text)
     add_figure(doc, "图4-1_文件上传与OCR处理时序.png", "图4-1 文件上传与 OCR 处理时序", width_cm=14.8)
@@ -765,6 +839,7 @@ def add_chapter_four(doc: Document) -> None:
         ["timeline_builder", "时间线构建", "按报告日期和指标时间生成时间线", "timeline"],
         ["measurement_consistency_agent", "指标一致性审计", "按规则检查血糖、ALT、CRP、白细胞等异常", "consistency_findings"],
         ["risk_agent", "风险提示", "将异常指标转化为非诊断性关注项", "risk_findings"],
+        ["knowledge_retrieval_agent", "知识检索", "根据异常指标、风险点和医学审计知识块执行 RAG 召回", "knowledge_queries、knowledge_context"],
         ["evidence_agent", "证据绑定", "为风险、冲突和指标结论绑定原文或指标证据", "evidence_items"],
         ["conflict_agent", "冲突复核", "检查叙事事实与结构化指标是否存在复核点", "conflict_findings"],
         ["compliance_agent", "合规检查", "检查关键结论是否仍缺少证据", "compliance_findings"],
@@ -777,8 +852,8 @@ def add_chapter_four(doc: Document) -> None:
     ]
     add_table(doc, "表4-1 LangGraph 节点职责与输入输出", ["节点", "职责", "输入依据", "主要输出"], node_rows)
     for text in [
-        "综合审计报告模块是本文体现 LangGraph 架构的核心。服务层创建 AuditReportRun 后，把用户选择的 document_version_ids 转换为 AuditGraphState。状态中包含 documents、measurements、completed_agents、route_history、iteration_count、max_iterations、quality_findings、risk_findings、evidence_items、citation_issues、safety_issues 和 final_report 等字段。每个节点只返回局部更新，Engine 将更新合并回状态。",
-        "状态机的第一阶段由 audit_router 控制。audit_router 首先检查文档质量，再构建时间线，随后进行指标一致性审计、风险提示和证据绑定。当风险或冲突缺少证据时，_findings_need_evidence 会使路由回到 evidence_agent。普通审计节点完成后均回到 audit_router，这种回环不是前端动画，而是 LangGraph 中真实存在的条件边和状态迁移。",
+        "综合审计报告模块是本文体现 LangGraph 架构的核心。服务层创建 AuditReportRun 后，把用户选择的 document_version_ids 转换为 AuditGraphState。状态中包含 documents、measurements、knowledge_chunks、knowledge_context、completed_agents、route_history、iteration_count、max_iterations、quality_findings、risk_findings、evidence_items、citation_issues、safety_issues 和 final_report 等字段。每个节点只返回局部更新，Engine 将更新合并回状态。",
+        "状态机的第一阶段由 audit_router 控制。audit_router 首先检查文档质量，再构建时间线，随后进行指标一致性审计、风险提示、知识检索和证据绑定。当风险、冲突或知识来源缺少证据时，_findings_need_evidence 会使路由回到 evidence_agent。普通审计节点完成后均回到 audit_router，这种回环不是前端动画，而是 LangGraph 中真实存在的条件边和状态迁移。",
         "状态机的第二阶段由 final_router 控制。report_composer 生成报告草稿后，citation_checker 检查关键结论是否绑定证据，safety_reviewer 检查报告中是否包含不适合审计场景的医疗承诺。如果 citation_issues 存在，final_router 会回到 audit_router 补充审计；如果 safety_issues 存在，则回到 report_composer 重写报告；只有检查通过或达到最大迭代保护条件时，流程才进入 persist_report。",
         "图4-3是综合审计报告 LangGraph 状态流转图，边关系来自 AUDIT_GRAPH_EDGES。图中蓝线表示 audit_router 分派审计节点，灰线表示节点完成后回到 audit_router，橙线表示报告生成与审查链路，红线表示 final_router 回环补充审计，绿线表示通过后持久化并结束。该图直接对应前端综合报告模块中需要展示的真实流转结构。",
     ]:
@@ -796,8 +871,8 @@ def add_chapter_four(doc: Document) -> None:
 
     add_section(doc, "4.5 前端模块实现")
     for text in [
-        "前端以工作台形式组织模块，主要包括系统控制台、文档接入流程、文档库、指标探索、智能洞察和综合审计报告。系统控制台用于查看服务状态和账号信息；文档接入流程负责上传和处理资料；文档库展示标准化文档与版本；指标探索支持结构化指标查询；智能洞察保持聊天机器人形态；综合审计报告模块独立承担文档选择、LangGraph 流程图流转和最终报告展示。",
-        "前端设计的重点是把智能洞察和综合审计报告分离。智能洞察是对话式能力，左侧选择数据源，中间为聊天框，右侧为对话记录；综合审计报告不是聊天框，而是一个以流程图为核心的工作台。用户选择若干文档后启动报告生成，流程图按照后端事件流实时高亮节点和边，最终通过按钮打开完整报告。这种区分可以避免所有能力挤在一个卡片中，也能突出 LangGraph 架构。",
+        "前端以成熟产品工作台形式组织模块，主要包括文档接入、文档库、综合审计报告、智能洞察、RAG 知识库和指标探索。文档接入负责上传和处理资料；文档库展示标准化文档、文档类型和创建时间；指标探索支持结构化指标查询；智能洞察保持聊天机器人形态并提供历史会话列表；RAG 知识库展示知识来源、检索命中和 BM25 词法匹配结果；综合审计报告模块独立承担文档选择、LangGraph 流程图流转和最终报告展示。",
+        "前端设计的重点是把智能洞察、RAG 知识库和综合审计报告分离。智能洞察是对话式能力，保留历史消息和会话列表；综合审计报告不是聊天框，而是一个以流程图为核心的工作台。用户选择若干文档后启动报告生成，流程图按照后端事件流实时高亮节点和边，最终通过按钮打开完整报告。右上角任务状态按钮用于查看 OCR 与标准化任务状态，避免长耗时任务在页面上变成不可解释的等待。",
         "图4-5展示前端模块结构。该图来自 frontend/src/App.jsx 的模块配置和 API 封装设计，说明各模块共享 Token 和 API 服务，但在交互目标上保持分工。综合审计报告模块是论文中最能体现课题题目的前端入口。",
     ]:
         add_body(doc, text)
@@ -807,20 +882,19 @@ def add_chapter_four(doc: Document) -> None:
 
 def add_chapter_five(doc: Document, snapshot: dict) -> None:
     add_chapter(doc, "第五章 测试与运行效果分析")
-    add_body(doc, "本章基于 Mock 体检数据、核心接口测试和端到端运行链路说明系统运行效果，并对当前初稿阶段的完成度、可展示内容和后续完善方向进行分析。")
+    add_body(doc, "本章基于 Mock 体检数据、核心接口测试、端到端运行链路和真实演示截图说明系统运行效果，并对当前版本的完成度、可展示内容和后续完善方向进行分析。")
     add_section(doc, "5.1 Mock 体检数据构造")
-    mock = snapshot["mock_data"]
     rows = [
-        ["文档总数", str(mock["document_count"]), "来自 scripts/seed_mock_exam_data.py 的 MOCK_DOCUMENTS"],
-        ["结构化指标", str(mock["measurement_count"]), "写入 measurements，用于指标查询和审计"],
-        ["叙事事实", str(mock["prose_fact_count"]), "写入 normalized_payload.prose_facts"],
-        ["文档类型", ", ".join(f"{k}:{v}" for k, v in mock["document_types"].items()), "physical_exam、lab_report、clinical_note、imaging_report"],
-        ["月份分布", ", ".join(f"{k}:{v}" for k, v in mock["monthly_documents"].items()), "覆盖 2026 年 1 月至 5 月"],
+        ["演示账号", "admin@qq.com / 123123123", "来自 scripts/seed_admin_mock_data.py"],
+        ["文档总数", "25", "20 份体检类单据，5 份报告型单据"],
+        ["结构化指标", "85", "写入 measurements，用于指标查询和审计"],
+        ["文档类型", "体检、检验、影像、病历摘要、报告型文档", "覆盖文档库、RAG 和综合审计演示"],
+        ["知识块", "17", "9 条默沙东医学手册摘要知识块，来自 scripts/seed_msd_manual_rag.py"],
     ]
     add_table(doc, "表5-1 Mock 数据构成", ["项目", "数量/分布", "来源说明"], rows)
     for text in [
-        "为了支撑完整流程测试，项目提供 seed_mock_exam_data.py 脚本创建测试账户 exam@healthdoc.local，并写入一组模拟体检数据。该数据并不是随意生成的一两条记录，而是覆盖体检报告、化验报告、病历记录和影像结论等多种类型，使综合审计报告能够同时读取结构化指标和叙事事实。Mock 数据包括 15 份文档、65 条结构化指标和 14 条叙事事实。",
-        "Mock 数据的价值在于让系统能够稳定复现端到端流程。OCR Provider 在本地使用 plaintext，因此 Mock 文档以文本报告形式保存；标准化结果直接写入 ExtractedDocument、DocumentVersion 和 Measurement；综合审计报告可以选择多份文档运行 LangGraph。图5-1展示 Mock 体检数据分布，数据来源为脚本中的 MOCK_DOCUMENTS 定义。",
+        "为了支撑完整流程测试，项目提供 seed_admin_mock_data.py 脚本创建 admin@qq.com 测试账户，并写入 25 份模拟医疗资料。该数据不是只为页面凑数，而是覆盖体检报告、化验报告、病历摘要、影像结论和综合报告型文档，使系统能够同时验证结构化指标、叙事事实、文档版本、RAG 知识检索和综合审计报告。",
+        "Mock 数据的价值在于让系统能够稳定复现端到端流程。文本样本可以稳定进入 OCR plaintext 分支，图片样本可在百度 OCR 密钥配置后验证真实识别链路；标准化结果写入 ExtractedDocument、DocumentVersion 和 Measurement；综合审计报告可以选择多份文档运行 LangGraph，并在报告中展示文档证据和知识来源。图5-1展示 Mock 体检数据分布。",
     ]:
         add_body(doc, text)
     add_figure(doc, "图5-1_Mock体检数据分布.png", "图5-1 Mock 体检数据分布", width_cm=14.8)
@@ -833,42 +907,43 @@ def add_chapter_five(doc: Document, snapshot: dict) -> None:
         ["T04", "标准化入库", "POST /ingestion/ocr-results/{id}/normalize", "创建文档、版本和指标", "通过"],
         ["T05", "文档查询", "GET /documents", "返回用户文档列表", "通过"],
         ["T06", "指标搜索", "GET /measurements/search", "返回匹配指标", "通过"],
-        ["T07", "综合审计创建", "POST /audit-reports", "创建 audit_report_runs", "通过"],
-        ["T08", "综合审计执行", "POST /audit-reports/{run_id}/execute", "产生事件、节点状态和最终报告", "通过"],
-        ["T09", "事件轮询", "GET /audit-reports/{run_id}/events", "返回边和节点执行事件", "通过"],
-        ["T10", "节点轮询", "GET /audit-reports/{run_id}/nodes", "返回节点状态和 visit_count", "通过"],
+        ["T07", "任务状态监控", "GET /tasks/provider-events/summary", "返回 OCR 与标准化 Provider 调用概览", "通过"],
+        ["T08", "知识库检索", "GET /knowledge/search", "返回知识块命中和来源", "通过"],
+        ["T09", "综合审计创建", "POST /audit-reports", "创建 audit_report_runs", "通过"],
+        ["T10", "综合审计执行", "POST /audit-reports/{run_id}/execute", "产生事件、节点状态和最终报告", "通过"],
+        ["T11", "事件轮询", "GET /audit-reports/{run_id}/events", "返回边和节点执行事件", "通过"],
+        ["T12", "节点轮询", "GET /audit-reports/{run_id}/nodes", "返回节点状态和 visit_count", "通过"],
     ]
     add_table(doc, "表5-2 端到端测试用例", ["编号", "功能", "接口/对象", "预期结果", "结果"], test_rows)
     for text in [
-        "测试围绕从登录到报告生成的主链路设计。首先验证用户认证是否能够返回 Token，然后验证文件上传、OCR、标准化、文档查询和指标查询，再验证综合审计报告的创建、执行、事件轮询和节点状态轮询。该测试路径覆盖了系统的核心业务数据流，也覆盖了论文中各图表对应的主要模块。",
-        "项目当前 pytest 用例已能够通过，临时后端健康检查接口返回 200。需要说明的是，毕业设计初稿阶段的测试仍以功能闭环验证为主，后续定稿前还应补充更多异常场景，例如空文档、缺失日期、标准化失败、LLM Provider 超时、审计报告安全审查不通过和最大迭代次数达到上限等。",
+        "测试围绕从登录到报告生成的主链路设计。首先验证用户认证是否能够返回 Token，然后验证文件上传、OCR、标准化、文档查询和指标查询，再验证任务状态监控、知识库检索、综合审计报告创建、执行、事件轮询和节点状态轮询。该测试路径覆盖了系统的核心业务数据流，也覆盖了论文中各图表对应的主要模块。",
+        "项目当前后端健康检查接口返回 200，前端本地服务能够登录 admin@qq.com 并读取 Mock 数据。需要说明的是，毕业设计阶段的测试以功能闭环验证为主，后续上线前还应补充更多异常场景，例如空文档、缺失日期、标准化失败、LLM Provider 超时、审计报告安全审查不通过和最大迭代次数达到上限等。",
         "图5-2展示端到端测试链路。该链路从登录和上传开始，经过 OCR、标准化、查询、审计运行、节点轮询和最终报告，能够对应用户演示时的完整操作路径。与纯后端单元测试相比，该链路更适合作为毕业答辩演示主线。",
     ]:
         add_body(doc, text)
     add_figure(doc, "图5-2_端到端测试链路.png", "图5-2 端到端测试链路", width_cm=14.8)
 
-    add_section(doc, "5.3 运行效果分析")
+    add_section(doc, "5.3 真实演示运行截图")
     for text in [
-        "从功能完成度看，当前项目已经具备后端演示和论文撰写的核心条件。资料上传、OCR 保存、标准化入库、指标查询、Mock 数据创建、LangGraph 综合审计报告、事件持久化和前端模块均已形成闭环。对于毕业设计而言，最重要的是能够展示“为什么必须使用 LangGraph”：系统中的审计流程包含多个审计节点、两个路由节点、状态字段、条件边和回环复核，而不是简单的一条线性流水线。",
-        "从技术体现看，综合审计报告模块解决了中期阶段“没有体现 LangGraph 架构”的问题。前端流程图高亮来自后端 audit_report_events 和 audit_report_node_states，后端事件来自 AuditGraphEngine.stream，边关系来自 AUDIT_GRAPH_EDGES。用户在页面上看到的不是静态 SVG，而是真实运行事件驱动的节点状态。该点应作为答辩演示的重点。",
-        "从不足看，当前系统仍有改进空间。第一，OCR Provider 在本地主要使用 plaintext，对图片型真实报告的识别能力需要接入真实 OCR 服务后再验证。第二，标准化效果虽然加入 llm_direct 和规则兜底，但仍需继续完善指标别名、单位换算和参考范围解析。第三，审计节点当前以规则审计为主，后续可以在安全边界明确的前提下引入更多 LLM 解释型节点。第四，数据库迁移链需要在定稿前整理，保证部署环境和本地环境一致。",
+        "为了避免运行效果只停留在流程图和表格层面，本文在本地启动后端与前端服务，使用 admin@qq.com 演示账号登录系统，并截取真实页面作为运行证据。截图对应当前代码和 Mock 数据状态，能够展示工作台、任务队列、文档库、RAG 知识库、综合审计流程和完整报告预览。",
     ]:
         add_body(doc, text)
-    add_expansion(doc, "chapter_five")
+    add_screenshot(doc, "01_workspace_home.png", "图5-3 系统工作台与功能模块", width_cm=15.0)
+    add_screenshot(doc, "02_task_queue_monitor.png", "图5-4 任务队列与 OCR/标准化状态监控", width_cm=15.0)
+    add_screenshot(doc, "03_document_vault.png", "图5-5 文档库中的标准化文档", width_cm=15.0)
+    add_screenshot(doc, "04_rag_knowledge_search.png", "图5-6 RAG 知识库检索与来源展示", width_cm=15.0)
+    add_screenshot(doc, "06_audit_graph_completed.png", "图5-7 综合审计报告 LangGraph 运行结果", width_cm=15.0)
+    add_screenshot(doc, "07_audit_report_modal.png", "图5-8 综合审计报告正文与 RAG 来源证据", width_cm=15.0)
+
+    add_section(doc, "5.4 运行效果与不足分析")
     for text in [
-        "从论文定稿角度看，测试部分还应强调测试数据与系统功能之间的对应关系。Mock 数据中的体检报告主要用于验证总检结论、时间线和多个指标并存的情况；化验报告主要用于验证数值指标、单位和异常标记；病历摘要主要用于验证叙事事实和用药、既往史等自然语言内容；影像结论主要用于验证非数值型检查结果是否能够进入报告证据。不同类型资料共同参与审计，才能说明系统不是只针对单一模板写死的演示程序。",
-        "对于接口测试结果，论文中不应只列出接口是否返回 200，还应说明接口通过后对数据库产生了什么影响。例如上传接口通过后应能在 record_files 中看到文件记录，OCR 接口通过后应能在 ocr_results 和 task_events 中看到处理结果，标准化接口通过后应能看到 document_versions 和 measurements，综合审计执行接口通过后应能看到 audit_report_events 中连续递增的 sequence。这样写可以把测试结果与表结构和流程图对应起来。",
-        "对于前端运行效果，评价重点是交互是否能够解释后端状态。综合审计报告模块中，节点亮起、边高亮、最终报告按钮出现，都应该来自后端事件和节点状态，而不是前端模拟动画。若用户刷新页面后仍能看到运行记录，说明后端持久化起到了作用；若重新打开报告能看到相同的证据和结论，说明 final_report 已经与 AuditReportRun 绑定。这样的说明能够增强论文中“真实流转”的可信度。",
-        "系统稳定性测试还可以从失败路径展开。比如选择空文档时，document_quality_agent 应给出质量发现；标准化结果缺少日期时，timeline_builder 应标记时间线不完整；报告草稿缺少证据时，citation_checker 应产生 citation_issues；报告语言过于绝对时，safety_reviewer 应触发重写。这些失败路径虽然不一定都在初稿阶段完整自动化，但它们说明了状态机设计预留的处理能力。",
-        "性能方面，当前系统更关注流程可解释和演示稳定，而不是高并发。由于毕业设计场景主要面向单用户或少量用户演示，系统把文件内容直接保存到数据库中可以降低部署复杂度。若后续进入真实生产环境，应将文件迁移到对象存储，并为 OCR、标准化和审计报告生成任务增加队列、重试和限流机制。论文中说明这一点，可以避免把原型系统夸大为生产级医疗平台。",
-        "可维护性方面，本文实现通过服务层和 Provider 层降低耦合。文件上传、OCR、标准化、审计报告和前端展示各自有明确入口，数据库模型也按资料、任务和审计三类对象组织。后续如果要增加新的审计节点，例如用药风险检查、复查建议检查或指标单位换算检查，只需要在 AuditGraphState 中增加对应字段，在图中加入节点和边，再补充事件记录即可，不需要重写整个报告生成流程。",
-        "从论文表达角度看，本文应避免把所有内容写成系统功能列表。更合适的写法是先说明问题，再说明设计选择，最后说明实现落点。例如讲标准化时，应先说明医疗资料格式不统一导致无法审计，再说明版本化和指标表的设计，最后说明代码中对应的 ExtractedDocument、DocumentVersion 和 Measurement。讲 LangGraph 时，也应先说明线性流程无法表达回环，再说明双路由状态机，最后说明事件表如何支撑前端流转图。",
-        "从答辩演示角度看，建议按照“资料接入、结构化入库、指标查询、综合审计、流程图流转、最终报告”六步展示。前四步说明系统有完整工程基础，后两步集中体现课题题目中的 LangGraph 和多 Agent。特别是综合审计运行时，应重点指出 audit_router、多个审计 Agent、final_router、persist_report 之间的关系，并说明节点高亮来自数据库事件。这比单纯展示最终报告更能回应老师对题目契合度的要求。",
-        "最终评价当前版本时，应使用谨慎表述。系统已经完成毕业设计所需的核心链路和可展示原型，但仍不是医疗生产系统；系统能够辅助整理资料和生成审计报告，但不替代医生诊断；系统使用 LangGraph 表达状态机和回环复核，但当前 Agent 节点仍以规则审计和结构化检查为主。这样的表述既能体现技术实现，也能避免过度承诺，使论文更符合大陆本科毕业论文的写作尺度。",
-        "综上，测试与运行效果章节不仅证明系统能跑通，还应证明系统为什么这样设计。Mock 数据证明输入足够多样，接口测试证明后端链路完整，事件与节点状态证明 LangGraph 不是静态概念，前端流程图证明状态机可以被用户理解，最终报告证明审计结果可以落地阅读。把这些证据组合起来，才能支撑本文题目中的“基于 LangGraph 的多 Agent 协作框架在医疗审计场景的设计与实现”。",
-        "此外，论文后续定稿时还可以将部分测试过程补充为截图或表格，例如展示审计事件序列、节点访问次数、最终报告证据条目和 Mock 数据分布。这样既能增强论文本身的证据感，也能让评阅教师更容易判断系统是否真实运行。对于工程类毕业论文而言，能够把源码、数据库、接口、图表和正文说明互相对应，是比单纯堆叠概念更重要的质量标准。",
-        "本章扩展说明的目的，是把系统运行效果从“功能可用”提升到“设计可解释”。如果只写接口通过和页面能打开，无法说明 LangGraph 在项目中的必要性；如果能说明节点为何拆分、状态如何变化、事件如何入库、前端如何轮询、报告如何绑定证据，就能够形成完整论证链。后续答辩时也应沿着这条链路展示系统，而不是只展示最终页面。",
-        "因此，当前测试章节已经能够支撑论文正文的工程论证。",
+        "从功能完成度看，当前项目已经具备后端演示和论文撰写的核心条件。资料上传、OCR 保存、标准化入库、文档库、指标查询、任务监控、RAG 知识库、LangGraph 综合审计报告、事件持久化和前端模块均已形成闭环。对于毕业设计而言，最重要的是能够展示“为什么必须使用 LangGraph”：系统中的审计流程包含多个审计节点、两个路由节点、状态字段、条件边和回环复核，而不是简单的一条线性流水线。",
+        "从技术体现看，综合审计报告模块解决了中期阶段“没有体现 LangGraph 架构”的问题。前端流程图高亮来自后端 audit_report_events 和 audit_report_node_states，后端事件来自 AuditGraphEngine.stream，边关系来自 AUDIT_GRAPH_EDGES。用户在页面上看到的不是静态流程图，而是真实运行事件驱动的节点状态。RAG 命中知识块后，报告预览还能展示 knowledge_sources 和 knowledge_chunk 证据。",
+        "从论文定稿角度看，测试部分还应强调测试数据与系统功能之间的对应关系。Mock 数据中的体检报告主要用于验证总检结论、时间线和多个指标并存的情况；化验报告主要用于验证数值指标、单位和异常标记；病历摘要主要用于验证叙事事实和用药、既往史等自然语言内容；报告型文档用于验证较长文本能否参与审计和摘要。",
+        "对于接口测试结果，论文中不应只列出接口是否返回 200，还应说明接口通过后对数据库产生了什么影响。例如上传接口通过后应能在 record_files 中看到文件记录，OCR 接口通过后应能在 ocr_results 和 task_events 中看到处理结果，标准化接口通过后应能看到 document_versions 和 measurements，综合审计执行接口通过后应能看到 audit_report_events 中连续递增的 sequence。",
+        "从不足看，当前系统仍有改进空间。第一，OCR Provider 虽已具备 auto 路由和百度 OCR 接入能力，但图片、扫描 PDF 和复杂表格的识别质量仍需要更多真实样本验证。第二，标准化效果虽然加入 llm_direct 和规则兜底，但仍需继续完善指标别名、单位换算和参考范围解析。第三，审计节点当前以规则审计、RAG 检索和证据绑定为主，后续可以在安全边界明确的前提下引入更多 LLM 解释型节点。第四，数据库迁移链和任务队列在上线前仍需加强，保证部署环境和本地环境一致。",
+        "性能方面，当前系统更关注流程可解释和演示稳定，而不是高并发。由于毕业设计场景主要面向单用户或少量用户演示，系统把文件内容直接保存到数据库中可以降低部署复杂度。若后续进入真实生产环境，应将文件迁移到对象存储，并为 OCR、标准化和审计报告生成任务增加更完整的队列、重试、限流和失败恢复机制。",
+        "综上，测试与运行效果章节不仅证明系统能跑通，还证明系统为什么这样设计。Mock 数据证明输入足够多样，接口测试证明后端链路完整，事件与节点状态证明 LangGraph 不是静态概念，RAG 检索证明知识来源可以进入报告，前端截图证明状态机可以被用户理解，最终报告证明审计结果可以落地阅读。",
     ]:
         add_body(doc, text)
 
@@ -876,9 +951,9 @@ def add_chapter_five(doc: Document, snapshot: dict) -> None:
 def add_conclusion(doc: Document) -> None:
     add_chapter(doc, "结束语")
     for text in [
-        "本文围绕《基于 LangGraph 的多 Agent 协作框架在医疗审计场景的设计与实现》完成了系统需求分析、总体架构设计、数据库设计、接口设计、核心流程实现和测试说明。系统以个人健康资料为入口，完成文件上传、OCR、标准化入库、版本化存储、指标查询、综合审计报告和前端展示，形成了从原始资料到审计报告的工程闭环。",
-        "本文实现的关键特点在于使用 LangGraph 将综合审计报告生成过程组织为状态机。audit_router 负责分派文档质量、时间线、指标一致性、风险、证据、冲突、合规和质量门禁等节点；final_router 负责根据引用检查和安全审查决定回退或持久化；事件和节点状态被保存到数据库并用于前端高亮展示。该设计使系统能够体现多 Agent 协作、条件路由、回环复核和可追溯执行过程。",
-        "后续工作主要包括三点。第一，接入更稳定的真实 OCR 服务和更多真实报告样本，提升图片、PDF 和复杂表格的处理能力。第二，完善标准化规则库和指标单位换算，增强不同报告模板之间的一致性。第三，在保持非诊断性边界的前提下扩展 LLM 审计节点，使风险解释、证据摘要和用户可读报告更加自然。总体来看，当前系统已经能够支撑毕业设计论文初稿和后续答辩演示，后续重点是补充测试、优化细节和完善论文表达。",
+        "本文围绕《基于 LangGraph 的多 Agent 协作框架在医疗审计场景的设计与实现》完成了系统需求分析、总体架构设计、数据库设计、接口设计、核心流程实现和测试说明。系统以个人健康资料为入口，完成文件上传、OCR、标准化入库、版本化存储、指标查询、RAG 知识检索、任务状态监控、综合审计报告和前端展示，形成了从原始资料到审计报告的工程闭环。",
+        "本文实现的关键特点在于使用 LangGraph 将综合审计报告生成过程组织为状态机。audit_router 负责分派文档质量、时间线、指标一致性、风险、知识检索、证据、冲突、合规和质量门禁等节点；final_router 负责根据引用检查和安全审查决定回退或持久化；事件和节点状态被保存到数据库并用于前端高亮展示。该设计使系统能够体现多 Agent 协作、条件路由、回环复核和可追溯执行过程。",
+        "后续工作主要包括三点。第一，持续验证真实 OCR 服务和更多真实报告样本，提升图片、PDF 和复杂表格的处理能力。第二，完善标准化规则库、指标单位换算和知识库内容，增强不同报告模板之间的一致性。第三，在保持非诊断性边界的前提下扩展 LLM 审计节点，使风险解释、证据摘要和用户可读报告更加自然。总体来看，当前系统已经能够支撑毕业设计论文初稿和后续答辩演示，后续重点是补充测试、优化细节和完善论文表达。",
     ]:
         add_body(doc, text)
 
@@ -908,6 +983,8 @@ def add_references(doc: Document) -> None:
         "Yao S, Zhao J, Yu D, et al. ReAct: Synergizing Reasoning and Acting in Language Models[C]//International Conference on Learning Representations. 2023.",
         "Wu Q, Bansal G, Zhang J, et al. AutoGen: Enabling Next-Gen LLM Applications via Multi-Agent Conversation[EB/OL]. arXiv:2308.08155, 2023[2026-05-07]. https://arxiv.org/abs/2308.08155.",
         "LangChain. LangGraph overview[EB/OL]. [2026-05-07]. https://docs.langchain.com/oss/python/langgraph/overview.",
+        "Thirunavukarasu A J, Ting D S J, Elangovan K, et al. Large language models in medicine[J]. Nature Medicine, 2023,29:1930-1940.",
+        "Wornow M, Xu Y, Thapa R, et al. The shaky foundations of large language models and foundation models for electronic health records[J]. npj Digital Medicine, 2023,6:135.",
     ]
     for idx, ref in enumerate(refs, start=1):
         p = doc.add_paragraph()
@@ -983,6 +1060,7 @@ def main() -> None:
     add_chapter_five(doc, snapshot)
     add_conclusion(doc)
     add_references(doc)
+    add_acknowledgement(doc)
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)
     output = OUTPUT
     try:

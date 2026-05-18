@@ -1,6 +1,6 @@
 {
   "providers": {
-    "ocr": "plaintext",
+        "ocr": "auto",
     "normalization": "llm_direct",
     "llm": "openai_compatible",
     "storage": "database_inline"
@@ -42,15 +42,20 @@
     "ingestion": [
       "POST /ingestion/ocr-results/{ocr_result_id}/normalize"
     ],
-    "insight": [
+        "insight": [
       "GET /insight/sessions",
       "GET /insight/sessions/{session_id}",
       "GET /insight/sessions/{session_id}/messages",
       "DELETE /insight/sessions/{session_id}",
       "POST /insight/sessions/stream",
-      "POST /insight/sessions/{session_id}/messages/stream"
-    ],
-    "ocr": [
+            "POST /insight/sessions/{session_id}/messages/stream"
+        ],
+        "knowledge": [
+            "GET /knowledge/chunks",
+            "GET /knowledge/sources",
+            "GET /knowledge/search"
+        ],
+        "ocr": [
       "POST /ocr/files/{record_file_id}/extract",
       "GET /ocr/files/{record_file_id}/revisions",
       "GET /ocr/files/{record_file_id}/revisions/current",
@@ -82,13 +87,14 @@
     "query": [
       "POST /query/selections"
     ],
-    "tasks": [
-      "GET /tasks",
-      "GET /tasks/{task_id}",
-      "GET /tasks/{task_id}/events",
-      "GET /tasks/{task_id}/provider-events",
-      "GET /tasks/{task_id}/result",
-      "POST /tasks/{task_id}/retry"
+        "tasks": [
+            "GET /tasks",
+            "GET /tasks/provider-events/summary",
+            "GET /tasks/{task_id}",
+            "GET /tasks/{task_id}/events",
+            "GET /tasks/{task_id}/provider-events",
+            "GET /tasks/{task_id}/result",
+            "POST /tasks/{task_id}/retry"
     ]
   },
   "audit_graph_edges": [
@@ -128,13 +134,21 @@
       "audit_router",
       "risk_agent"
     ],
-    [
-      "risk_agent",
-      "audit_router"
-    ],
-    [
-      "audit_router",
-      "evidence_agent"
+        [
+            "risk_agent",
+            "audit_router"
+        ],
+        [
+            "audit_router",
+            "knowledge_retrieval_agent"
+        ],
+        [
+            "knowledge_retrieval_agent",
+            "audit_router"
+        ],
+        [
+            "audit_router",
+            "evidence_agent"
     ],
     [
       "evidence_agent",
@@ -198,19 +212,20 @@
     ]
   ],
   "mock_data": {
-    "document_count": 15,
-    "measurement_count": 65,
-    "prose_fact_count": 14,
-    "document_categories": {
-      "structured_metrics": 11,
-      "narrative_context": 4
-    },
-    "document_types": {
-      "physical_exam": 2,
-      "lab_report": 9,
-      "clinical_note": 3,
-      "imaging_report": 1
-    },
+        "document_count": 25,
+        "measurement_count": 85,
+        "prose_fact_count": 5,
+        "document_categories": {
+            "structured_metrics": 20,
+            "narrative_context": 5
+        },
+        "document_types": {
+            "physical_exam": 8,
+            "lab_report": 9,
+            "clinical_note": 3,
+            "imaging_report": 2,
+            "narrative_report": 3
+        },
     "monthly_documents": {
       "2026-01": 3,
       "2026-02": 2,
