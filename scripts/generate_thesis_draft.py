@@ -34,6 +34,7 @@ DATE_RANGE = "2026年2月23日至2026年5月22日"
 ACCENT = "000000"
 LIGHT = "F2F2F2"
 GRID = "D7DEE5"
+REFERENCE_COUNT = 24
 
 
 def load_snapshot() -> dict:
@@ -169,7 +170,7 @@ def configure_section(section, *, header_text: str | None, page_start: int | Non
     set_page_numbering(section, start=page_start, fmt=page_fmt)
 
 
-def add_field(paragraph, instruction: str, placeholder: str = "") -> None:
+def add_field(paragraph, instruction: str, placeholder: str = ""):
     run = paragraph.add_run()
     fld_begin = OxmlElement("w:fldChar")
     fld_begin.set(qn("w:fldCharType"), "begin")
@@ -187,6 +188,7 @@ def add_field(paragraph, instruction: str, placeholder: str = "") -> None:
     run._r.append(fld_separate)
     run._r.append(text)
     run._r.append(fld_end)
+    return run
 
 
 def add_center_text(doc: Document, text: str, size: float, *, bold: bool = False, font_name: str = "宋体", after: float = 0) -> None:
@@ -196,16 +198,69 @@ def add_center_text(doc: Document, text: str, size: float, *, bold: bool = False
     set_run_font(run, size, bold=bold, name=font_name)
 
 
-def add_runs_with_citations(paragraph, text: str, *, bold: bool = False) -> None:
+def reference_bookmark_name(number: int) -> str:
+    return f"ref_{number:03d}"
+
+
+def citation_numbers(text: str) -> list[int]:
+    numbers = [int(part) for part in re.findall(r"\d+", text)]
+    if not numbers:
+        return []
+    if any(number < 1 or number > REFERENCE_COUNT for number in numbers):
+        return []
+    return numbers
+
+
+def add_reference_field(paragraph, number: int, *, size: float) -> None:
+    # Use Word REF fields so citation numbers are cross-references, not static text.
+    run = add_field(paragraph, f"REF {reference_bookmark_name(number)} \\h", str(number))
+    set_run_font(run, size, name="Times New Roman")
+
+
+def add_citation_run(paragraph, citation: str, *, size: float) -> None:
+    inner = citation[1:-1]
+    if not citation_numbers(inner):
+        run = paragraph.add_run(citation)
+        set_run_font(run, size, name="Times New Roman")
+        return
+    run = paragraph.add_run("[")
+    set_run_font(run, size, name="Times New Roman")
+    for part in re.split(r"(\d+)", inner):
+        if not part:
+            continue
+        if part.isdigit():
+            add_reference_field(paragraph, int(part), size=size)
+        else:
+            run = paragraph.add_run(part)
+            set_run_font(run, size, name="Times New Roman")
+    run = paragraph.add_run("]")
+    set_run_font(run, size, name="Times New Roman")
+
+
+def add_bookmarked_reference_number(paragraph, number: int, *, size: float) -> None:
+    bookmark_id = 1000 + number
+    run = paragraph.add_run(str(number))
+    set_run_font(run, size, name="Times New Roman")
+    start = OxmlElement("w:bookmarkStart")
+    start.set(qn("w:id"), str(bookmark_id))
+    start.set(qn("w:name"), reference_bookmark_name(number))
+    end = OxmlElement("w:bookmarkEnd")
+    end.set(qn("w:id"), str(bookmark_id))
+    parent = paragraph._p
+    run_index = parent.index(run._r)
+    parent.insert(run_index, start)
+    parent.insert(run_index + 2, end)
+
+
+def add_runs_with_citations(paragraph, text: str, *, bold: bool = False, size: float = 10.5) -> None:
     for part in re.split(r"(\[[0-9,\-\s]+\])", text):
         if not part:
             continue
         if re.fullmatch(r"\[[0-9,\-\s]+\]", part):
-            run = paragraph.add_run(part)
-            set_run_font(run, 10.5, name="Times New Roman")
+            add_citation_run(paragraph, part, size=size)
         else:
             run = paragraph.add_run(part)
-            set_run_font(run, 10.5, bold=bold)
+            set_run_font(run, size, bold=bold)
 
 
 def add_body(doc: Document, text: str, *, first_line: bool = True, bold_prefix: str | None = None) -> None:
@@ -252,8 +307,11 @@ def set_cell_text(cell, text: str, *, header: bool = False, size: float = 9.5) -
     cell.text = ""
     p = cell.paragraphs[0]
     set_paragraph_format(p, after=0)
-    run = p.add_run(str(text))
-    set_run_font(run, size, bold=header, name="宋体")
+    if header:
+        run = p.add_run(str(text))
+        set_run_font(run, size, bold=True, name="宋体")
+    else:
+        add_runs_with_citations(p, str(text), size=size)
     if header:
         p.alignment = WD_ALIGN_PARAGRAPH.CENTER
         shade_cell(cell, "FFFFFF")
@@ -1037,7 +1095,10 @@ def add_references(doc: Document) -> None:
     for idx, ref in enumerate(refs, start=1):
         p = doc.add_paragraph()
         set_paragraph_format(p, first_line=False)
-        run = p.add_run(f"[{idx}] {ref}")
+        run = p.add_run("[")
+        set_run_font(run, 10.5, name="Times New Roman")
+        add_bookmarked_reference_number(p, idx, size=10.5)
+        run = p.add_run(f"] {ref}")
         set_run_font(run, 10.5)
 
 
