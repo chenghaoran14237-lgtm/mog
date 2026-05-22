@@ -31,4 +31,4 @@ dev = [
 testpaths = ["tests"]
 
 [tool.setuptools.packages.find]
-include = ["app*", "migrations*"]
+include = ["app*", "migrations*", "scripts*"]

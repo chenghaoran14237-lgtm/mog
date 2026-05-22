@@ -8,6 +8,7 @@ WORKDIR /app
 COPY pyproject.toml README.md alembic.ini ./
 COPY app ./app
 COPY migrations ./migrations
+COPY scripts ./scripts
 
 RUN pip install --no-cache-dir .
 
